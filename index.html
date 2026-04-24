@@ -332,13 +332,12 @@
   </div>
 
   <script>
+    // Config (can be overridden by editing this line during deployment/build)
+    window.API_BASE_URL = "/api";
+
     // Use a same-origin Vercel rewrite proxy to avoid CORS in production.
     // Vercel will rewrite /api/* -> https://mealskart-backend.onrender.com/*
-    const API_BASE_URL = "/api";
-
-    function apiUrl(path) {
-      return `${API_BASE_URL}${path}`;
-    }
+    const API_BASE_URL = window.API_BASE_URL || "/api";
 
     const state = {
       time_available: 15,
@@ -373,7 +372,7 @@
 
     async function trackInteraction(action, recipeId) {
       try {
-        const response = await fetch(apiUrl("/track"), {
+        const response = await fetch(`${API_BASE_URL}/track`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -467,7 +466,7 @@
       }
 
       try {
-        const response = await fetch(apiUrl(`/recipe/${recipeId}`), {
+        const response = await fetch(`${API_BASE_URL}/recipe/${recipeId}`, {
           method: "GET",
           headers: { "Accept": "application/json" }
         });
@@ -497,7 +496,7 @@
       readyText.textContent = mode === "decide" ? "Dinner decided for you" : "Your quick meal is ready";
 
       try {
-        const response = await fetch(apiUrl("/recommend"), {
+        const response = await fetch(`${API_BASE_URL}/recommend`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
