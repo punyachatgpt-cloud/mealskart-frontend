@@ -146,6 +146,13 @@
       display: none;
     }
 
+    .pref-hint {
+      margin: 6px 2px 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+      display: none;
+    }
+
     .results {
       margin-top: 14px;
       display: grid;
@@ -331,6 +338,7 @@
     <p class="status" style="margin-top: 6px; text-align:center;">⚡ Takes less than 5 seconds</p>
     <p class="status" id="statusText"></p>
     <p class="ready-text" id="readyText">Your quick meal is ready</p>
+    <p class="pref-hint" id="prefHint"></p>
     <p class="tap-hint" id="tapHint">Tap a dish to start cooking</p>
 
     <section class="results" id="results"></section>
@@ -390,6 +398,7 @@
 
     const statusText = document.getElementById("statusText");
     const readyText = document.getElementById("readyText");
+    const prefHint = document.getElementById("prefHint");
     const tapHint = document.getElementById("tapHint");
     const resultsContainer = document.getElementById("results");
     const suggestBtn = document.getElementById("suggestBtn");
@@ -409,6 +418,7 @@
     const PREFERENCES_KEY = "foodai_preferences";
     const LAST_COOKED_KEY = "last_cooked";
     const RECENT_COOKED_KEY = "recent_cooked_ids";
+    const RECIPE_META_KEY = "recipe_meta";
 
     function toRecipeCode(recipeId) {
       const numericId = Number(recipeId);
@@ -474,6 +484,67 @@
         localStorage.setItem(RECENT_COOKED_KEY, JSON.stringify(next));
       } catch (error) {
         // Ignore storage failures.
+      }
+    }
+
+    function saveRecipeMeta(recipeId, tagsText) {
+      try {
+        const id = String(recipeId);
+        const tags = String(tagsText || "")
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
+
+        const raw = localStorage.getItem(RECIPE_META_KEY);
+        const existing = raw ? JSON.parse(raw) : {};
+        const next = (existing && typeof existing === "object") ? existing : {};
+        next[id] = { tags, updatedAt: Date.now() };
+        localStorage.setItem(RECIPE_META_KEY, JSON.stringify(next));
+      } catch (error) {
+        // Ignore storage failures.
+      }
+    }
+
+    function updatePreferenceHint() {
+      try {
+        const recent = getRecentCookedIds();
+        if (recent.length < 3) {
+          prefHint.style.display = "none";
+          prefHint.textContent = "";
+          return;
+        }
+
+        const raw = localStorage.getItem(RECIPE_META_KEY);
+        const meta = raw ? JSON.parse(raw) : {};
+        const counts = { quick: 0, healthy: 0, comfort: 0 };
+
+        for (const id of recent) {
+          const entry = meta && typeof meta === "object" ? meta[String(id)] : null;
+          const tags = entry && Array.isArray(entry.tags) ? entry.tags : [];
+          for (const tag of ["quick", "healthy", "comfort"]) {
+            if (tags.includes(tag)) counts[tag] += 1;
+          }
+        }
+
+        const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+        if (!top || top[1] < 2) {
+          prefHint.style.display = "none";
+          prefHint.textContent = "";
+          return;
+        }
+
+        const [tag] = top;
+        const copyByTag = {
+          quick: "You usually prefer quick meals ⚡",
+          healthy: "You usually prefer healthy meals 🥗",
+          comfort: "You usually prefer comfort meals 🍲"
+        };
+
+        prefHint.textContent = copyByTag[tag] || "";
+        prefHint.style.display = prefHint.textContent ? "block" : "none";
+      } catch (error) {
+        prefHint.style.display = "none";
+        prefHint.textContent = "";
       }
     }
 
@@ -563,13 +634,16 @@
           } catch (error) {
             // Ignore storage failures.
           }
+          updatePreferenceHint();
           trackInteraction("cook", item.id);
           openRecipeModal(item.id);
         });
         resultsContainer.appendChild(card);
+        saveRecipeMeta(item.id, item.tags);
         trackInteraction("view", item.id);
       });
       tapHint.style.display = "block";
+      updatePreferenceHint();
     }
 
     function updateModalStep() {
@@ -690,6 +764,7 @@
     bindChoiceButtons();
     loadPreferences();
     applyPreferencesToUI();
+    updatePreferenceHint();
     getSuggestions(getInitialMode());
   </script>
 </body>
