@@ -575,10 +575,10 @@
   <div class="shell">
     <header class="topbar">
       <div class="brand">
-        <h1>What’s cooking today? 🍳</h1>
+        <h1>What's cooking today? &#x1F373;</h1>
         <p>Pick your time, mood, diet and ingredients. MealsKart will suggest dishes that feel right, fast.</p>
       </div>
-      <div class="microcopy" id="microcopy">Dinner ready in 15 mins ⚡</div>
+      <div class="microcopy" id="microcopy">Dinner ready in 15 mins &#9889;</div>
     </header>
 
     <section class="grid">
@@ -617,7 +617,7 @@
           <div class="actions">
             <button class="btn" id="suggestBtn" type="button">Show My Meals</button>
             <button class="btn secondary" id="decideBtn" type="button">Just Decide For Me</button>
-            <div class="trust">⚡ Takes less than 5 seconds</div>
+            <div class="trust">&#9889; Takes less than 5 seconds</div>
           </div>
         </div>
       </aside>
@@ -628,7 +628,7 @@
             <p class="headline" id="headline">Your meals, served fresh</p>
             <p class="sub" id="subline">Tap a card to start cooking step-by-step.</p>
             <div class="prefHint" id="prefHint"></div>
-            <div class="decideHint" id="decideHint">⭐ Your meal is decided. No thinking needed. Start cooking.</div>
+            <div class="decideHint" id="decideHint">&#11088; Your meal is decided. No thinking needed. Start cooking.</div>
           </div>
           <div>
             <div class="spinner" id="loading">
@@ -804,7 +804,7 @@
     }
 
     function updateMicrocopy() {
-      el.microcopy.textContent = `Dinner ready in ${state.time_available} mins ⚡`;
+      el.microcopy.innerHTML = `Dinner ready in ${state.time_available} mins &#9889;`;
     }
 
     function getRecentCookedIds() {
@@ -873,12 +873,12 @@
 
         const [tag] = top;
         const copyByTag = {
-          quick: "You usually prefer quick meals ⚡",
-          healthy: "You usually prefer healthy meals 🥗",
-          comfort: "You usually prefer comfort meals 🍲"
+          quick: "You usually prefer quick meals &#9889;",
+          healthy: "You usually prefer healthy meals &#129367;",
+          comfort: "You usually prefer comfort meals &#127858;"
         };
 
-        el.prefHint.textContent = copyByTag[tag] || "";
+        el.prefHint.innerHTML = copyByTag[tag] || "";
         el.prefHint.style.display = el.prefHint.textContent ? "block" : "none";
       } catch (error) {
         el.prefHint.style.display = "none";
@@ -973,7 +973,7 @@
         card.tabIndex = 0;
 
         const badges = [
-          isDecide ? '<span class="badge gold">⭐ Your Meal is Decided</span>' : (isFirst ? '<span class="badge gold">⭐ Recommended</span>' : ""),
+          isDecide ? '<span class="badge gold">&#11088; Your Meal is Decided</span>' : (isFirst ? '<span class="badge gold">&#11088; Recommended</span>' : ""),
           tagBadges(state.diet, item.tags)
         ].filter(Boolean).join("");
 
@@ -989,13 +989,13 @@
                 <h3 class="foodName">${item.name}</h3>
               </div>
               <button class="heartBtn" type="button" aria-label="Toggle favorite">
-                <span class="heart">${isFav ? "❤" : "♡"}</span>
+                <span class="heart">${isFav ? "&#10084;" : "&#9825;"}</span>
               </button>
             </div>
 
             <div class="metaRow">
-              <span class="metaItem">⏱️ ${clampInt(item.time_minutes, 0)} min</span>
-              <span class="metaItem">✅ Easy</span>
+              <span class="metaItem">&#9201; ${clampInt(item.time_minutes, 0)} min</span>
+              <span class="metaItem">&#9989; Easy</span>
             </div>
 
             <p class="desc">${desc}</p>
@@ -1016,7 +1016,7 @@
           else next.add(id);
           saveFavorites(next);
           const heart = heartBtn.querySelector(".heart");
-          heart.textContent = next.has(id) ? "❤" : "♡";
+          heart.innerHTML = next.has(id) ? "&#10084;" : "&#9825;";
         });
 
         function open() {
@@ -1067,7 +1067,7 @@
         updateModalStep();
         el.recipeModal.classList.add("open");
       } catch (error) {
-        el.statusText.textContent = "⚠️ Could not load cooking steps. Try again.";
+        el.statusText.innerHTML = "&#9888; Could not load cooking steps. Try again.";
       }
     }
 
@@ -1134,7 +1134,7 @@
         localStorage.setItem(LAST_MODE_KEY, mode);
         if (mode === "decide" && Array.isArray(data) && data.length > 0) trackInteraction("decide", data[0].id);
       } catch (error) {
-        el.statusText.textContent = "⚠️ Something went wrong. Please try again.";
+        el.statusText.innerHTML = "&#9888; Something went wrong. Please try again.";
         renderEmpty("No dishes found. Try different options.");
       } finally {
         el.loading.style.display = "none";
