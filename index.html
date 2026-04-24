@@ -197,6 +197,18 @@
       line-height: 1.45;
     }
 
+    .reason {
+      margin: 6px 0 10px;
+      font-size: 0.88rem;
+      color: #476357;
+      font-style: italic;
+      line-height: 1.4;
+      background: #f1faf4;
+      border: 1px solid #d7efe1;
+      border-radius: 12px;
+      padding: 8px 10px;
+    }
+
     .why {
       margin: 10px 0 0;
       font-size: 0.94rem;
@@ -538,6 +550,7 @@
         card.innerHTML = `
           ${mode === "decide" ? '<p class="best-badge">&#11088; Best Choice</p>' : ""}
           <h3>${item.name}</h3>
+          ${item.reason ? `<div class="reason">${item.reason}</div>` : ""}
           <p class="meta">Time: ${item.time_minutes} min</p>
           <p class="meta">Tags: ${item.tags}</p>
           <p class="meta">Score: ${item.score}</p>
