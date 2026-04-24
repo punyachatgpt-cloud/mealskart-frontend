@@ -392,6 +392,9 @@
     let currentStepIndex = 0;
     const LAST_MODE_KEY = "foodai_last_mode";
     let isLoadingSuggestions = false;
+    const PREFERENCES_KEY = "foodai_preferences";
+    const LAST_COOKED_KEY = "last_cooked";
+    const RECENT_COOKED_KEY = "recent_cooked_ids";
 
     function toRecipeCode(recipeId) {
       const numericId = Number(recipeId);
@@ -399,6 +402,65 @@
         return String(recipeId);
       }
       return `r${String(numericId).padStart(3, "0")}`;
+    }
+
+    function savePreferences() {
+      try {
+        localStorage.setItem(PREFERENCES_KEY, JSON.stringify({
+          time_available: state.time_available,
+          mood: state.mood,
+          diet: state.diet
+        }));
+      } catch (error) {
+        // Ignore storage failures.
+      }
+    }
+
+    function loadPreferences() {
+      try {
+        const saved = localStorage.getItem(PREFERENCES_KEY);
+        if (!saved) return false;
+
+        const parsed = JSON.parse(saved);
+        if (!parsed || typeof parsed !== "object") return false;
+
+        if (typeof parsed.time_available === "number") state.time_available = parsed.time_available;
+        if (typeof parsed.mood === "string") state.mood = parsed.mood;
+        if (typeof parsed.diet === "string") state.diet = parsed.diet;
+
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function applyPreferencesToUI() {
+      setSelected("time", String(state.time_available));
+      setSelected("mood", String(state.mood));
+      setSelected("diet", String(state.diet));
+    }
+
+    function getRecentCookedIds() {
+      try {
+        const raw = localStorage.getItem(RECENT_COOKED_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed.map(String).filter(Boolean).slice(0, 3);
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function pushRecentCookedId(recipeId) {
+      try {
+        const id = String(recipeId);
+        const existing = getRecentCookedIds().filter((x) => x !== id);
+        const next = [id, ...existing].slice(0, 3);
+        localStorage.setItem(RECENT_COOKED_KEY, JSON.stringify(next));
+      } catch (error) {
+        // Ignore storage failures.
+      }
     }
 
     function trackInteraction(action, recipeId) {
@@ -438,6 +500,7 @@
             state.diet = value;
           }
           setSelected(group, value);
+          savePreferences();
         });
       });
     }
@@ -449,7 +512,13 @@
 
     function renderResults(items, mode) {
       resultsContainer.innerHTML = "";
-      const visibleItems = mode === "decide" ? items.slice(0, 1) : items;
+      const incomingItems = mode === "decide" ? items.slice(0, 1) : items;
+      const recentCooked = getRecentCookedIds();
+      let visibleItems = incomingItems;
+      if (mode === "normal" && recentCooked.length > 0) {
+        const filtered = incomingItems.filter((item) => !recentCooked.includes(String(item.id)));
+        visibleItems = filtered.length > 0 ? filtered : incomingItems;
+      }
       tapHint.style.display = "none";
 
       if (visibleItems.length === 0) {
@@ -473,6 +542,12 @@
           <p class="why"><strong>Why this dish:</strong> ${item.why}</p>
         `;
         card.addEventListener("click", () => {
+          try {
+            localStorage.setItem(LAST_COOKED_KEY, String(item.id));
+            pushRecentCookedId(item.id);
+          } catch (error) {
+            // Ignore storage failures.
+          }
           trackInteraction("cook", item.id);
           openRecipeModal(item.id);
         });
@@ -571,6 +646,8 @@
       }
     });
     bindChoiceButtons();
+    loadPreferences();
+    applyPreferencesToUI();
     getSuggestions(getInitialMode());
   </script>
 </body>
