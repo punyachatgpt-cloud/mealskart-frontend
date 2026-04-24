@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://mealskart-backend.onrender.com/$1"
+    }
+  ]
+}

@@ -332,7 +332,9 @@
   </div>
 
   <script>
-    const API_BASE_URL = "https://mealskart-backend.onrender.com";
+    // Use a same-origin Vercel rewrite proxy to avoid CORS in production.
+    // Vercel will rewrite /api/* -> https://mealskart-backend.onrender.com/*
+    const API_BASE_URL = "/api";
 
     function apiUrl(path) {
       return `${API_BASE_URL}${path}`;
