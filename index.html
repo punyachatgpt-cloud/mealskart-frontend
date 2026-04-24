@@ -328,6 +328,11 @@
       </div>
     </section>
 
+    <section class="panel">
+      <p class="section-label">What ingredients do you have?</p>
+      <input id="ingredientsInput" placeholder="e.g. egg, onion, bread" style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); font-size: 1rem;" />
+    </section>
+
     <section class="actions">
       <button class="action" id="suggestBtn">Show My Meals</button>
       <button class="action secondary" id="decideBtn">Just Decide For Me</button>
@@ -404,6 +409,7 @@
     const suggestBtn = document.getElementById("suggestBtn");
     const decideBtn = document.getElementById("decideBtn");
     const loading = document.getElementById("loading");
+    const ingredientsInput = document.getElementById("ingredientsInput");
     const recipeModal = document.getElementById("recipeModal");
     const modalDishName = document.getElementById("modalDishName");
     const stepCountLabel = document.getElementById("stepCountLabel");
@@ -692,7 +698,12 @@
       readyText.textContent = mode === "decide" ? "Dinner decided for you" : "Your quick meal is ready";
 
       try {
-        const cacheKey = JSON.stringify({ ...state, mode });
+        const ingredients = (ingredientsInput?.value || "")
+          .split(",")
+          .map((i) => i.trim())
+          .filter(Boolean);
+
+        const cacheKey = JSON.stringify({ ...state, mode, ingredients });
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
           try {
@@ -719,7 +730,8 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             ...state,
-            mode
+            mode,
+            ingredients
           })
         });
 
