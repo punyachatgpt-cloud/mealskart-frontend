@@ -30,7 +30,7 @@
     }
 
     .app {
-      width: min(100%, 760px);
+      width: min(100%, 600px);
       margin: 0 auto;
       padding: 20px 16px 28px;
     }
@@ -53,7 +53,7 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 14px;
-      margin-bottom: 14px;
+      margin-bottom: 20px;
     }
 
     .section-label {
@@ -105,13 +105,14 @@
       box-shadow: 0 10px 20px rgba(31, 143, 95, 0.25);
       cursor: pointer;
       min-height: 54px;
-      margin: 8px 0 6px;
+      margin: 0;
     }
 
     .actions {
-      display: grid;
-      gap: 10px;
-      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin: 22px 0 10px;
     }
 
     .action.secondary {
@@ -163,9 +164,10 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 14px;
+      padding: 18px;
       box-shadow: var(--shadow);
       cursor: pointer;
+      overflow: hidden;
     }
 
     .card.highlighted {
@@ -211,7 +213,9 @@
 
     .card h3 {
       margin: 0 0 7px;
-      font-size: 1.08rem;
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: 0.1px;
     }
 
     .meta {
@@ -219,18 +223,32 @@
       color: var(--muted);
       font-size: 0.92rem;
       line-height: 1.45;
+      word-break: break-word;
     }
 
     .reason {
-      margin: 6px 0 10px;
-      font-size: 0.88rem;
-      color: #476357;
-      font-style: italic;
-      line-height: 1.4;
-      background: #f1faf4;
-      border: 1px solid #d7efe1;
-      border-radius: 12px;
-      padding: 8px 10px;
+      margin: 8px 0 12px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .tag-badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #184433;
+      background: #eef8f1;
+      border: 1px solid #d5eadc;
     }
 
     .why {
@@ -498,17 +516,6 @@
     }
 
     function setDecideModeUI(isDecide) {
-      const panels = [timePanel, moodPanel, dietPanel, ingredientsPanel];
-      panels.forEach((panel) => {
-        if (!panel) return;
-        panel.style.display = isDecide ? "none" : "";
-      });
-
-      // Hide "Show My Meals" in decide mode to reduce distractions.
-      if (suggestBtn) {
-        suggestBtn.style.display = isDecide ? "none" : "";
-      }
-
       if (decideHint) {
         decideHint.style.display = isDecide ? "block" : "none";
       }
@@ -675,6 +682,12 @@
           card.classList.add("highlighted");
           card.classList.add("best-choice");
         }
+        const tagBadges = String(item.tags || "")
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean)
+          .map((t) => `<span class="tag-badge">${t}</span>`)
+          .join("");
         card.innerHTML = `
           ${mode === "decide"
             ? (isFirst ? '<p class="best-badge">&#11088; Your Meal is Decided</p>' : "")
@@ -683,8 +696,7 @@
           <h3>${item.name}</h3>
           ${item.reason ? `<div class="reason">${item.reason}</div>` : ""}
           <p class="meta">Time: ${item.time_minutes} min</p>
-          <p class="meta">Tags: ${item.tags}</p>
-          <p class="meta">Score: ${item.score}</p>
+          <div class="tag-row">${tagBadges}</div>
           <p class="why"><strong>Why this dish:</strong> ${item.why}</p>
         `;
         card.addEventListener("click", () => {
