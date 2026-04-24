@@ -281,6 +281,7 @@
 <body>
   <main class="app">
     <h1 class="title">Food Decision</h1>
+    <p class="subtitle" style="margin-top: 6px;">👋 What should I cook today?</p>
     <p class="subtitle">Pick your time, mood, and diet. We will suggest the best 3 dishes.</p>
 
     <section class="panel">
@@ -309,12 +310,13 @@
     </section>
 
     <section class="actions">
-      <button class="action" id="suggestBtn">Get Suggestion</button>
-      <button class="action secondary" id="decideBtn">Decide For Me</button>
+      <button class="action" id="suggestBtn">Show My Meals</button>
+      <button class="action secondary" id="decideBtn">Just Decide For Me</button>
     </section>
     <div id="loading" style="display:none; text-align:center; margin-top:10px;">
-      <p>Loading suggestions...</p>
+      <p>🍳 Finding the best meal for you...</p>
     </div>
+    <p class="status" style="margin-top: 6px; text-align:center;">⚡ Takes less than 5 seconds</p>
     <p class="status" id="statusText"></p>
     <p class="ready-text" id="readyText">Your quick meal is ready</p>
     <p class="tap-hint" id="tapHint">Tap a dish to start cooking</p>
@@ -522,7 +524,7 @@
       tapHint.style.display = "none";
 
       if (visibleItems.length === 0) {
-        statusText.textContent = "No matching dishes found. Try different options.";
+        statusText.textContent = "No dishes found. Try different options.";
         return;
       }
 
@@ -647,7 +649,7 @@
         }
         statusText.textContent = mode === "decide" ? "One final pick is ready." : "Top 3 suggestions ready.";
       } catch (error) {
-        statusText.textContent = "⚠️ Network issue. Please try again.";
+        statusText.textContent = "⚠️ Something went wrong. Please try again.";
       } finally {
         loading.style.display = "none";
         suggestBtn.disabled = false;
