@@ -603,6 +603,28 @@
       readyText.textContent = mode === "decide" ? "Dinner decided for you" : "Your quick meal is ready";
 
       try {
+        const cacheKey = JSON.stringify({ ...state, mode });
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            const cachedData = parsed && typeof parsed === "object" ? parsed.data : null;
+            const cachedTime = parsed && typeof parsed === "object" ? parsed.time : null;
+            const isFresh = typeof cachedTime === "number" && (Date.now() - cachedTime < 10 * 60 * 1000);
+            if (isFresh && Array.isArray(cachedData)) {
+              renderResults(cachedData, mode);
+              localStorage.setItem(LAST_MODE_KEY, mode);
+              if (mode === "decide" && cachedData.length > 0) {
+                trackInteraction("decide", cachedData[0].id);
+              }
+              statusText.textContent = mode === "decide" ? "One final pick is ready." : "Top 3 suggestions ready.";
+              return;
+            }
+          } catch (error) {
+            // Ignore cache parsing errors and fall back to network.
+          }
+        }
+
         const response = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -613,6 +635,11 @@
         });
 
         const data = await response.json();
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify({ data, time: Date.now() }));
+        } catch (error) {
+          // Ignore storage quota errors.
+        }
         renderResults(data, mode);
         localStorage.setItem(LAST_MODE_KEY, mode);
         if (mode === "decide" && data.length > 0) {
