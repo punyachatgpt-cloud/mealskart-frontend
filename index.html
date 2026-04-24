@@ -192,6 +192,23 @@
       border: 1px solid #9dd5b8;
     }
 
+    .recommended-badge {
+      display: inline-block;
+      margin: 0 0 10px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.83rem;
+      font-weight: 700;
+      color: #0f4c31;
+      background: #e8f6ee;
+      border: 1px solid #bfe6d2;
+    }
+
+    .card.recommended {
+      border-color: var(--accent);
+      box-shadow: 0 14px 30px rgba(31, 143, 95, 0.14);
+    }
+
     .card h3 {
       margin: 0 0 7px;
       font-size: 1.08rem;
@@ -342,7 +359,7 @@
     </div>
     <p class="status" style="margin-top: 6px; text-align:center;">⚡ Takes less than 5 seconds</p>
     <p class="status" id="statusText"></p>
-    <p class="ready-text" id="readyText">Your quick meal is ready</p>
+    <p class="ready-text" id="readyText">Dinner ready in 15 mins 🍳</p>
     <p class="pref-hint" id="prefHint"></p>
     <p class="tap-hint" id="tapHint">Tap a dish to start cooking</p>
 
@@ -470,6 +487,10 @@
       setSelected("diet", String(state.diet));
     }
 
+    function updateTopMessage() {
+      readyText.textContent = `Dinner ready in ${state.time_available} mins 🍳`;
+    }
+
     function getRecentCookedIds() {
       try {
         const raw = localStorage.getItem(RECENT_COOKED_KEY);
@@ -592,6 +613,9 @@
           }
           setSelected(group, value);
           savePreferences();
+          if (group === "time") {
+            updateTopMessage();
+          }
         });
       });
     }
@@ -620,12 +644,19 @@
       visibleItems.forEach((item, index) => {
         const card = document.createElement("article");
         card.className = "card";
-        if (mode === "decide" && index === 0) {
+        const isFirst = index === 0;
+        if (isFirst) {
+          card.classList.add("recommended");
+        }
+        if (mode === "decide" && isFirst) {
           card.classList.add("highlighted");
           card.classList.add("best-choice");
         }
         card.innerHTML = `
-          ${mode === "decide" ? '<p class="best-badge">&#11088; Best Choice</p>' : ""}
+          ${mode === "decide"
+            ? (isFirst ? '<p class="best-badge">&#11088; Best Choice</p>' : "")
+            : (isFirst ? '<p class="recommended-badge">&#11088; Recommended for you</p>' : "")
+          }
           <h3>${item.name}</h3>
           ${item.reason ? `<div class="reason">${item.reason}</div>` : ""}
           <p class="meta">Time: ${item.time_minutes} min</p>
@@ -695,7 +726,7 @@
       suggestBtn.disabled = true;
       decideBtn.disabled = true;
       loading.style.display = "block";
-      readyText.textContent = mode === "decide" ? "Dinner decided for you" : "Your quick meal is ready";
+      updateTopMessage();
 
       try {
         const ingredients = (ingredientsInput?.value || "")
@@ -776,6 +807,7 @@
     bindChoiceButtons();
     loadPreferences();
     applyPreferencesToUI();
+    updateTopMessage();
     updatePreferenceHint();
     getSuggestions(getInitialMode());
   </script>
