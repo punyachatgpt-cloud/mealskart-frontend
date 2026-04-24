@@ -3,441 +3,731 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Food Decision</title>
+  <title>MealsKart</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f6faf7;
-      --surface: #ffffff;
-      --text: #153024;
-      --muted: #5f7468;
-      --accent: #1f8f5f;
-      --accent-soft: #e3f5eb;
-      --border: #d9e5dd;
-      --radius: 16px;
-      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-      --shadow-hover: 0 10px 26px rgba(0, 0, 0, 0.10);
+      --bg0: #e8fbf1;
+      --bg1: #fdfefb;
+      --ink: #0f2f22;
+      --muted: rgba(15, 47, 34, 0.68);
+      --muted2: rgba(15, 47, 34, 0.55);
+      --border: rgba(255, 255, 255, 0.28);
+      --glass: rgba(255, 255, 255, 0.55);
+      --glass-strong: rgba(255, 255, 255, 0.72);
+      --shadow: 0 18px 50px rgba(10, 30, 20, 0.14);
+      --shadow-soft: 0 10px 26px rgba(10, 30, 20, 0.10);
+      --accent: #1a8f60;
+      --accent2: #0f6f48;
+      --accentGlow: rgba(26, 143, 96, 0.35);
+      --radius: 18px;
+      --radiusSm: 14px;
+      --goldInk: #5a3b00;
+      --goldBg: #fff1c2;
+      --goldBorder: #f0d27a;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
+
+    html, body { height: 100%; }
 
     body {
       margin: 0;
-      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-      background: linear-gradient(180deg, #e7f7ee 0%, #fdfefc 55%, var(--bg) 100%);
-      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 480px at 12% 8%, rgba(40, 200, 130, 0.18) 0%, rgba(40, 200, 130, 0) 60%),
+        radial-gradient(720px 380px at 85% 18%, rgba(255, 210, 120, 0.18) 0%, rgba(255, 210, 120, 0) 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    .app {
-      width: min(100%, 600px);
-      margin: 40px auto 0;
-      padding: 20px 16px 28px;
+    .shell {
+      width: min(1200px, 100%);
+      margin: 40px auto 60px;
+      padding: 0 16px;
     }
 
-    .title {
-      margin: 0 0 6px;
-      font-size: 2rem;
+    .topbar {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(26px, 3.2vw, 38px);
       font-weight: 900;
-      letter-spacing: 0.2px;
+      letter-spacing: -0.02em;
     }
 
-    .subtitle {
-      margin: 0 0 18px;
+    .brand p {
+      margin: 8px 0 0;
       color: var(--muted);
       font-size: 0.98rem;
+      line-height: 1.45;
     }
 
-    .panel {
-      background: var(--surface);
+    .microcopy {
+      text-align: right;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.94rem;
+      white-space: nowrap;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .glass {
+      background: var(--glass);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .left {
+      padding: 18px;
+    }
+
+    .section {
       padding: 14px;
-      margin-bottom: 20px;
+      border-radius: var(--radiusSm);
+      background: rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.32);
     }
 
-    .section-label {
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
       margin: 0 0 10px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      color: rgba(15, 47, 34, 0.9);
       font-size: 0.95rem;
-      color: var(--muted);
-      font-weight: 600;
     }
 
-    .choices {
+    .hint {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: var(--muted2);
+    }
+
+    .seg {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
     }
 
-    .choice-btn {
-      border: 1px solid var(--border);
-      background: #fdfefd;
-      color: var(--text);
-      font-size: 1rem;
-      padding: 14px 16px;
-      border-radius: 12px;
-      min-height: 52px;
-      min-width: 120px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.15s ease, background-color 0.2s ease, border-color 0.2s ease;
-    }
-
-    .choice-btn:active {
-      transform: scale(0.98);
-    }
-
-    .choice-btn.selected {
-      border-color: var(--accent);
-      background: var(--accent-soft);
-      color: #0f4c31;
-    }
-
-    .action {
-      width: 100%;
-      border: none;
+    .chip {
+      position: relative;
+      border: 1px solid rgba(15, 47, 34, 0.14);
+      background: rgba(255, 255, 255, 0.75);
+      color: rgba(15, 47, 34, 0.88);
+      padding: 12px 14px;
+      min-height: 46px;
       border-radius: 999px;
-      padding: 16px;
-      font-size: 1rem;
-      font-weight: 700;
-      color: #fff;
-      background: linear-gradient(135deg, #1f8f5f, #197b50);
-      box-shadow: 0 10px 20px rgba(31, 143, 95, 0.25);
+      font-weight: 800;
+      letter-spacing: -0.01em;
       cursor: pointer;
-      min-height: 54px;
-      margin: 0;
-      transition: transform 0.2s ease, filter 0.2s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+      user-select: none;
+    }
+
+    .chip:active { transform: scale(0.98); }
+
+    .chip.selected {
+      border-color: rgba(26, 143, 96, 0.45);
+      background: rgba(26, 143, 96, 0.10);
+      box-shadow: 0 12px 26px rgba(26, 143, 96, 0.12);
+    }
+
+    .field {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(15, 47, 34, 0.14);
+      background: rgba(255, 255, 255, 0.78);
+      padding: 12px 12px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .field:focus {
+      border-color: rgba(26, 143, 96, 0.55);
+      box-shadow: 0 0 0 6px rgba(26, 143, 96, 0.12);
     }
 
     .actions {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      margin: 22px 0 10px;
-    }
-
-    .action.secondary {
-      background: linear-gradient(135deg, #146844, #0f5537);
-      color: #ffffff;
-      box-shadow: 0 10px 20px rgba(15, 85, 55, 0.28);
-    }
-
-    @media (hover: hover) and (pointer: fine) {
-      .action:hover {
-        transform: scale(1.01);
-        filter: brightness(0.98);
-      }
-
-      .action.secondary:hover {
-        filter: brightness(0.96);
-      }
-    }
-
-    .action:disabled {
-      opacity: 0.65;
-      cursor: not-allowed;
-    }
-
-    .status {
-      color: var(--muted);
-      margin: 10px 2px 0;
-      font-size: 0.93rem;
-      min-height: 20px;
-    }
-
-    .ready-text {
-      margin: 12px 2px 0;
-      font-size: 1rem;
-      font-weight: 700;
-      color: #0f4c31;
-    }
-
-    .tap-hint {
-      margin: 8px 2px 0;
-      font-size: 0.85rem;
-      color: var(--muted);
-      display: none;
-    }
-
-    .pref-hint {
-      margin: 6px 2px 0;
-      font-size: 0.85rem;
-      color: var(--muted);
-      display: none;
-    }
-
-    .results {
-      margin-top: 14px;
       display: grid;
       gap: 12px;
+      margin-top: 6px;
     }
 
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 18px;
-      box-shadow: var(--shadow);
+    .btn {
+      position: relative;
+      width: 100%;
+      border: none;
+      border-radius: 999px;
+      padding: 14px 16px;
+      min-height: 52px;
+      font-weight: 900;
+      letter-spacing: -0.01em;
       cursor: pointer;
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 18px 34px rgba(26, 143, 96, 0.28);
+      transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
       overflow: hidden;
-      animation: fadeUp 0.2s ease both;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      isolation: isolate;
     }
 
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(6px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .btn.secondary {
+      background: linear-gradient(135deg, rgba(15, 47, 34, 0.92), rgba(15, 47, 34, 0.78));
+      box-shadow: 0 18px 34px rgba(15, 47, 34, 0.20);
+    }
+
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      filter: saturate(0.75);
     }
 
     @media (hover: hover) and (pointer: fine) {
-      .card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-hover);
+      .btn:hover {
+        transform: translateY(-1px) scale(1.01);
+        filter: brightness(0.98);
+        box-shadow: 0 22px 44px rgba(26, 143, 96, 0.32);
       }
+      .btn.secondary:hover {
+        box-shadow: 0 22px 44px rgba(15, 47, 34, 0.22);
+      }
+      .chip:hover { transform: translateY(-1px); }
     }
 
-    .card.highlighted {
-      border-color: var(--accent);
-      background: var(--accent-soft);
-      box-shadow: 0 14px 30px rgba(31, 143, 95, 0.2);
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple 500ms ease-out;
+      background: rgba(255, 255, 255, 0.45);
+      pointer-events: none;
+      mix-blend-mode: overlay;
+      z-index: 0;
     }
 
-    .card.best-choice {
-      padding: 20px;
-      border-width: 2px;
-      transform: scale(1.02);
+    @keyframes ripple {
+      to { transform: scale(12); opacity: 0; }
     }
 
-    .best-badge {
-      display: inline-block;
-      margin: 0 0 10px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 0.83rem;
-      font-weight: 700;
-      color: #5a3b00;
-      background: #fff1c2;
-      border: 1px solid #f0d27a;
-    }
-
-    .recommended-badge {
-      display: inline-block;
-      margin: 0 0 10px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 0.83rem;
-      font-weight: 700;
-      color: #0f4c31;
-      background: #e8f6ee;
-      border: 1px solid #bfe6d2;
-    }
-
-    .card.recommended {
-      border-color: var(--accent);
-      box-shadow: 0 14px 30px rgba(31, 143, 95, 0.14);
-    }
-
-    .card h3 {
-      margin: 0 0 7px;
-      font-size: 1.25rem;
-      font-weight: 800;
-      letter-spacing: 0.1px;
-    }
-
-    .meta {
-      margin: 0;
-      color: var(--muted);
-      font-size: 0.92rem;
-      line-height: 1.45;
-      word-break: break-word;
-    }
-
-    .reason {
-      margin: 8px 0 12px;
-      font-size: 0.9rem;
-      color: var(--muted);
-      line-height: 1.45;
-    }
-
-    .tag-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 8px;
-    }
-
-    .tag-badge {
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: #184433;
-      background: #f3faf6;
-      border: 1px solid #d7efe1;
-    }
-
-    .why {
+    .trust {
       margin: 10px 0 0;
-      font-size: 0.94rem;
-      line-height: 1.45;
+      color: var(--muted2);
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-align: center;
     }
 
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(8, 22, 16, 0.42);
-      display: none;
-      align-items: flex-end;
-      justify-content: center;
-      padding: 16px;
-      z-index: 999;
-    }
-
-    .modal-overlay.open {
-      display: flex;
-    }
-
-    .modal {
-      width: min(100%, 560px);
-      background: var(--surface);
-      border-radius: 18px;
-      border: 1px solid var(--border);
-      box-shadow: 0 24px 40px rgba(0, 0, 0, 0.14);
+    .right {
       padding: 18px;
+      min-height: 520px;
     }
 
-    .modal-head {
+    .statusRow {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       gap: 10px;
       margin-bottom: 12px;
     }
 
-    .modal-title {
+    .statusRow .headline {
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      margin: 0;
+      font-size: 1.05rem;
+      color: rgba(15, 47, 34, 0.92);
+    }
+
+    .statusRow .sub {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .statusText {
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.92rem;
+      min-height: 20px;
+      text-align: right;
+    }
+
+    .spinner {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(15, 47, 34, 0.10);
+      box-shadow: var(--shadow-soft);
+      color: rgba(15, 47, 34, 0.88);
+      font-weight: 800;
+      font-size: 0.92rem;
+    }
+
+    .spin {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid rgba(15, 47, 34, 0.15);
+      border-top-color: rgba(26, 143, 96, 0.95);
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .prefHint {
+      display: none;
+      margin: 8px 0 0;
+      color: var(--muted2);
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .decideHint {
+      display: none;
+      margin: 8px 0 0;
+      color: rgba(15, 47, 34, 0.76);
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+
+    .results {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: 1fr; }
+      .microcopy { text-align: left; white-space: normal; }
+      .results { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 620px) {
+      .shell { margin-top: 22px; }
+      .right, .left { padding: 14px; }
+      .results { grid-template-columns: 1fr; }
+    }
+
+    .foodCard {
+      background: rgba(255, 255, 255, 0.62);
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      border-radius: 18px;
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      cursor: pointer;
+      transform: translateY(0);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      animation: fadeUp 0.22s ease both;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .foodCard:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+      }
+      .foodCard:hover .foodImg {
+        transform: scale(1.03);
+      }
+    }
+
+    .foodImg {
+      height: 150px;
+      width: 100%;
+      background: #dff3e8;
+      background-size: cover;
+      background-position: center;
+      transition: transform 0.25s ease;
+    }
+
+    .foodBody {
+      padding: 14px 14px 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .foodTop {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .foodName {
+      margin: 0;
+      font-size: 1.12rem;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    .heartBtn {
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      border: 1px solid rgba(15, 47, 34, 0.10);
+      background: rgba(255, 255, 255, 0.75);
+      box-shadow: 0 10px 18px rgba(10, 30, 20, 0.08);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: transform 0.2s ease, filter 0.2s ease;
+      flex: 0 0 auto;
+    }
+
+    .heartBtn:active { transform: scale(0.96); }
+    @media (hover: hover) and (pointer: fine) { .heartBtn:hover { filter: brightness(0.98); } }
+
+    .heart {
+      font-size: 1.05rem;
+      line-height: 1;
+    }
+
+    .badgeRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.78rem;
+      letter-spacing: -0.01em;
+      color: rgba(15, 47, 34, 0.92);
+      background: rgba(255, 255, 255, 0.70);
+      border: 1px solid rgba(15, 47, 34, 0.10);
+    }
+
+    .badge.gold {
+      color: var(--goldInk);
+      background: rgba(255, 241, 194, 0.92);
+      border-color: rgba(240, 210, 122, 0.95);
+    }
+
+    .metaRow {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 0.88rem;
+    }
+
+    .metaItem { display: inline-flex; align-items: center; gap: 6px; }
+
+    .desc {
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 0.92rem;
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .whyBox {
+      background: rgba(255, 255, 255, 0.70);
+      border: 1px solid rgba(15, 47, 34, 0.10);
+      border-radius: 14px;
+      padding: 10px 12px;
+      color: rgba(15, 47, 34, 0.86);
+      font-weight: 750;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .whyBox strong {
+      display: block;
+      font-weight: 900;
+      margin-bottom: 2px;
+    }
+
+    .empty {
+      grid-column: 1 / -1;
+      padding: 18px;
+      border-radius: var(--radius);
+      border: 1px dashed rgba(15, 47, 34, 0.20);
+      background: rgba(255, 255, 255, 0.50);
+      text-align: center;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    /* Modal */
+    .modalOverlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(8, 22, 16, 0.42);
+      z-index: 1000;
+    }
+
+    .modalOverlay.open { display: flex; }
+
+    .modal {
+      width: min(100%, 680px);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.22);
+      padding: 18px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transform: translateY(10px);
+      animation: modalIn 0.2s ease both;
+    }
+
+    @keyframes modalIn {
+      to { transform: translateY(0); }
+    }
+
+    .modalHead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .modalTitle {
       margin: 0;
       font-size: 1.2rem;
+      font-weight: 900;
+      letter-spacing: -0.01em;
     }
 
-    .close-btn {
-      border: 1px solid var(--border);
-      background: #fff;
-      color: var(--muted);
-      border-radius: 10px;
-      padding: 8px 10px;
-      font-weight: 600;
+    .closeBtn {
+      border: 1px solid rgba(15, 47, 34, 0.12);
+      background: rgba(255, 255, 255, 0.78);
+      color: rgba(15, 47, 34, 0.86);
+      border-radius: 999px;
+      padding: 10px 12px;
+      font-weight: 900;
       cursor: pointer;
+      transition: transform 0.2s ease, filter 0.2s ease;
     }
+    .closeBtn:active { transform: scale(0.98); }
 
-    .step-label {
-      font-size: 0.88rem;
-      color: var(--muted);
+    .stepLabel {
       margin: 0 0 6px;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 0.9rem;
     }
 
-    .step-text {
-      margin: 0 0 16px;
-      font-size: 1rem;
+    .stepText {
+      margin: 0 0 14px;
+      color: rgba(15, 47, 34, 0.88);
+      font-weight: 750;
       line-height: 1.55;
-    }
-
-    @media (min-width: 640px) {
-      .app {
-        padding: 30px 20px 36px;
-      }
-
-      .results {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .card:first-child {
-        grid-column: 1 / -1;
-      }
-
+      font-size: 1rem;
     }
   </style>
 </head>
 <body>
-  <main class="app">
-    <h1 class="title">Food Decision</h1>
-    <p class="subtitle" style="margin-top: 6px;">👋 What should I cook today?</p>
-    <p class="subtitle">Pick your time, mood, and diet. We will suggest the best 3 dishes.</p>
-
-    <section class="panel" id="timePanel">
-      <p class="section-label">1. Time</p>
-      <div class="choices" id="timeChoices">
-        <button class="choice-btn selected" data-group="time" data-value="15">15 min</button>
-        <button class="choice-btn" data-group="time" data-value="30">30 min</button>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <h1>What’s cooking today? 🍳</h1>
+        <p>Pick your time, mood, diet and ingredients. MealsKart will suggest dishes that feel right, fast.</p>
       </div>
-    </section>
+      <div class="microcopy" id="microcopy">Dinner ready in 15 mins ⚡</div>
+    </header>
 
-    <section class="panel" id="moodPanel">
-      <p class="section-label">2. Mood</p>
-      <div class="choices" id="moodChoices">
-        <button class="choice-btn selected" data-group="mood" data-value="quick">quick</button>
-        <button class="choice-btn" data-group="mood" data-value="healthy">healthy</button>
-        <button class="choice-btn" data-group="mood" data-value="comfort">comfort</button>
+    <section class="grid">
+      <aside class="glass left">
+        <div class="stack">
+          <div class="section" id="timePanel">
+            <div class="label">Time <span class="hint">how long do you have</span></div>
+            <div class="seg" role="group" aria-label="Time">
+              <button class="chip selected" data-group="time" data-value="15">15 min</button>
+              <button class="chip" data-group="time" data-value="30">30 min</button>
+            </div>
+          </div>
+
+          <div class="section" id="moodPanel">
+            <div class="label">Mood <span class="hint">match the vibe</span></div>
+            <div class="seg" role="group" aria-label="Mood">
+              <button class="chip selected" data-group="mood" data-value="quick">quick</button>
+              <button class="chip" data-group="mood" data-value="healthy">healthy</button>
+              <button class="chip" data-group="mood" data-value="comfort">comfort</button>
+            </div>
+          </div>
+
+          <div class="section" id="dietPanel">
+            <div class="label">Diet <span class="hint">always respected</span></div>
+            <div class="seg" role="group" aria-label="Diet">
+              <button class="chip selected" data-group="diet" data-value="veg">veg</button>
+              <button class="chip" data-group="diet" data-value="non-veg">non-veg</button>
+            </div>
+          </div>
+
+          <div class="section" id="ingredientsPanel">
+            <div class="label">What ingredients do you have? <span class="hint">comma separated</span></div>
+            <input id="ingredientsInput" class="field" placeholder="e.g. egg, onion, bread" autocomplete="off" />
+          </div>
+
+          <div class="actions">
+            <button class="btn" id="suggestBtn" type="button">Show My Meals</button>
+            <button class="btn secondary" id="decideBtn" type="button">Just Decide For Me</button>
+            <div class="trust">⚡ Takes less than 5 seconds</div>
+          </div>
+        </div>
+      </aside>
+
+      <main class="glass right">
+        <div class="statusRow">
+          <div>
+            <p class="headline" id="headline">Your meals, served fresh</p>
+            <p class="sub" id="subline">Tap a card to start cooking step-by-step.</p>
+            <div class="prefHint" id="prefHint"></div>
+            <div class="decideHint" id="decideHint">⭐ Your meal is decided. No thinking needed. Start cooking.</div>
+          </div>
+          <div>
+            <div class="spinner" id="loading">
+              <span class="spin"></span>
+              <span>Finding the best meal for you...</span>
+            </div>
+            <div class="statusText" id="statusText"></div>
+          </div>
+        </div>
+
+        <section class="results" id="results"></section>
+      </main>
+    </section>
+  </div>
+
+  <div class="modalOverlay" id="recipeModal">
+    <section class="modal" role="dialog" aria-modal="true" aria-label="Recipe steps">
+      <div class="modalHead">
+        <h2 class="modalTitle" id="modalDishName">Recipe</h2>
+        <button class="closeBtn" id="closeModalBtn" type="button">Close</button>
       </div>
-    </section>
-
-    <section class="panel" id="dietPanel">
-      <p class="section-label">3. Diet</p>
-      <div class="choices" id="dietChoices">
-        <button class="choice-btn selected" data-group="diet" data-value="veg">veg</button>
-        <button class="choice-btn" data-group="diet" data-value="non-veg">non-veg</button>
-      </div>
-    </section>
-
-    <section class="panel" id="ingredientsPanel">
-      <p class="section-label">What ingredients do you have?</p>
-      <input id="ingredientsInput" placeholder="e.g. egg, onion, bread" style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); font-size: 1rem;" />
-    </section>
-
-    <section class="actions">
-      <button class="action" id="suggestBtn">Show My Meals</button>
-      <button class="action secondary" id="decideBtn">Just Decide For Me</button>
-    </section>
-    <div id="loading" style="display:none; text-align:center; margin-top:10px;">
-      <p>🍳 Finding the best meal for you...</p>
-    </div>
-    <p class="status" style="margin-top: 6px; text-align:center;">⚡ Takes less than 5 seconds</p>
-    <p class="status" id="statusText"></p>
-    <p class="ready-text" id="readyText">Dinner ready in 15 mins 🍳</p>
-    <p class="tap-hint" id="decideHint" style="display:none;">No thinking needed. Start cooking.</p>
-    <p class="pref-hint" id="prefHint"></p>
-    <p class="tap-hint" id="tapHint">Tap a dish to start cooking</p>
-
-    <section class="results" id="results"></section>
-  </main>
-
-  <div class="modal-overlay" id="recipeModal">
-    <section class="modal">
-      <div class="modal-head">
-        <h2 class="modal-title" id="modalDishName">Recipe</h2>
-        <button class="close-btn" id="closeModalBtn">Close</button>
-      </div>
-      <p class="step-label" id="stepCountLabel">Step 1</p>
-      <p class="step-text" id="stepText">Loading...</p>
-      <button class="action" id="nextStepBtn">Next Step</button>
+      <p class="stepLabel" id="stepCountLabel">Step 1</p>
+      <p class="stepText" id="stepText">Loading...</p>
+      <button class="btn" id="nextStepBtn" type="button">Next Step</button>
     </section>
   </div>
 
   <script>
-    // Config (can be overridden by editing this line during deployment/build)
-    window.API_BASE_URL = "/api";
+    const API_BASE_URL = "/api";
 
-    // Use a same-origin Vercel rewrite proxy to avoid CORS in production.
-    // Vercel will rewrite /api/* -> https://mealskart-backend.onrender.com/*
-    const API_BASE_URL = window.API_BASE_URL || "/api";
+    const PREFERENCES_KEY = "foodai_preferences";
+    const LAST_MODE_KEY = "foodai_last_mode";
+    const LAST_COOKED_KEY = "last_cooked";
+    const RECENT_COOKED_KEY = "recent_cooked_ids";
+    const RECIPE_META_KEY = "recipe_meta";
+    const FAVORITES_KEY = "favorite_recipe_ids";
+
+    const state = {
+      time_available: 15,
+      mood: "quick",
+      diet: "veg"
+    };
+
+    const el = {
+      microcopy: document.getElementById("microcopy"),
+      statusText: document.getElementById("statusText"),
+      loading: document.getElementById("loading"),
+      results: document.getElementById("results"),
+      prefHint: document.getElementById("prefHint"),
+      decideHint: document.getElementById("decideHint"),
+      ingredientsInput: document.getElementById("ingredientsInput"),
+      suggestBtn: document.getElementById("suggestBtn"),
+      decideBtn: document.getElementById("decideBtn"),
+      recipeModal: document.getElementById("recipeModal"),
+      modalDishName: document.getElementById("modalDishName"),
+      stepCountLabel: document.getElementById("stepCountLabel"),
+      stepText: document.getElementById("stepText"),
+      nextStepBtn: document.getElementById("nextStepBtn"),
+      closeModalBtn: document.getElementById("closeModalBtn")
+    };
+
+    let modalSteps = [];
+    let currentStepIndex = 0;
+    let isLoadingSuggestions = false;
+
+    function addRipple(button, event) {
+      const rect = button.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const x = event.clientX - rect.left - size / 2;
+      const y = event.clientY - rect.top - size / 2;
+
+      const ripple = document.createElement("span");
+      ripple.className = "ripple";
+      ripple.style.width = `${size}px`;
+      ripple.style.height = `${size}px`;
+      ripple.style.left = `${x}px`;
+      ripple.style.top = `${y}px`;
+
+      button.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 650);
+    }
+
+    function clampInt(value, fallback) {
+      const n = Number(value);
+      return Number.isFinite(n) ? Math.trunc(n) : fallback;
+    }
+
+    function toRecipeCode(recipeId) {
+      const numericId = Number(recipeId);
+      if (Number.isNaN(numericId)) return String(recipeId);
+      return `r${String(numericId).padStart(3, "0")}`;
+    }
+
+    function getIngredients() {
+      return (el.ingredientsInput?.value || "")
+        .split(",")
+        .map((i) => i.trim())
+        .filter(Boolean);
+    }
 
     async function fetchWithRetry(url, options, retries = 2, timeout = 8000) {
       for (let i = 0; i <= retries; i++) {
@@ -452,61 +742,43 @@
 
           clearTimeout(id);
 
-          if (!response.ok) {
-            throw new Error("Request failed");
-          }
-
+          if (!response.ok) throw new Error("Request failed");
           return response;
         } catch (error) {
-          if (i === retries) {
-            throw error;
-          }
+          if (i === retries) throw error;
         }
       }
     }
 
-    const state = {
-      time_available: 15,
-      mood: "quick",
-      diet: "veg"
-    };
+    function trackInteraction(action, recipeId) {
+      try {
+        // debug only
+        console.log("Tracking:", action, recipeId);
+        fetchWithRetry(`${API_BASE_URL}/track`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action,
+            recipe_id: toRecipeCode(recipeId),
+            timestamp: Date.now()
+          })
+        }).catch(() => {});
+      } catch (error) {}
+    }
 
-    const statusText = document.getElementById("statusText");
-    const readyText = document.getElementById("readyText");
-    const prefHint = document.getElementById("prefHint");
-    const tapHint = document.getElementById("tapHint");
-    const decideHint = document.getElementById("decideHint");
-    const resultsContainer = document.getElementById("results");
-    const suggestBtn = document.getElementById("suggestBtn");
-    const decideBtn = document.getElementById("decideBtn");
-    const loading = document.getElementById("loading");
-    const ingredientsInput = document.getElementById("ingredientsInput");
-    const timePanel = document.getElementById("timePanel");
-    const moodPanel = document.getElementById("moodPanel");
-    const dietPanel = document.getElementById("dietPanel");
-    const ingredientsPanel = document.getElementById("ingredientsPanel");
-    const recipeModal = document.getElementById("recipeModal");
-    const modalDishName = document.getElementById("modalDishName");
-    const stepCountLabel = document.getElementById("stepCountLabel");
-    const stepText = document.getElementById("stepText");
-    const nextStepBtn = document.getElementById("nextStepBtn");
-    const closeModalBtn = document.getElementById("closeModalBtn");
-
-    let modalSteps = [];
-    let currentStepIndex = 0;
-    const LAST_MODE_KEY = "foodai_last_mode";
-    let isLoadingSuggestions = false;
-    const PREFERENCES_KEY = "foodai_preferences";
-    const LAST_COOKED_KEY = "last_cooked";
-    const RECENT_COOKED_KEY = "recent_cooked_ids";
-    const RECIPE_META_KEY = "recipe_meta";
-
-    function toRecipeCode(recipeId) {
-      const numericId = Number(recipeId);
-      if (Number.isNaN(numericId)) {
-        return String(recipeId);
+    function loadPreferences() {
+      try {
+        const raw = localStorage.getItem(PREFERENCES_KEY);
+        if (!raw) return false;
+        const parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== "object") return false;
+        if (typeof parsed.time_available === "number") state.time_available = parsed.time_available;
+        if (typeof parsed.mood === "string") state.mood = parsed.mood;
+        if (typeof parsed.diet === "string") state.diet = parsed.diet;
+        return true;
+      } catch (error) {
+        return false;
       }
-      return `r${String(numericId).padStart(3, "0")}`;
     }
 
     function savePreferences() {
@@ -516,27 +788,13 @@
           mood: state.mood,
           diet: state.diet
         }));
-      } catch (error) {
-        // Ignore storage failures.
-      }
+      } catch (error) {}
     }
 
-    function loadPreferences() {
-      try {
-        const saved = localStorage.getItem(PREFERENCES_KEY);
-        if (!saved) return false;
-
-        const parsed = JSON.parse(saved);
-        if (!parsed || typeof parsed !== "object") return false;
-
-        if (typeof parsed.time_available === "number") state.time_available = parsed.time_available;
-        if (typeof parsed.mood === "string") state.mood = parsed.mood;
-        if (typeof parsed.diet === "string") state.diet = parsed.diet;
-
-        return true;
-      } catch (error) {
-        return false;
-      }
+    function setSelected(group, value) {
+      document.querySelectorAll(`[data-group="${group}"]`).forEach((btn) => {
+        btn.classList.toggle("selected", btn.dataset.value === value);
+      });
     }
 
     function applyPreferencesToUI() {
@@ -545,14 +803,8 @@
       setSelected("diet", String(state.diet));
     }
 
-    function updateTopMessage() {
-      readyText.textContent = `Dinner ready in ${state.time_available} mins 🍳`;
-    }
-
-    function setDecideModeUI(isDecide) {
-      if (decideHint) {
-        decideHint.style.display = isDecide ? "block" : "none";
-      }
+    function updateMicrocopy() {
+      el.microcopy.textContent = `Dinner ready in ${state.time_available} mins ⚡`;
     }
 
     function getRecentCookedIds() {
@@ -573,9 +825,7 @@
         const existing = getRecentCookedIds().filter((x) => x !== id);
         const next = [id, ...existing].slice(0, 3);
         localStorage.setItem(RECENT_COOKED_KEY, JSON.stringify(next));
-      } catch (error) {
-        // Ignore storage failures.
-      }
+      } catch (error) {}
     }
 
     function saveRecipeMeta(recipeId, tagsText) {
@@ -585,23 +835,20 @@
           .split(",")
           .map((t) => t.trim())
           .filter(Boolean);
-
         const raw = localStorage.getItem(RECIPE_META_KEY);
         const existing = raw ? JSON.parse(raw) : {};
         const next = (existing && typeof existing === "object") ? existing : {};
         next[id] = { tags, updatedAt: Date.now() };
         localStorage.setItem(RECIPE_META_KEY, JSON.stringify(next));
-      } catch (error) {
-        // Ignore storage failures.
-      }
+      } catch (error) {}
     }
 
     function updatePreferenceHint() {
       try {
         const recent = getRecentCookedIds();
         if (recent.length < 3) {
-          prefHint.style.display = "none";
-          prefHint.textContent = "";
+          el.prefHint.style.display = "none";
+          el.prefHint.textContent = "";
           return;
         }
 
@@ -619,8 +866,8 @@
 
         const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
         if (!top || top[1] < 2) {
-          prefHint.style.display = "none";
-          prefHint.textContent = "";
+          el.prefHint.style.display = "none";
+          el.prefHint.textContent = "";
           return;
         }
 
@@ -631,57 +878,201 @@
           comfort: "You usually prefer comfort meals 🍲"
         };
 
-        prefHint.textContent = copyByTag[tag] || "";
-        prefHint.style.display = prefHint.textContent ? "block" : "none";
+        el.prefHint.textContent = copyByTag[tag] || "";
+        el.prefHint.style.display = el.prefHint.textContent ? "block" : "none";
       } catch (error) {
-        prefHint.style.display = "none";
-        prefHint.textContent = "";
+        el.prefHint.style.display = "none";
+        el.prefHint.textContent = "";
       }
     }
 
-    function trackInteraction(action, recipeId) {
+    function loadFavorites() {
       try {
-        console.log("Tracking:", action, recipeId);
-        fetchWithRetry(`${API_BASE_URL}/track`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            action,
-            recipe_id: toRecipeCode(recipeId),
-            timestamp: Date.now()
-          })
-        }).catch(() => {
-          // Silent failure: tracking should never affect UX.
-        });
+        const raw = localStorage.getItem(FAVORITES_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(parsed)) return new Set();
+        return new Set(parsed.map(String));
       } catch (error) {
-        // Tracking should never block the main user flow.
+        return new Set();
       }
     }
 
-    function setSelected(group, value) {
-      document.querySelectorAll(`[data-group="${group}"]`).forEach((btn) => {
-        btn.classList.toggle("selected", btn.dataset.value === value);
-      });
+    function saveFavorites(favoritesSet) {
+      try {
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(Array.from(favoritesSet)));
+      } catch (error) {}
     }
 
-    function bindChoiceButtons() {
-      document.querySelectorAll(".choice-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const { group, value } = btn.dataset;
-          if (group === "time") {
-            state.time_available = Number(value);
-          } else if (group === "mood") {
-            state.mood = value;
-          } else if (group === "diet") {
-            state.diet = value;
-          }
-          setSelected(group, value);
-          savePreferences();
-          if (group === "time") {
-            updateTopMessage();
+    function shuffleInPlace(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function dishImageUrl(name) {
+      // Unsplash "source" endpoint as requested.
+      const q = encodeURIComponent(`food,${name}`);
+      return `https://source.unsplash.com/400x300/?${q}`;
+    }
+
+    function tagBadges(diet, tagsText) {
+      const tags = String(tagsText || "")
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+      const all = [];
+      if (diet) all.push(diet);
+      all.push(...tags);
+
+      return all
+        .slice(0, 4)
+        .map((t) => `<span class="badge">${t}</span>`)
+        .join("");
+    }
+
+    function renderEmpty(message) {
+      el.results.innerHTML = `<div class="empty">${message}</div>`;
+    }
+
+    function renderResults(items, mode) {
+      el.results.innerHTML = "";
+
+      const incoming = mode === "decide" ? items.slice(0, 1) : items.slice(0, 3);
+      const recentCooked = getRecentCookedIds();
+      let visible = incoming;
+      if (mode === "normal" && recentCooked.length > 0) {
+        const filtered = incoming.filter((item) => !recentCooked.includes(String(item.id)));
+        visible = filtered.length > 0 ? filtered : incoming;
+      }
+
+      if (visible.length === 0) {
+        renderEmpty("No dishes found. Try different options.");
+        return;
+      }
+
+      // Slight order randomization while keeping the first one as "recommended".
+      const ordered = visible.slice();
+      if (ordered.length > 2) {
+        const tail = ordered.slice(1);
+        shuffleInPlace(tail);
+        ordered.splice(1, ordered.length - 1, ...tail);
+      }
+
+      const favorites = loadFavorites();
+
+      ordered.forEach((item, index) => {
+        const isFirst = index === 0;
+        const isDecide = mode === "decide" && isFirst;
+        const isFav = favorites.has(String(item.id));
+
+        const card = document.createElement("article");
+        card.className = "foodCard";
+        card.tabIndex = 0;
+
+        const badges = [
+          isDecide ? '<span class="badge gold">⭐ Your Meal is Decided</span>' : (isFirst ? '<span class="badge gold">⭐ Recommended</span>' : ""),
+          tagBadges(state.diet, item.tags)
+        ].filter(Boolean).join("");
+
+        const whyText = String(item.why || "").trim() || "Picked to match your time and mood.";
+        const desc = String(item.reason || "").trim() || "A good match for your preferences.";
+
+        card.innerHTML = `
+          <div class="foodImg" style="background-image:url('${dishImageUrl(item.name)}');"></div>
+          <div class="foodBody">
+            <div class="foodTop">
+              <div>
+                <div class="badgeRow">${badges}</div>
+                <h3 class="foodName">${item.name}</h3>
+              </div>
+              <button class="heartBtn" type="button" aria-label="Toggle favorite">
+                <span class="heart">${isFav ? "❤" : "♡"}</span>
+              </button>
+            </div>
+
+            <div class="metaRow">
+              <span class="metaItem">⏱️ ${clampInt(item.time_minutes, 0)} min</span>
+              <span class="metaItem">✅ Easy</span>
+            </div>
+
+            <p class="desc">${desc}</p>
+
+            <div class="whyBox">
+              <strong>Why this dish?</strong>
+              <span>${whyText}</span>
+            </div>
+          </div>
+        `;
+
+        const heartBtn = card.querySelector(".heartBtn");
+        heartBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const id = String(item.id);
+          const next = loadFavorites();
+          if (next.has(id)) next.delete(id);
+          else next.add(id);
+          saveFavorites(next);
+          const heart = heartBtn.querySelector(".heart");
+          heart.textContent = next.has(id) ? "❤" : "♡";
+        });
+
+        function open() {
+          try {
+            localStorage.setItem(LAST_COOKED_KEY, String(item.id));
+            pushRecentCookedId(item.id);
+          } catch (error) {}
+          updatePreferenceHint();
+          trackInteraction("cook", item.id);
+          openRecipeModal(item.id);
+        }
+
+        card.addEventListener("click", () => open());
+        card.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            open();
           }
         });
+
+        el.results.appendChild(card);
+        saveRecipeMeta(item.id, item.tags);
+        trackInteraction("view", item.id);
       });
+
+      updatePreferenceHint();
+    }
+
+    function updateModalStep() {
+      const stepNo = currentStepIndex + 1;
+      const total = modalSteps.length;
+      el.stepCountLabel.textContent = `Step ${stepNo} of ${total}`;
+      el.stepText.textContent = modalSteps[currentStepIndex] || "No step found";
+      el.nextStepBtn.textContent = stepNo >= total ? "Done" : "Next Step";
+    }
+
+    async function openRecipeModal(recipeId) {
+      if (!recipeId) return;
+      try {
+        const response = await fetchWithRetry(`${API_BASE_URL}/recipe/${recipeId}`, {
+          method: "GET",
+          headers: { "Accept": "application/json" }
+        });
+        const recipe = await response.json();
+        el.modalDishName.textContent = recipe.name || "Recipe";
+        modalSteps = Array.isArray(recipe.steps) ? recipe.steps : [];
+        currentStepIndex = 0;
+        updateModalStep();
+        el.recipeModal.classList.add("open");
+      } catch (error) {
+        el.statusText.textContent = "⚠️ Could not load cooking steps. Try again.";
+      }
+    }
+
+    function closeRecipeModal() {
+      el.recipeModal.classList.remove("open");
     }
 
     function getInitialMode() {
@@ -689,121 +1080,23 @@
       return savedMode === "decide" ? "decide" : "normal";
     }
 
-    function renderResults(items, mode) {
-      resultsContainer.innerHTML = "";
-      const incomingItems = mode === "decide" ? items.slice(0, 1) : items;
-      const recentCooked = getRecentCookedIds();
-      let visibleItems = incomingItems;
-      if (mode === "normal" && recentCooked.length > 0) {
-        const filtered = incomingItems.filter((item) => !recentCooked.includes(String(item.id)));
-        visibleItems = filtered.length > 0 ? filtered : incomingItems;
-      }
-      tapHint.style.display = "none";
-
-      if (visibleItems.length === 0) {
-        statusText.textContent = "No dishes found. Try different options.";
-        return;
-      }
-
-      visibleItems.forEach((item, index) => {
-        const card = document.createElement("article");
-        card.className = "card";
-        const isFirst = index === 0;
-        if (isFirst) {
-          card.classList.add("recommended");
-        }
-        if (mode === "decide" && isFirst) {
-          card.classList.add("highlighted");
-          card.classList.add("best-choice");
-        }
-        const tagBadges = String(item.tags || "")
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean)
-          .map((t) => `<span class="tag-badge">${t}</span>`)
-          .join("");
-        card.innerHTML = `
-          ${mode === "decide"
-            ? (isFirst ? '<p class="best-badge">&#11088; Your Meal is Decided</p>' : "")
-            : (isFirst ? '<p class="recommended-badge">&#11088; Recommended for you</p>' : "")
-          }
-          <h3>${item.name}</h3>
-          ${item.reason ? `<div class="reason">${item.reason}</div>` : ""}
-          <p class="meta">Time: ${item.time_minutes} min</p>
-          <div class="tag-row">${tagBadges}</div>
-          <p class="why"><strong>Why this dish:</strong> ${item.why}</p>
-        `;
-        card.addEventListener("click", () => {
-          try {
-            localStorage.setItem(LAST_COOKED_KEY, String(item.id));
-            pushRecentCookedId(item.id);
-          } catch (error) {
-            // Ignore storage failures.
-          }
-          updatePreferenceHint();
-          trackInteraction("cook", item.id);
-          openRecipeModal(item.id);
-        });
-        resultsContainer.appendChild(card);
-        saveRecipeMeta(item.id, item.tags);
-        trackInteraction("view", item.id);
-      });
-      tapHint.style.display = "block";
-      updatePreferenceHint();
-    }
-
-    function updateModalStep() {
-      const stepNo = currentStepIndex + 1;
-      const total = modalSteps.length;
-      stepCountLabel.textContent = `Step ${stepNo} of ${total}`;
-      stepText.textContent = modalSteps[currentStepIndex] || "No step found";
-      nextStepBtn.textContent = stepNo >= total ? "Done" : "Next Step";
-    }
-
-    async function openRecipeModal(recipeId) {
-      if (!recipeId) {
-        statusText.textContent = "Could not open recipe details for this card.";
-        return;
-      }
-
-      try {
-        const response = await fetchWithRetry(`${API_BASE_URL}/recipe/${recipeId}`, {
-          method: "GET",
-          headers: { "Accept": "application/json" }
-        });
-
-        const recipe = await response.json();
-        modalDishName.textContent = recipe.name;
-        modalSteps = Array.isArray(recipe.steps) ? recipe.steps : [];
-        currentStepIndex = 0;
-        updateModalStep();
-        recipeModal.classList.add("open");
-      } catch (error) {
-        statusText.textContent = "Could not load cooking steps right now.";
-      }
-    }
-
-    function closeRecipeModal() {
-      recipeModal.classList.remove("open");
+    function setDecideModeUI(isDecide) {
+      el.decideHint.style.display = isDecide ? "block" : "none";
     }
 
     async function getSuggestions(mode = "normal") {
-      if (isLoadingSuggestions) {
-        return;
-      }
+      if (isLoadingSuggestions) return;
       isLoadingSuggestions = true;
-      suggestBtn.disabled = true;
-      decideBtn.disabled = true;
-      loading.style.display = "block";
-      updateTopMessage();
+
+      el.suggestBtn.disabled = true;
+      el.decideBtn.disabled = true;
+      el.loading.style.display = "inline-flex";
+      el.statusText.textContent = "";
       setDecideModeUI(mode === "decide");
+      updateMicrocopy();
 
       try {
-        const ingredients = (ingredientsInput?.value || "")
-          .split(",")
-          .map((i) => i.trim())
-          .filter(Boolean);
-
+        const ingredients = getIngredients();
         const cacheKey = JSON.stringify({ ...state, mode, ingredients });
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
@@ -815,18 +1108,14 @@
             if (isFresh && Array.isArray(cachedData)) {
               renderResults(cachedData, mode);
               localStorage.setItem(LAST_MODE_KEY, mode);
-              if (mode === "decide" && cachedData.length > 0) {
-                trackInteraction("decide", cachedData[0].id);
-              }
-              statusText.textContent = mode === "decide" ? "One final pick is ready." : "Top 3 suggestions ready.";
+              if (mode === "decide" && cachedData.length > 0) trackInteraction("decide", cachedData[0].id);
+              el.statusText.textContent = "Ready.";
               return;
             }
-          } catch (error) {
-            // Ignore cache parsing errors and fall back to network.
-          }
+          } catch (error) {}
         }
 
-        const response = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
+        const response = await fetchWithRetry("/api/recommend", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -839,28 +1128,52 @@
         const data = await response.json();
         try {
           localStorage.setItem(cacheKey, JSON.stringify({ data, time: Date.now() }));
-        } catch (error) {
-          // Ignore storage quota errors.
-        }
-        renderResults(data, mode);
+        } catch (error) {}
+
+        renderResults(Array.isArray(data) ? data : [], mode);
         localStorage.setItem(LAST_MODE_KEY, mode);
-        if (mode === "decide" && data.length > 0) {
-          trackInteraction("decide", data[0].id);
-        }
-        statusText.textContent = mode === "decide" ? "One final pick is ready." : "Top 3 suggestions ready.";
+        if (mode === "decide" && Array.isArray(data) && data.length > 0) trackInteraction("decide", data[0].id);
       } catch (error) {
-        statusText.textContent = "⚠️ Something went wrong. Please try again.";
+        el.statusText.textContent = "⚠️ Something went wrong. Please try again.";
+        renderEmpty("No dishes found. Try different options.");
       } finally {
-        loading.style.display = "none";
-        suggestBtn.disabled = false;
-        decideBtn.disabled = false;
+        el.loading.style.display = "none";
+        el.suggestBtn.disabled = false;
+        el.decideBtn.disabled = false;
         isLoadingSuggestions = false;
       }
     }
 
-    suggestBtn.addEventListener("click", () => getSuggestions("normal"));
-    decideBtn.addEventListener("click", () => getSuggestions("decide"));
-    nextStepBtn.addEventListener("click", () => {
+    function bindInputs() {
+      document.querySelectorAll("[data-group]").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          if (btn.closest(".btn")) return;
+          const group = btn.dataset.group;
+          const value = btn.dataset.value;
+
+          if (group === "time") state.time_available = clampInt(value, state.time_available);
+          if (group === "mood") state.mood = value;
+          if (group === "diet") state.diet = value;
+
+          setSelected(group, value);
+          savePreferences();
+          updateMicrocopy();
+        });
+      });
+    }
+
+    el.suggestBtn.addEventListener("click", (e) => {
+      addRipple(el.suggestBtn, e);
+      getSuggestions("normal");
+    });
+
+    el.decideBtn.addEventListener("click", (e) => {
+      addRipple(el.decideBtn, e);
+      getSuggestions("decide");
+    });
+
+    el.nextStepBtn.addEventListener("click", (e) => {
+      addRipple(el.nextStepBtn, e);
       if (currentStepIndex < modalSteps.length - 1) {
         currentStepIndex += 1;
         updateModalStep();
@@ -868,16 +1181,17 @@
       }
       closeRecipeModal();
     });
-    closeModalBtn.addEventListener("click", closeRecipeModal);
-    recipeModal.addEventListener("click", (event) => {
-      if (event.target === recipeModal) {
-        closeRecipeModal();
-      }
+
+    el.closeModalBtn.addEventListener("click", closeRecipeModal);
+    el.recipeModal.addEventListener("click", (event) => {
+      if (event.target === el.recipeModal) closeRecipeModal();
     });
-    bindChoiceButtons();
+
+    // Boot
+    bindInputs();
     loadPreferences();
     applyPreferencesToUI();
-    updateTopMessage();
+    updateMicrocopy();
     updatePreferenceHint();
     getSuggestions(getInitialMode());
   </script>
