@@ -312,6 +312,9 @@
       <button class="action" id="suggestBtn">Get Suggestion</button>
       <button class="action secondary" id="decideBtn">Decide For Me</button>
     </section>
+    <div id="loading" style="display:none; text-align:center; margin-top:10px;">
+      <p>Loading suggestions...</p>
+    </div>
     <p class="status" id="statusText"></p>
     <p class="ready-text" id="readyText">Your quick meal is ready</p>
     <p class="tap-hint" id="tapHint">Tap a dish to start cooking</p>
@@ -351,6 +354,7 @@
     const resultsContainer = document.getElementById("results");
     const suggestBtn = document.getElementById("suggestBtn");
     const decideBtn = document.getElementById("decideBtn");
+    const loading = document.getElementById("loading");
     const recipeModal = document.getElementById("recipeModal");
     const modalDishName = document.getElementById("modalDishName");
     const stepCountLabel = document.getElementById("stepCountLabel");
@@ -361,6 +365,7 @@
     let modalSteps = [];
     let currentStepIndex = 0;
     const LAST_MODE_KEY = "foodai_last_mode";
+    let isLoadingSuggestions = false;
 
     function toRecipeCode(recipeId) {
       const numericId = Number(recipeId);
@@ -490,9 +495,13 @@
     }
 
     async function getSuggestions(mode = "normal") {
+      if (isLoadingSuggestions) {
+        return;
+      }
+      isLoadingSuggestions = true;
       suggestBtn.disabled = true;
       decideBtn.disabled = true;
-      statusText.textContent = "Thinking...";
+      loading.style.display = "block";
       readyText.textContent = mode === "decide" ? "Dinner decided for you" : "Your quick meal is ready";
 
       try {
@@ -517,10 +526,12 @@
         }
         statusText.textContent = mode === "decide" ? "One final pick is ready." : "Top 3 suggestions ready.";
       } catch (error) {
-        statusText.textContent = "Could not fetch suggestions. Make sure API server is running.";
+        statusText.textContent = "⚠️ Unable to fetch suggestions. Please try again.";
       } finally {
+        loading.style.display = "none";
         suggestBtn.disabled = false;
         decideBtn.disabled = false;
+        isLoadingSuggestions = false;
       }
     }
 
