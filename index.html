@@ -401,15 +401,19 @@
       return `r${String(numericId).padStart(3, "0")}`;
     }
 
-    async function trackInteraction(action, recipeId) {
+    function trackInteraction(action, recipeId) {
       try {
-        await fetchWithRetry(`${API_BASE_URL}/track`, {
+        console.log("Tracking:", action, recipeId);
+        fetchWithRetry(`${API_BASE_URL}/track`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             action,
-            recipe_id: toRecipeCode(recipeId)
+            recipe_id: toRecipeCode(recipeId),
+            timestamp: Date.now()
           })
+        }).catch(() => {
+          // Silent failure: tracking should never affect UX.
         });
       } catch (error) {
         // Tracking should never block the main user flow.
