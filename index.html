@@ -320,7 +320,7 @@
     <p class="subtitle" style="margin-top: 6px;">👋 What should I cook today?</p>
     <p class="subtitle">Pick your time, mood, and diet. We will suggest the best 3 dishes.</p>
 
-    <section class="panel">
+    <section class="panel" id="timePanel">
       <p class="section-label">1. Time</p>
       <div class="choices" id="timeChoices">
         <button class="choice-btn selected" data-group="time" data-value="15">15 min</button>
@@ -328,7 +328,7 @@
       </div>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="moodPanel">
       <p class="section-label">2. Mood</p>
       <div class="choices" id="moodChoices">
         <button class="choice-btn selected" data-group="mood" data-value="quick">quick</button>
@@ -337,7 +337,7 @@
       </div>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="dietPanel">
       <p class="section-label">3. Diet</p>
       <div class="choices" id="dietChoices">
         <button class="choice-btn selected" data-group="diet" data-value="veg">veg</button>
@@ -345,7 +345,7 @@
       </div>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="ingredientsPanel">
       <p class="section-label">What ingredients do you have?</p>
       <input id="ingredientsInput" placeholder="e.g. egg, onion, bread" style="width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); font-size: 1rem;" />
     </section>
@@ -360,6 +360,7 @@
     <p class="status" style="margin-top: 6px; text-align:center;">⚡ Takes less than 5 seconds</p>
     <p class="status" id="statusText"></p>
     <p class="ready-text" id="readyText">Dinner ready in 15 mins 🍳</p>
+    <p class="tap-hint" id="decideHint" style="display:none;">No thinking needed. Start cooking.</p>
     <p class="pref-hint" id="prefHint"></p>
     <p class="tap-hint" id="tapHint">Tap a dish to start cooking</p>
 
@@ -422,11 +423,16 @@
     const readyText = document.getElementById("readyText");
     const prefHint = document.getElementById("prefHint");
     const tapHint = document.getElementById("tapHint");
+    const decideHint = document.getElementById("decideHint");
     const resultsContainer = document.getElementById("results");
     const suggestBtn = document.getElementById("suggestBtn");
     const decideBtn = document.getElementById("decideBtn");
     const loading = document.getElementById("loading");
     const ingredientsInput = document.getElementById("ingredientsInput");
+    const timePanel = document.getElementById("timePanel");
+    const moodPanel = document.getElementById("moodPanel");
+    const dietPanel = document.getElementById("dietPanel");
+    const ingredientsPanel = document.getElementById("ingredientsPanel");
     const recipeModal = document.getElementById("recipeModal");
     const modalDishName = document.getElementById("modalDishName");
     const stepCountLabel = document.getElementById("stepCountLabel");
@@ -489,6 +495,23 @@
 
     function updateTopMessage() {
       readyText.textContent = `Dinner ready in ${state.time_available} mins 🍳`;
+    }
+
+    function setDecideModeUI(isDecide) {
+      const panels = [timePanel, moodPanel, dietPanel, ingredientsPanel];
+      panels.forEach((panel) => {
+        if (!panel) return;
+        panel.style.display = isDecide ? "none" : "";
+      });
+
+      // Hide "Show My Meals" in decide mode to reduce distractions.
+      if (suggestBtn) {
+        suggestBtn.style.display = isDecide ? "none" : "";
+      }
+
+      if (decideHint) {
+        decideHint.style.display = isDecide ? "block" : "none";
+      }
     }
 
     function getRecentCookedIds() {
@@ -654,7 +677,7 @@
         }
         card.innerHTML = `
           ${mode === "decide"
-            ? (isFirst ? '<p class="best-badge">&#11088; Best Choice</p>' : "")
+            ? (isFirst ? '<p class="best-badge">&#11088; Your Meal is Decided</p>' : "")
             : (isFirst ? '<p class="recommended-badge">&#11088; Recommended for you</p>' : "")
           }
           <h3>${item.name}</h3>
@@ -727,6 +750,7 @@
       decideBtn.disabled = true;
       loading.style.display = "block";
       updateTopMessage();
+      setDecideModeUI(mode === "decide");
 
       try {
         const ingredients = (ingredientsInput?.value || "")
