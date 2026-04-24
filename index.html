@@ -342,6 +342,32 @@
     // Vercel will rewrite /api/* -> https://mealskart-backend.onrender.com/*
     const API_BASE_URL = window.API_BASE_URL || "/api";
 
+    async function fetchWithRetry(url, options, retries = 2, timeout = 8000) {
+      for (let i = 0; i <= retries; i++) {
+        try {
+          const controller = new AbortController();
+          const id = setTimeout(() => controller.abort(), timeout);
+
+          const response = await fetch(url, {
+            ...options,
+            signal: controller.signal
+          });
+
+          clearTimeout(id);
+
+          if (!response.ok) {
+            throw new Error("Request failed");
+          }
+
+          return response;
+        } catch (error) {
+          if (i === retries) {
+            throw error;
+          }
+        }
+      }
+    }
+
     const state = {
       time_available: 15,
       mood: "quick",
@@ -377,7 +403,7 @@
 
     async function trackInteraction(action, recipeId) {
       try {
-        const response = await fetch(`${API_BASE_URL}/track`, {
+        await fetchWithRetry(`${API_BASE_URL}/track`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -385,10 +411,6 @@
             recipe_id: toRecipeCode(recipeId)
           })
         });
-
-        if (!response.ok) {
-          throw new Error("Track request failed");
-        }
       } catch (error) {
         // Tracking should never block the main user flow.
       }
@@ -471,13 +493,10 @@
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/recipe/${recipeId}`, {
+        const response = await fetchWithRetry(`${API_BASE_URL}/recipe/${recipeId}`, {
           method: "GET",
           headers: { "Accept": "application/json" }
         });
-        if (!response.ok) {
-          throw new Error("Recipe request failed");
-        }
 
         const recipe = await response.json();
         modalDishName.textContent = recipe.name;
@@ -505,7 +524,7 @@
       readyText.textContent = mode === "decide" ? "Dinner decided for you" : "Your quick meal is ready";
 
       try {
-        const response = await fetch(`${API_BASE_URL}/recommend`, {
+        const response = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -513,10 +532,6 @@
             mode
           })
         });
-
-        if (!response.ok) {
-          throw new Error("Request failed");
-        }
 
         const data = await response.json();
         renderResults(data, mode);
@@ -526,7 +541,7 @@
         }
         statusText.textContent = mode === "decide" ? "One final pick is ready." : "Top 3 suggestions ready.";
       } catch (error) {
-        statusText.textContent = "⚠️ Unable to fetch suggestions. Please try again.";
+        statusText.textContent = "⚠️ Network issue. Please try again.";
       } finally {
         loading.style.display = "none";
         suggestBtn.disabled = false;
