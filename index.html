@@ -29,6 +29,7 @@
       --goldInk: #3b2a00;
       --goldBg: rgba(255, 245, 200, 0.92);
       --goldBorder: rgba(240, 206, 98, 0.95);
+      --cardRadius: 28px;
     }
 
     * { box-sizing: border-box; }
@@ -169,6 +170,20 @@
       box-shadow: 0 12px 28px rgba(14, 165, 106, 0.16);
     }
 
+    .chip.selected::after {
+      content: "";
+      position: absolute;
+      inset: -4px;
+      border-radius: inherit;
+      border: 1px solid rgba(14, 165, 106, 0.18);
+      animation: selectedPulse 1.8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes selectedPulse {
+      50% { opacity: 0.35; transform: scale(1.04); }
+    }
+
     .field {
       width: 100%;
       border-radius: 16px;
@@ -209,11 +224,24 @@
       isolation: isolate;
     }
 
+    .btn::after {
+      content: "";
+      position: absolute;
+      inset: 1px;
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(255,255,255,0.22), rgba(255,255,255,0));
+      pointer-events: none;
+    }
+
     .btn.secondary {
       color: rgba(11, 18, 32, 0.92);
       background: rgba(255, 255, 255, 0.85);
       border: 1px solid rgba(15, 23, 42, 0.12);
       box-shadow: 0 14px 30px rgba(2, 8, 23, 0.08);
+    }
+
+    .btn.secondary::after {
+      background: linear-gradient(180deg, rgba(255,255,255,0.52), rgba(255,255,255,0));
     }
 
     .btn:disabled {
@@ -264,6 +292,7 @@
     .right {
       padding: 22px;
       min-height: 620px;
+      overflow: hidden;
     }
 
     .statusRow {
@@ -271,15 +300,17 @@
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      margin-bottom: 12px;
+      margin-bottom: 18px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.08);
     }
 
     .statusRow .headline {
       font-weight: 900;
-      letter-spacing: -0.01em;
+      letter-spacing: 0;
       margin: 0;
-      font-size: 1.05rem;
-      color: rgba(15, 47, 34, 0.92);
+      font-size: 1.18rem;
+      color: rgba(11, 18, 32, 0.94);
     }
 
     .statusRow .sub {
@@ -309,6 +340,50 @@
       color: rgba(11, 18, 32, 0.88);
       font-weight: 800;
       font-size: 0.92rem;
+    }
+
+    .loadingGrid {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: minmax(320px, 1.28fr) minmax(240px, 0.92fr);
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .skeletonCard {
+      min-height: 420px;
+      border-radius: var(--cardRadius);
+      background: rgba(255,255,255,0.82);
+      border: 1px solid rgba(255,255,255,0.32);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+    }
+
+    .skeletonImage,
+    .skeletonLine {
+      background: linear-gradient(100deg, rgba(226,232,240,0.7), rgba(248,250,252,0.96), rgba(226,232,240,0.7));
+      background-size: 220% 100%;
+      animation: shimmer 1.25s ease-in-out infinite;
+    }
+
+    .skeletonImage { height: 240px; }
+
+    .skeletonBody {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .skeletonLine {
+      height: 14px;
+      border-radius: 999px;
+    }
+
+    .skeletonLine.short { width: 42%; }
+    .skeletonLine.medium { width: 68%; }
+
+    @keyframes shimmer {
+      to { background-position: -220% 0; }
     }
 
     .spin {
@@ -343,6 +418,7 @@
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 18px;
       margin-top: 18px;
+      align-items: stretch;
     }
 
     .results.decideResults {
@@ -350,32 +426,65 @@
       justify-content: center;
     }
 
+    .results.hasHero {
+      grid-template-columns: minmax(320px, 1.28fr) minmax(240px, 0.92fr);
+      grid-auto-flow: dense;
+    }
+
     @media (max-width: 980px) {
       .grid { grid-template-columns: 1fr; }
       .left { position: static; }
       .microcopy { text-align: left; white-space: normal; }
-      .results { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .results,
+      .results.hasHero,
+      .loadingGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
 
     @media (max-width: 620px) {
       .shell { margin-top: 22px; }
       .right, .left { padding: 14px; }
-      .results { grid-template-columns: 1fr; }
+      .results,
+      .results.hasHero,
+      .loadingGrid { grid-template-columns: 1fr; }
+      .statusRow { align-items: flex-start; flex-direction: column; }
+      .foodCard.heroCard .foodImg,
+      .foodCard.decideCard .foodImg,
+      .foodImg { height: 230px; }
+      .topbar { align-items: flex-start; flex-direction: column; }
     }
 
     .foodCard {
       background: rgba(255, 255, 255, 0.90);
       border: 1px solid rgba(255, 255, 255, 0.30);
-      border-radius: 24px;
+      border-radius: var(--cardRadius);
       box-shadow: var(--shadow-soft);
       overflow: hidden;
       cursor: pointer;
       transform: translateY(0);
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
-      animation: fadeUp 420ms ease-out both;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, filter 0.22s ease;
+      animation: cardEnter 520ms cubic-bezier(.2,.9,.2,1) both;
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       min-height: 100%;
+    }
+
+    .foodCard.heroCard {
+      grid-row: span 2;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 32px 94px rgba(2, 8, 23, 0.17);
+    }
+
+    .foodCard.heroCard .foodImg {
+      height: 330px;
+    }
+
+    .foodCard.heroCard .foodName {
+      font-size: 1.58rem;
+    }
+
+    .foodCard.heroCard .desc {
+      font-size: 1rem;
+      min-height: auto;
     }
 
     .foodCard.decideCard {
@@ -387,15 +496,16 @@
       height: 250px;
     }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes cardEnter {
+      from { opacity: 0; transform: translateY(24px) scale(0.985); filter: blur(6px); }
+      to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
     }
 
     @media (hover: hover) and (pointer: fine) {
       .foodCard:hover {
         transform: translateY(-6px) scale(1.02);
         box-shadow: var(--shadow);
+        border-color: rgba(14, 165, 106, 0.18);
       }
       .foodCard:hover .foodImg {
         transform: scale(1.04);
@@ -412,6 +522,22 @@
       background-position: center;
       position: relative;
       transition: transform 0.25s ease;
+      overflow: hidden;
+    }
+
+    .foodImg::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(100deg, rgba(255,255,255,0.05), rgba(255,255,255,0.35), rgba(255,255,255,0.05));
+      transform: translateX(-100%);
+      animation: imageSheen 1.6s ease-in-out infinite;
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    .foodImg.imageLoaded::before {
+      display: none;
     }
 
     .foodImg::after {
@@ -420,6 +546,10 @@
       inset: 0;
       background: linear-gradient(180deg, rgba(0,0,0,0.02) 35%, rgba(0,0,0,0.66) 100%);
       pointer-events: none;
+    }
+
+    @keyframes imageSheen {
+      to { transform: translateX(100%); }
     }
 
     .imageLabel {
@@ -438,7 +568,7 @@
 
     .imageTitle {
       margin: 0;
-      font-size: 1.08rem;
+      font-size: 1.12rem;
       line-height: 1.15;
       font-weight: 900;
       text-shadow: 0 2px 16px rgba(0, 0, 0, 0.42);
@@ -461,6 +591,27 @@
       padding: 18px 18px 20px;
       display: grid;
       gap: 12px;
+    }
+
+    .smartStrip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: -2px;
+    }
+
+    .smartChip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      color: rgba(7, 77, 55, 0.96);
+      background: rgba(14, 165, 106, 0.10);
+      border: 1px solid rgba(14, 165, 106, 0.18);
+      font-size: 0.78rem;
+      font-weight: 900;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
     }
 
     .foodTop {
@@ -594,23 +745,55 @@
       font-size: 0.9rem;
       line-height: 1.45;
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.60);
+      position: relative;
+    }
+
+    .whyBox::before {
+      content: "";
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      bottom: 12px;
+      width: 3px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--accent), var(--accent2));
+    }
+
+    .whyBox strong,
+    .whyBox span {
+      display: block;
+      padding-left: 12px;
     }
 
     .whyBox strong {
-      display: block;
       font-weight: 900;
       margin-bottom: 2px;
     }
 
     .empty {
       grid-column: 1 / -1;
-      padding: 18px;
+      padding: 34px 22px;
       border-radius: var(--radius);
       border: 1px dashed rgba(15, 23, 42, 0.18);
       background: rgba(255, 255, 255, 0.70);
       text-align: center;
       color: var(--muted);
       font-weight: 800;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .empty strong {
+      display: block;
+      color: var(--ink);
+      font-size: 1.12rem;
+      margin-bottom: 6px;
+    }
+
+    .empty span {
+      display: block;
+      max-width: 360px;
+      margin: 0 auto;
+      line-height: 1.45;
     }
 
     /* Modal */
@@ -684,6 +867,17 @@
       font-weight: 750;
       line-height: 1.55;
       font-size: 1rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
@@ -1048,6 +1242,22 @@
       return imagePool[index];
     }
 
+    function smartBadges(item, index, mode) {
+      const tags = String(item.tags || "").toLowerCase();
+      const time = clampInt(item.time_minutes, 0);
+      const badges = [];
+
+      if (mode === "decide" || index === 0) badges.push("Best match");
+      if (time <= 15 || tags.includes("quick")) badges.push("Fast pick");
+      if (tags.includes("healthy")) badges.push("Fresh choice");
+      if (tags.includes("comfort")) badges.push("Comfort mood");
+
+      return Array.from(new Set(badges))
+        .slice(0, 3)
+        .map((badge) => `<span class="smartChip">${badge}</span>`)
+        .join("");
+    }
+
     function tagBadges(diet, tagsText) {
       const tags = String(tagsText || "")
         .split(",")
@@ -1076,13 +1286,41 @@
         .join("");
     }
 
+    function renderLoadingCards(mode) {
+      const count = mode === "decide" ? 1 : 3;
+      el.results.classList.toggle("decideResults", mode === "decide");
+      el.results.classList.toggle("hasHero", false);
+      el.results.innerHTML = `
+        <div class="loadingGrid">
+          ${Array.from({ length: count }).map(() => `
+            <article class="skeletonCard">
+              <div class="skeletonImage"></div>
+              <div class="skeletonBody">
+                <div class="skeletonLine short"></div>
+                <div class="skeletonLine medium"></div>
+                <div class="skeletonLine"></div>
+                <div class="skeletonLine medium"></div>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+      `;
+    }
+
     function renderEmpty(message) {
-      el.results.innerHTML = `<div class="empty">${message || "&#x1F373; Let's find something delicious!"}</div>`;
+      el.results.classList.remove("decideResults", "hasHero");
+      el.results.innerHTML = `
+        <div class="empty">
+          <strong>&#x1F373; Let's find something delicious!</strong>
+          <span>${message || "Try a different time, mood, diet, or ingredient combination."}</span>
+        </div>
+      `;
     }
 
     function renderResults(items, mode) {
       el.results.innerHTML = "";
       el.results.classList.toggle("decideResults", mode === "decide");
+      el.results.classList.toggle("hasHero", mode !== "decide");
 
       const incoming = mode === "decide" ? items.slice(0, 1) : items.slice(0, 3);
       const recentCooked = getRecentCookedIds();
@@ -1111,9 +1349,14 @@
         const isFirst = index === 0;
         const isDecide = mode === "decide" && isFirst;
         const isFav = favorites.has(String(item.id));
+        const isHero = mode !== "decide" && isFirst;
 
         const card = document.createElement("article");
-        card.className = isDecide ? "foodCard decideCard" : "foodCard";
+        card.className = [
+          "foodCard",
+          isDecide ? "decideCard" : "",
+          isHero ? "heroCard" : ""
+        ].filter(Boolean).join(" ");
         card.tabIndex = 0;
         card.style.animationDelay = `${index * 100}ms`;
 
@@ -1124,6 +1367,7 @@
 
         const whyText = String(item.why || "").trim() || "Picked to match your time and mood.";
         const desc = String(item.reason || "").trim() || "A good match for your preferences.";
+        const intelligence = smartBadges(item, index, mode);
 
         card.innerHTML = `
           <div class="foodImg" style="background-image:url('${dishImageUrl(item.name)}');">
@@ -1149,6 +1393,7 @@
             </div>
 
             <p class="desc">${desc}</p>
+            <div class="smartStrip">${intelligence}</div>
 
             <div class="whyBox">
               <strong>Why this dish?</strong>
@@ -1188,6 +1433,14 @@
         });
 
         el.results.appendChild(card);
+        const imageEl = card.querySelector(".foodImg");
+        const image = new Image();
+        image.onload = () => imageEl.classList.add("imageLoaded");
+        image.onerror = () => {
+          imageEl.style.backgroundImage = "linear-gradient(135deg, rgba(14, 165, 106, 0.36), rgba(7, 77, 55, 0.62))";
+          imageEl.classList.add("imageLoaded");
+        };
+        image.src = dishImageUrl(item.name);
         saveRecipeMeta(item.id, item.tags);
         trackInteraction("view", item.id);
       });
@@ -1244,6 +1497,7 @@
       el.statusText.textContent = "";
       setDecideModeUI(mode === "decide");
       updateMicrocopy();
+      renderLoadingCards(mode);
 
       try {
         const ingredients = getIngredients();
