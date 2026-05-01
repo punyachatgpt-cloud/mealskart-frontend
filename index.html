@@ -147,6 +147,19 @@
       flex-wrap: wrap;
     }
 
+    .seg.scroll {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding: 2px 2px 8px;
+      scrollbar-width: thin;
+      scroll-snap-type: x proximity;
+    }
+
+    .seg.scroll .chip {
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+    }
+
     .chip {
       position: relative;
       border: 1px solid rgba(15, 23, 42, 0.12);
@@ -911,6 +924,22 @@
             </div>
           </div>
 
+          <div class="section" id="categoryPanel">
+            <div class="label">Craving <span class="hint">cuisine or type</span></div>
+            <div class="seg scroll" role="group" aria-label="Category">
+              <button class="chip selected" data-group="category" data-value="all">all</button>
+              <button class="chip" data-group="category" data-value="north-indian">north indian</button>
+              <button class="chip" data-group="category" data-value="south-indian">south indian</button>
+              <button class="chip" data-group="category" data-value="continental">continental</button>
+              <button class="chip" data-group="category" data-value="chinese">chinese</button>
+              <button class="chip" data-group="category" data-value="salad">salad</button>
+              <button class="chip" data-group="category" data-value="drinks">drinks</button>
+              <button class="chip" data-group="category" data-value="snacks">snacks</button>
+              <button class="chip" data-group="category" data-value="sweets">sweets</button>
+              <button class="chip" data-group="category" data-value="other">other</button>
+            </div>
+          </div>
+
           <div class="section" id="dietPanel">
             <div class="label">Diet <span class="hint">always respected</span></div>
             <div class="seg" role="group" aria-label="Diet">
@@ -979,7 +1008,8 @@
     const state = {
       time_available: 15,
       mood: "quick",
-      diet: "veg"
+      diet: "veg",
+      category: "all"
     };
 
     const el = {
@@ -1085,6 +1115,7 @@
         if (typeof parsed.time_available === "number") state.time_available = parsed.time_available;
         if (typeof parsed.mood === "string") state.mood = parsed.mood;
         if (typeof parsed.diet === "string") state.diet = parsed.diet;
+        if (typeof parsed.category === "string") state.category = parsed.category;
         return true;
       } catch (error) {
         return false;
@@ -1096,7 +1127,8 @@
         localStorage.setItem(PREFERENCES_KEY, JSON.stringify({
           time_available: state.time_available,
           mood: state.mood,
-          diet: state.diet
+          diet: state.diet,
+          category: state.category
         }));
       } catch (error) {}
     }
@@ -1111,10 +1143,12 @@
       setSelected("time", String(state.time_available));
       setSelected("mood", String(state.mood));
       setSelected("diet", String(state.diet));
+      setSelected("category", String(state.category));
     }
 
     function updateMicrocopy() {
-      el.microcopy.innerHTML = `Dinner ready in ${state.time_available} mins &#9889;`;
+      const category = state.category === "all" ? "meal" : state.category.replace("-", " ");
+      el.microcopy.innerHTML = `${category} ready in ${state.time_available} mins &#9889;`;
     }
 
     function getRecentCookedIds() {
@@ -1245,9 +1279,11 @@
     function smartBadges(item, index, mode) {
       const tags = String(item.tags || "").toLowerCase();
       const time = clampInt(item.time_minutes, 0);
+      const category = String(item.category || "").replace("-", " ");
       const badges = [];
 
       if (mode === "decide" || index === 0) badges.push("Best match");
+      if (state.category !== "all" && item.category === state.category) badges.push(category);
       if (time <= 15 || tags.includes("quick")) badges.push("Fast pick");
       if (tags.includes("healthy")) badges.push("Fresh choice");
       if (tags.includes("comfort")) badges.push("Comfort mood");
@@ -1258,7 +1294,7 @@
         .join("");
     }
 
-    function tagBadges(diet, tagsText) {
+    function tagBadges(diet, tagsText, categoryText) {
       const tags = String(tagsText || "")
         .split(",")
         .map((t) => t.trim())
@@ -1266,6 +1302,7 @@
 
       const all = [];
       if (diet) all.push(diet);
+      if (categoryText && categoryText !== "other") all.push(String(categoryText).replace("-", " "));
       all.push(...tags);
 
       const iconByTag = {
@@ -1273,7 +1310,15 @@
         "non-veg": "&#128020;",
         "quick": "&#128293;",
         "healthy": "&#129367;",
-        "comfort": "&#127858;"
+        "comfort": "&#127858;",
+        "north indian": "&#127835;",
+        "south indian": "&#129379;",
+        "continental": "&#127828;",
+        "chinese": "&#127836;",
+        "salad": "&#129367;",
+        "drinks": "&#129380;",
+        "snacks": "&#127839;",
+        "sweets": "&#127856;"
       };
 
       return all
@@ -1362,7 +1407,7 @@
 
         const badges = [
           isDecide ? '<span class="badge gold">&#11088; Your Meal is Decided</span>' : (isFirst ? '<span class="badge gold">&#11088; Recommended</span>' : ""),
-          tagBadges(state.diet, item.tags)
+          tagBadges(state.diet, item.tags, item.category)
         ].filter(Boolean).join("");
 
         const whyText = String(item.why || "").trim() || "Picked to match your time and mood.";
@@ -1558,6 +1603,7 @@
           if (group === "time") state.time_available = clampInt(value, state.time_available);
           if (group === "mood") state.mood = value;
           if (group === "diet") state.diet = value;
+          if (group === "category") state.category = value;
 
           setSelected(group, value);
           savePreferences();
