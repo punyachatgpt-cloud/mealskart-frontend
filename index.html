@@ -19,17 +19,17 @@
       --surfaceStrong: rgba(255, 255, 255, 0.86);
       --border: rgba(15, 23, 42, 0.10);
       --borderSoft: rgba(255, 255, 255, 0.30);
-      --shadow: 0 26px 80px rgba(2, 8, 23, 0.16);
-      --shadow-soft: 0 16px 48px rgba(2, 8, 23, 0.12);
+      --shadow: 0 22px 64px rgba(2, 8, 23, 0.13);
+      --shadow-soft: 0 14px 34px rgba(2, 8, 23, 0.10);
       --accent: #0ea56a;
       --accent2: #074d37;
       --accentGlow: rgba(14, 165, 106, 0.36);
-      --radius: 20px;
-      --radiusSm: 16px;
+      --radius: 18px;
+      --radiusSm: 14px;
       --goldInk: #3b2a00;
       --goldBg: rgba(255, 245, 200, 0.92);
       --goldBorder: rgba(240, 206, 98, 0.95);
-      --cardRadius: 28px;
+      --cardRadius: 22px;
     }
 
     * { box-sizing: border-box; }
@@ -52,9 +52,11 @@
     }
 
     .shell {
-      width: min(1200px, 100%);
-      margin: 40px auto 60px;
-      padding: 0 16px;
+      width: min(1240px, 100%);
+      max-width: 100vw;
+      margin: 28px auto 48px;
+      padding: 0 clamp(14px, 2vw, 22px);
+      overflow: hidden;
     }
 
     .topbar {
@@ -65,11 +67,18 @@
       margin-bottom: 16px;
     }
 
+    .topbar > *,
+    .brand {
+      min-width: 0;
+      max-width: 100%;
+    }
+
     .brand h1 {
       margin: 0;
       font-size: clamp(28px, 3.2vw, 42px);
       font-weight: 900;
       letter-spacing: -0.02em;
+      overflow-wrap: anywhere;
     }
 
     .brand p {
@@ -78,6 +87,7 @@
       font-size: 1.02rem;
       line-height: 1.45;
       max-width: 58ch;
+      overflow-wrap: break-word;
     }
 
     .microcopy {
@@ -90,9 +100,12 @@
 
     .grid {
       display: grid;
-      grid-template-columns: 356px minmax(0, 1fr);
+      grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
       gap: 24px;
       align-items: start;
+      isolation: isolate;
+      width: 100%;
+      max-width: 100%;
     }
 
     .glass {
@@ -102,30 +115,39 @@
       box-shadow: var(--shadow);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
+      min-width: 0;
+      max-width: 100%;
     }
 
     .left {
       padding: 18px;
       position: sticky;
       top: 24px;
+      z-index: 2;
+      max-height: calc(100vh - 48px);
+      justify-self: stretch;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scrollbar-gutter: stable;
     }
 
     .section {
-      padding: 16px;
+      padding: 15px;
       border-radius: var(--radiusSm);
       background: rgba(255, 255, 255, 0.82);
       border: 1px solid var(--border);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.70);
+      overflow: hidden;
     }
 
     .stack {
       display: grid;
-      gap: 16px;
+      gap: 14px;
     }
 
     .label {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
       gap: 10px;
       margin: 0 0 10px;
@@ -133,12 +155,16 @@
       letter-spacing: -0.01em;
       color: rgba(11, 18, 32, 0.92);
       font-size: 0.98rem;
+      line-height: 1.22;
     }
 
     .hint {
       font-weight: 600;
       font-size: 0.85rem;
       color: var(--muted2);
+      line-height: 1.2;
+      text-align: right;
+      max-width: 120px;
     }
 
     .seg {
@@ -150,9 +176,12 @@
     .seg.scroll {
       flex-wrap: nowrap;
       overflow-x: auto;
-      padding: 2px 2px 8px;
+      padding: 2px 2px 10px;
       scrollbar-width: thin;
       scroll-snap-type: x proximity;
+      max-width: 100%;
+      -webkit-overflow-scrolling: touch;
+      mask-image: linear-gradient(90deg, #000 calc(100% - 26px), transparent);
     }
 
     .seg.scroll .chip {
@@ -160,15 +189,20 @@
       scroll-snap-align: start;
     }
 
+    .seg.scroll::-webkit-scrollbar {
+      height: 0;
+    }
+
     .chip {
       position: relative;
       border: 1px solid rgba(15, 23, 42, 0.12);
       background: rgba(255, 255, 255, 0.90);
       color: rgba(11, 18, 32, 0.92);
-      padding: 12px 14px;
-      min-height: 46px;
+      padding: 11px 14px;
+      min-height: 44px;
       border-radius: 999px;
       font-weight: 800;
+      font-size: 0.92rem;
       letter-spacing: -0.01em;
       cursor: pointer;
       transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
@@ -204,6 +238,7 @@
       background: rgba(255, 255, 255, 0.92);
       padding: 12px 14px;
       font-size: 1rem;
+      min-width: 0;
       outline: none;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
@@ -215,8 +250,13 @@
 
     .actions {
       display: grid;
-      gap: 12px;
-      margin-top: 6px;
+      gap: 10px;
+      margin-top: 2px;
+      position: sticky;
+      bottom: 0;
+      padding-top: 12px;
+      background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,0.88) 28%, rgba(255,255,255,0.96));
+      z-index: 3;
     }
 
     .btn {
@@ -225,7 +265,7 @@
       border: none;
       border-radius: 999px;
       padding: 14px 16px;
-      min-height: 52px;
+      min-height: 50px;
       font-weight: 900;
       letter-spacing: -0.01em;
       cursor: pointer;
@@ -295,7 +335,7 @@
     }
 
     .trust {
-      margin: 10px 0 0;
+      margin: 8px 0 0;
       color: var(--muted2);
       font-weight: 700;
       font-size: 0.9rem;
@@ -305,14 +345,17 @@
     .right {
       padding: 22px;
       min-height: 620px;
-      overflow: hidden;
+      min-width: 0;
+      overflow: clip;
+      position: relative;
+      z-index: 1;
     }
 
     .statusRow {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 18px;
       margin-bottom: 18px;
       padding-bottom: 16px;
       border-bottom: 1px solid rgba(15, 23, 42, 0.08);
@@ -358,9 +401,10 @@
     .loadingGrid {
       display: grid;
       grid-column: 1 / -1;
-      grid-template-columns: minmax(320px, 1.28fr) minmax(240px, 0.92fr);
+      grid-template-columns: minmax(280px, 1.28fr) minmax(220px, 0.92fr);
       gap: 18px;
       margin-top: 18px;
+      min-width: 0;
     }
 
     .skeletonCard {
@@ -428,25 +472,49 @@
 
     .results {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 238px), 1fr));
       gap: 18px;
       margin-top: 18px;
       align-items: stretch;
+      min-width: 0;
     }
 
     .results.decideResults {
-      grid-template-columns: minmax(280px, 460px);
+      grid-template-columns: minmax(0, 480px);
       justify-content: center;
     }
 
     .results.hasHero {
-      grid-template-columns: minmax(320px, 1.28fr) minmax(240px, 0.92fr);
+      grid-template-columns: minmax(280px, 1.2fr) minmax(220px, 0.95fr);
       grid-auto-flow: dense;
+    }
+
+    @media (max-width: 1120px) {
+      .shell { width: min(1060px, 100%); }
+      .grid {
+        grid-template-columns: minmax(290px, 330px) minmax(0, 1fr);
+        gap: 18px;
+      }
+      .left,
+      .right { padding: 16px; }
+      .results.hasHero,
+      .loadingGrid { grid-template-columns: 1fr; }
+      .foodCard.heroCard { grid-row: auto; }
+      .foodCard.heroCard .foodImg { height: 260px; }
     }
 
     @media (max-width: 980px) {
       .grid { grid-template-columns: 1fr; }
-      .left { position: static; }
+      .left {
+        position: static;
+        max-height: none;
+        overflow: visible;
+      }
+      .actions {
+        position: static;
+        padding-top: 0;
+        background: transparent;
+      }
       .microcopy { text-align: left; white-space: normal; }
       .results,
       .results.hasHero,
@@ -454,8 +522,31 @@
     }
 
     @media (max-width: 620px) {
-      .shell { margin-top: 22px; }
-      .right, .left { padding: 14px; }
+      .shell {
+        width: calc(100vw - 72px);
+        margin-top: 18px;
+        padding: 0;
+      }
+      .grid,
+      .left,
+      .right,
+      .stack,
+      .section,
+      .actions {
+        width: 100%;
+        max-width: 100%;
+      }
+      .brand p { max-width: 100%; }
+      .right, .left { padding: 12px; }
+      .section { padding: 13px; }
+      .hint { display: none; }
+      .label { justify-content: flex-start; }
+      .brand h1 { font-size: clamp(24px, 7vw, 30px); }
+      .brand p { font-size: 0.96rem; }
+      .chip {
+        min-height: 42px;
+        padding: 10px 12px;
+      }
       .results,
       .results.hasHero,
       .loadingGrid { grid-template-columns: 1fr; }
@@ -479,6 +570,7 @@
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       min-height: 100%;
+      min-width: 0;
     }
 
     .foodCard.heroCard {
@@ -739,6 +831,19 @@
       border: 1px solid rgba(15, 23, 42, 0.08);
     }
 
+    .ingredientPreview {
+      color: rgba(15, 47, 34, 0.72);
+      font-weight: 800;
+      font-size: 0.86rem;
+      line-height: 1.4;
+      margin: -2px 0 0;
+    }
+
+    .ingredientPreview strong {
+      color: rgba(15, 47, 34, 0.94);
+      font-weight: 950;
+    }
+
     .desc {
       color: var(--muted);
       font-weight: 700;
@@ -809,6 +914,117 @@
       line-height: 1.45;
     }
 
+    .planWrap {
+      grid-column: 1 / -1;
+      display: grid;
+      gap: 16px;
+    }
+
+    .planHeader {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 2px 2px 0;
+    }
+
+    .planHeader h3 {
+      margin: 0;
+      font-size: 1.22rem;
+      font-weight: 950;
+      color: rgba(11, 18, 32, 0.94);
+    }
+
+    .planHeader p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-weight: 750;
+      font-size: 0.92rem;
+    }
+
+    .planCalories {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      padding: 8px 11px;
+      background: rgba(255, 241, 194, 0.92);
+      border: 1px solid rgba(240, 210, 122, 0.95);
+      color: var(--goldInk);
+      font-weight: 950;
+      font-size: 0.86rem;
+    }
+
+    .planDays {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .planDay {
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      box-shadow: var(--shadow-soft);
+      min-width: 0;
+    }
+
+    .planDay h4 {
+      margin: 0 0 10px;
+      font-size: 0.94rem;
+      font-weight: 950;
+      color: rgba(11, 18, 32, 0.92);
+    }
+
+    .planMeal {
+      display: grid;
+      gap: 5px;
+      padding: 10px 0;
+      border-top: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .planMeal:first-of-type {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .planMeal strong {
+      color: rgba(11, 18, 32, 0.94);
+      font-weight: 950;
+      line-height: 1.25;
+    }
+
+    .planMeal span {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .groceryBox {
+      border-radius: 18px;
+      padding: 14px;
+      background: linear-gradient(135deg, rgba(14, 165, 106, 0.08), rgba(255, 255, 255, 0.86));
+      border: 1px solid rgba(14, 165, 106, 0.16);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .groceryBox h4 {
+      margin: 0 0 10px;
+      font-size: 0.98rem;
+      font-weight: 950;
+    }
+
+    .groceryList {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    @media (max-width: 980px) {
+      .planDays { grid-template-columns: 1fr; }
+      .planHeader { align-items: flex-start; flex-direction: column; }
+    }
+
     /* Modal */
     .modalOverlay {
       position: fixed;
@@ -855,6 +1071,51 @@
       letter-spacing: -0.01em;
     }
 
+    .modalMetaGrid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin: 8px 0 12px;
+    }
+
+    .modalMetaItem {
+      border-radius: 16px;
+      padding: 11px 12px;
+      background: rgba(248, 250, 252, 0.92);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      color: rgba(11, 18, 32, 0.88);
+      font-weight: 900;
+      font-size: 0.88rem;
+      line-height: 1.25;
+    }
+
+    .modalMetaItem span {
+      display: block;
+      color: var(--muted2);
+      font-size: 0.74rem;
+      font-weight: 850;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .ingredientList {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 0 0 14px;
+    }
+
+    .ingredientChip {
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: rgba(14, 165, 106, 0.10);
+      border: 1px solid rgba(14, 165, 106, 0.18);
+      color: rgba(7, 77, 55, 0.96);
+      font-weight: 900;
+      font-size: 0.8rem;
+    }
+
     .closeBtn {
       border: 1px solid rgba(15, 47, 34, 0.12);
       background: rgba(255, 255, 255, 0.78);
@@ -882,6 +1143,43 @@
       font-size: 1rem;
     }
 
+    .stepProgress {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.08);
+      overflow: hidden;
+      margin: 0 0 14px;
+    }
+
+    .stepProgressBar {
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width 0.18s ease;
+    }
+
+    .stepActions {
+      display: grid;
+      grid-template-columns: minmax(0, 0.7fr) minmax(0, 1fr);
+      gap: 10px;
+    }
+
+    .stepActions .btn {
+      min-width: 0;
+    }
+
+    .stepActions .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.46;
+      transform: none;
+    }
+
+    @media (max-width: 620px) {
+      .modalMetaGrid { grid-template-columns: 1fr; }
+      .stepActions { grid-template-columns: 1fr; }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *,
       *::before,
@@ -898,8 +1196,8 @@
   <div class="shell">
     <header class="topbar">
       <div class="brand">
-        <h1>What's cooking today? &#x1F373;</h1>
-        <p>Pick your time, mood, diet and ingredients. MealsKart will suggest dishes that feel right, fast.</p>
+        <h1>What's cooking?</h1>
+        <p>Choose time, mood, diet and ingredients.</p>
       </div>
       <div class="microcopy" id="microcopy">Dinner ready in 15 mins &#9889;</div>
     </header>
@@ -956,6 +1254,7 @@
           <div class="actions">
             <button class="btn" id="decideBtn" type="button">Decide for me</button>
             <button class="btn secondary" id="suggestBtn" type="button">Show options</button>
+            <button class="btn secondary" id="planBtn" type="button">Plan 3 days</button>
             <div class="trust">&#9889; Takes less than 5 seconds</div>
           </div>
         </div>
@@ -989,9 +1288,15 @@
         <h2 class="modalTitle" id="modalDishName">Recipe</h2>
         <button class="closeBtn" id="closeModalBtn" type="button">Close</button>
       </div>
+      <div class="modalMetaGrid" id="modalMeta"></div>
+      <div class="ingredientList" id="modalIngredients"></div>
       <p class="stepLabel" id="stepCountLabel">Step 1</p>
+      <div class="stepProgress" aria-hidden="true"><div class="stepProgressBar" id="stepProgressBar"></div></div>
       <p class="stepText" id="stepText">Loading...</p>
-      <button class="btn" id="nextStepBtn" type="button">Next Step</button>
+      <div class="stepActions">
+        <button class="btn secondary" id="prevStepBtn" type="button">Previous</button>
+        <button class="btn" id="nextStepBtn" type="button">Next Step</button>
+      </div>
     </section>
   </div>
 
@@ -1022,10 +1327,15 @@
       ingredientsInput: document.getElementById("ingredientsInput"),
       suggestBtn: document.getElementById("suggestBtn"),
       decideBtn: document.getElementById("decideBtn"),
+      planBtn: document.getElementById("planBtn"),
       recipeModal: document.getElementById("recipeModal"),
       modalDishName: document.getElementById("modalDishName"),
+      modalMeta: document.getElementById("modalMeta"),
+      modalIngredients: document.getElementById("modalIngredients"),
       stepCountLabel: document.getElementById("stepCountLabel"),
+      stepProgressBar: document.getElementById("stepProgressBar"),
       stepText: document.getElementById("stepText"),
+      prevStepBtn: document.getElementById("prevStepBtn"),
       nextStepBtn: document.getElementById("nextStepBtn"),
       closeModalBtn: document.getElementById("closeModalBtn")
     };
@@ -1054,6 +1364,29 @@
     function clampInt(value, fallback) {
       const n = Number(value);
       return Number.isFinite(n) ? Math.trunc(n) : fallback;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function titleCase(value) {
+      return String(value || "")
+        .replace(/[-_]/g, " ")
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+    }
+
+    function formatIngredientsPreview(ingredients) {
+      if (!Array.isArray(ingredients) || ingredients.length === 0) return "";
+      return ingredients
+        .slice(0, 4)
+        .map((ingredient) => titleCase(ingredient))
+        .join(", ");
     }
 
     function toRecipeCode(recipeId) {
@@ -1362,6 +1695,58 @@
       `;
     }
 
+    function renderMealPlan(plan) {
+      const days = Array.isArray(plan?.days) ? plan.days : [];
+      const groceries = Array.isArray(plan?.grocery_list) ? plan.grocery_list : [];
+      const totalCalories = clampInt(plan?.total_calories, 0);
+
+      el.results.classList.remove("decideResults", "hasHero");
+
+      if (days.length === 0) {
+        renderEmpty("No plan found. Try a longer time window or a different diet.");
+        return;
+      }
+
+      const dayHtml = days.map((day) => {
+        const recipes = Array.isArray(day.recipes) ? day.recipes : [];
+        const meals = recipes.map((recipe) => `
+          <div class="planMeal">
+            <strong>${escapeHtml(recipe.name)}</strong>
+            <span>&#9201; ${clampInt(recipe.time_minutes, 0)} min &middot; &#128293; ${clampInt(recipe.calories, 0)} cal &middot; ${escapeHtml(titleCase(recipe.category || "meal"))}</span>
+          </div>
+        `).join("");
+
+        return `
+          <article class="planDay">
+            <h4>Day ${clampInt(day.day, 0)}</h4>
+            ${meals}
+          </article>
+        `;
+      }).join("");
+
+      const groceryHtml = groceries
+        .slice(0, 22)
+        .map((item) => `<span class="ingredientChip">${escapeHtml(titleCase(item.name))}${clampInt(item.used_in, 0) > 1 ? ` x${clampInt(item.used_in, 0)}` : ""}</span>`)
+        .join("");
+
+      el.results.innerHTML = `
+        <section class="planWrap">
+          <div class="planHeader">
+            <div>
+              <h3>3-day meal plan</h3>
+              <p>Built from your current time, mood, diet and craving.</p>
+            </div>
+            ${totalCalories > 0 ? `<div class="planCalories">${totalCalories} total cal</div>` : ""}
+          </div>
+          <div class="planDays">${dayHtml}</div>
+          <div class="groceryBox">
+            <h4>Smart grocery list</h4>
+            <div class="groceryList">${groceryHtml}</div>
+          </div>
+        </section>
+      `;
+    }
+
     function renderResults(items, mode) {
       el.results.innerHTML = "";
       el.results.classList.toggle("decideResults", mode === "decide");
@@ -1413,11 +1798,15 @@
         const whyText = String(item.why || "").trim() || "Picked to match your time and mood.";
         const desc = String(item.reason || "").trim() || "A good match for your preferences.";
         const intelligence = smartBadges(item, index, mode);
+        const calories = clampInt(item.calories, 0);
+        const difficulty = titleCase(item.difficulty || "easy");
+        const matchPercent = clampInt(item.ingredient_match_percent, 0);
+        const ingredientPreview = formatIngredientsPreview(item.ingredients_preview);
 
         card.innerHTML = `
           <div class="foodImg" style="background-image:url('${dishImageUrl(item.name)}');">
             <div class="imageLabel">
-              <p class="imageTitle">${item.name}</p>
+              <p class="imageTitle">${escapeHtml(item.name)}</p>
               <span class="imageTime">&#9201; ${clampInt(item.time_minutes, 0)} min</span>
             </div>
           </div>
@@ -1425,7 +1814,7 @@
             <div class="foodTop">
               <div>
                 <div class="badgeRow">${badges}</div>
-                <h3 class="foodName">${item.name}</h3>
+                <h3 class="foodName">${escapeHtml(item.name)}</h3>
               </div>
               <button class="heartBtn" type="button" aria-label="Toggle favorite">
                 <span class="heart">${isFav ? "&#10084;" : "&#9825;"}</span>
@@ -1434,15 +1823,18 @@
 
             <div class="metaRow">
               <span class="metaItem">&#9201; ${clampInt(item.time_minutes, 0)} min</span>
-              <span class="metaItem">&#9989; Easy</span>
+              ${calories > 0 ? `<span class="metaItem">&#128293; ${calories} cal</span>` : ""}
+              <span class="metaItem">&#9989; ${escapeHtml(difficulty)}</span>
+              ${matchPercent > 0 ? `<span class="metaItem">&#127919; ${matchPercent}% match</span>` : ""}
             </div>
 
-            <p class="desc">${desc}</p>
+            ${ingredientPreview ? `<p class="ingredientPreview"><strong>Uses</strong> ${escapeHtml(ingredientPreview)}</p>` : ""}
+            <p class="desc">${escapeHtml(desc)}</p>
             <div class="smartStrip">${intelligence}</div>
 
             <div class="whyBox">
               <strong>Why this dish?</strong>
-              <span>${whyText}</span>
+              <span>${escapeHtml(whyText)}</span>
             </div>
           </div>
         `;
@@ -1498,6 +1890,8 @@
       const total = modalSteps.length;
       el.stepCountLabel.textContent = `Step ${stepNo} of ${total}`;
       el.stepText.textContent = modalSteps[currentStepIndex] || "No step found";
+      el.stepProgressBar.style.width = total > 0 ? `${Math.round((stepNo / total) * 100)}%` : "0%";
+      el.prevStepBtn.disabled = currentStepIndex <= 0;
       el.nextStepBtn.textContent = stepNo >= total ? "Done" : "Next Step";
     }
 
@@ -1510,6 +1904,18 @@
         });
         const recipe = await response.json();
         el.modalDishName.textContent = recipe.name || "Recipe";
+        const calories = clampInt(recipe.calories, 0);
+        const time = clampInt(recipe.time_minutes, 0);
+        const difficulty = titleCase(recipe.difficulty || "easy");
+        el.modalMeta.innerHTML = `
+          <div class="modalMetaItem"><span>Time</span>${time || "--"} min</div>
+          <div class="modalMetaItem"><span>Calories</span>${calories || "--"} cal</div>
+          <div class="modalMetaItem"><span>Difficulty</span>${escapeHtml(difficulty)}</div>
+        `;
+        const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
+        el.modalIngredients.innerHTML = ingredients
+          .map((ingredient) => `<span class="ingredientChip">${escapeHtml(titleCase(ingredient))}</span>`)
+          .join("");
         modalSteps = Array.isArray(recipe.steps) ? recipe.steps : [];
         currentStepIndex = 0;
         updateModalStep();
@@ -1538,6 +1944,7 @@
 
       el.suggestBtn.disabled = true;
       el.decideBtn.disabled = true;
+      el.planBtn.disabled = true;
       el.loading.style.display = "inline-flex";
       el.statusText.textContent = "";
       setDecideModeUI(mode === "decide");
@@ -1589,6 +1996,49 @@
         el.loading.style.display = "none";
         el.suggestBtn.disabled = false;
         el.decideBtn.disabled = false;
+        el.planBtn.disabled = false;
+        isLoadingSuggestions = false;
+      }
+    }
+
+    async function getMealPlan() {
+      if (isLoadingSuggestions) return;
+      isLoadingSuggestions = true;
+
+      el.suggestBtn.disabled = true;
+      el.decideBtn.disabled = true;
+      el.planBtn.disabled = true;
+      el.loading.style.display = "inline-flex";
+      el.statusText.textContent = "";
+      setDecideModeUI(false);
+      updateMicrocopy();
+      renderLoadingCards("normal");
+
+      try {
+        const response = await fetchWithRetry(`${API_BASE_URL}/meal-plan`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            days: 3,
+            meals_per_day: 2,
+            time_available: state.time_available,
+            mood: state.mood,
+            diet: state.diet,
+            category: state.category
+          })
+        });
+
+        const data = await response.json();
+        renderMealPlan(data);
+        el.statusText.textContent = "Plan ready.";
+      } catch (error) {
+        el.statusText.innerHTML = "&#9888; Could not build your plan. Please try again.";
+        renderEmpty("No plan found. Try different options.");
+      } finally {
+        el.loading.style.display = "none";
+        el.suggestBtn.disabled = false;
+        el.decideBtn.disabled = false;
+        el.planBtn.disabled = false;
         isLoadingSuggestions = false;
       }
     }
@@ -1622,6 +2072,11 @@
       getSuggestions("decide");
     });
 
+    el.planBtn.addEventListener("click", (e) => {
+      addRipple(el.planBtn, e);
+      getMealPlan();
+    });
+
     el.nextStepBtn.addEventListener("click", (e) => {
       addRipple(el.nextStepBtn, e);
       if (currentStepIndex < modalSteps.length - 1) {
@@ -1630,6 +2085,14 @@
         return;
       }
       closeRecipeModal();
+    });
+
+    el.prevStepBtn.addEventListener("click", (e) => {
+      addRipple(el.prevStepBtn, e);
+      if (currentStepIndex > 0) {
+        currentStepIndex -= 1;
+        updateModalStep();
+      }
     });
 
     el.closeModalBtn.addEventListener("click", closeRecipeModal);
