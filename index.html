@@ -6,7 +6,7 @@
   <title>MealsKart</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Manrope:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
       /* Neutral base + single accent (Stripe/Linear-ish) */
@@ -38,7 +38,7 @@
 
     body {
       margin: 0;
-      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      font-family: Manrope, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
       color: var(--ink);
       background:
         linear-gradient(115deg, rgba(246, 250, 248, 0.96), rgba(246, 250, 248, 0.90)),
@@ -75,9 +75,10 @@
 
     .brand h1 {
       margin: 0;
+      font-family: Fraunces, Georgia, serif;
       font-size: clamp(28px, 3.2vw, 42px);
       font-weight: 900;
-      letter-spacing: -0.02em;
+      letter-spacing: 0;
       overflow-wrap: anywhere;
     }
 
@@ -318,6 +319,17 @@
     }
 
     .btn:active { transform: translateY(0) scale(0.985); }
+
+    .btn:focus-visible,
+    .chip:focus-visible,
+    .heartBtn:focus-visible,
+    .closeBtn:focus-visible,
+    .servingBtn:focus-visible,
+    .timerBtn:focus-visible,
+    .foodCard:focus-visible {
+      outline: 3px solid rgba(14, 165, 106, 0.32);
+      outline-offset: 3px;
+    }
 
     .ripple {
       position: absolute;
@@ -728,6 +740,7 @@
 
     .foodName {
       margin: 0;
+      font-family: Fraunces, Georgia, serif;
       font-size: 1.24rem;
       font-weight: 900;
       letter-spacing: 0;
@@ -842,6 +855,32 @@
     .ingredientPreview strong {
       color: rgba(15, 47, 34, 0.94);
       font-weight: 950;
+    }
+
+    .miniMacroRow {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .miniMacro {
+      border-radius: 14px;
+      padding: 9px 10px;
+      background: rgba(255, 255, 255, 0.76);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      color: rgba(11, 18, 32, 0.9);
+      font-weight: 950;
+      font-size: 0.82rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .miniMacro span {
+      display: block;
+      color: var(--muted2);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 2px;
     }
 
     .desc {
@@ -1041,11 +1080,13 @@
 
     .modal {
       width: min(100%, 680px);
+      max-height: calc(100vh - 32px);
       border-radius: 22px;
       background: rgba(255, 255, 255, 0.92);
       border: 1px solid rgba(255, 255, 255, 0.35);
       box-shadow: 0 30px 60px rgba(0, 0, 0, 0.22);
       padding: 18px;
+      overflow-y: auto;
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       transform: translateY(10px);
@@ -1066,9 +1107,10 @@
 
     .modalTitle {
       margin: 0;
+      font-family: Fraunces, Georgia, serif;
       font-size: 1.2rem;
       font-weight: 900;
-      letter-spacing: -0.01em;
+      letter-spacing: 0;
     }
 
     .modalMetaGrid {
@@ -1114,6 +1156,134 @@
       color: rgba(7, 77, 55, 0.96);
       font-weight: 900;
       font-size: 0.8rem;
+    }
+
+    .servingRow,
+    .timerRow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 14px;
+    }
+
+    .servingLabel,
+    .timerText {
+      color: rgba(11, 18, 32, 0.86);
+      font-weight: 950;
+      font-size: 0.9rem;
+    }
+
+    .servingControls {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px;
+      border-radius: 999px;
+      background: rgba(248, 250, 252, 0.94);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+    }
+
+    .servingBtn,
+    .timerBtn {
+      border: 1px solid rgba(15, 47, 34, 0.12);
+      background: rgba(255, 255, 255, 0.82);
+      color: rgba(15, 47, 34, 0.88);
+      border-radius: 999px;
+      min-width: 34px;
+      min-height: 34px;
+      padding: 7px 10px;
+      font-weight: 950;
+      cursor: pointer;
+    }
+
+    .servingCount {
+      min-width: 68px;
+      text-align: center;
+      font-weight: 950;
+      color: rgba(11, 18, 32, 0.92);
+      font-size: 0.9rem;
+    }
+
+    .macroGrid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin: 0 0 14px;
+    }
+
+    .macroItem {
+      border-radius: 16px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      font-weight: 950;
+      color: rgba(11, 18, 32, 0.9);
+      font-size: 0.88rem;
+    }
+
+    .macroItem span {
+      display: block;
+      color: var(--muted2);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 2px;
+    }
+
+    .modalSectionTitle {
+      margin: 0 0 9px;
+      color: rgba(11, 18, 32, 0.9);
+      font-weight: 950;
+      font-size: 0.88rem;
+    }
+
+    .ingredientChecklist {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin: 0 0 14px;
+    }
+
+    .ingredientCheck {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      border-radius: 14px;
+      padding: 9px 10px;
+      background: rgba(248, 250, 252, 0.86);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      color: rgba(11, 18, 32, 0.86);
+      font-weight: 850;
+      font-size: 0.82rem;
+      line-height: 1.3;
+    }
+
+    .ingredientCheck input {
+      margin-top: 2px;
+      accent-color: var(--accent);
+    }
+
+    .missingBox,
+    .substitutionBox {
+      border-radius: 16px;
+      padding: 12px;
+      margin: 0 0 14px;
+      background: rgba(255, 241, 194, 0.52);
+      border: 1px solid rgba(240, 210, 122, 0.72);
+    }
+
+    .substitutionBox {
+      background: rgba(14, 165, 106, 0.07);
+      border-color: rgba(14, 165, 106, 0.16);
+    }
+
+    .substitutionLine {
+      color: rgba(11, 18, 32, 0.84);
+      font-weight: 850;
+      font-size: 0.84rem;
+      line-height: 1.4;
+      margin: 6px 0 0;
     }
 
     .closeBtn {
@@ -1177,6 +1347,10 @@
 
     @media (max-width: 620px) {
       .modalMetaGrid { grid-template-columns: 1fr; }
+      .macroGrid,
+      .ingredientChecklist { grid-template-columns: 1fr; }
+      .servingRow,
+      .timerRow { align-items: flex-start; flex-direction: column; }
       .stepActions { grid-template-columns: 1fr; }
     }
 
@@ -1289,10 +1463,26 @@
         <button class="closeBtn" id="closeModalBtn" type="button">Close</button>
       </div>
       <div class="modalMetaGrid" id="modalMeta"></div>
-      <div class="ingredientList" id="modalIngredients"></div>
+      <div class="servingRow">
+        <div class="servingLabel">Servings</div>
+        <div class="servingControls" aria-label="Serving controls">
+          <button class="servingBtn" id="servingMinusBtn" type="button">-</button>
+          <span class="servingCount" id="servingCount">1x</span>
+          <button class="servingBtn" id="servingPlusBtn" type="button">+</button>
+        </div>
+      </div>
+      <div class="macroGrid" id="macroGrid"></div>
+      <p class="modalSectionTitle">Ingredient checklist</p>
+      <div class="ingredientChecklist" id="modalIngredients"></div>
+      <div class="missingBox" id="missingBox"></div>
+      <div class="substitutionBox" id="substitutionBox"></div>
       <p class="stepLabel" id="stepCountLabel">Step 1</p>
       <div class="stepProgress" aria-hidden="true"><div class="stepProgressBar" id="stepProgressBar"></div></div>
       <p class="stepText" id="stepText">Loading...</p>
+      <div class="timerRow" id="timerRow">
+        <div class="timerText" id="timerText">No timer for this step</div>
+        <button class="timerBtn" id="timerBtn" type="button">Start</button>
+      </div>
       <div class="stepActions">
         <button class="btn secondary" id="prevStepBtn" type="button">Previous</button>
         <button class="btn" id="nextStepBtn" type="button">Next Step</button>
@@ -1332,16 +1522,30 @@
       modalDishName: document.getElementById("modalDishName"),
       modalMeta: document.getElementById("modalMeta"),
       modalIngredients: document.getElementById("modalIngredients"),
+      macroGrid: document.getElementById("macroGrid"),
+      missingBox: document.getElementById("missingBox"),
+      substitutionBox: document.getElementById("substitutionBox"),
+      servingMinusBtn: document.getElementById("servingMinusBtn"),
+      servingPlusBtn: document.getElementById("servingPlusBtn"),
+      servingCount: document.getElementById("servingCount"),
       stepCountLabel: document.getElementById("stepCountLabel"),
       stepProgressBar: document.getElementById("stepProgressBar"),
       stepText: document.getElementById("stepText"),
+      timerRow: document.getElementById("timerRow"),
+      timerText: document.getElementById("timerText"),
+      timerBtn: document.getElementById("timerBtn"),
       prevStepBtn: document.getElementById("prevStepBtn"),
       nextStepBtn: document.getElementById("nextStepBtn"),
       closeModalBtn: document.getElementById("closeModalBtn")
     };
 
     let modalSteps = [];
+    let activeRecipe = null;
     let currentStepIndex = 0;
+    let servingMultiplier = 1;
+    let timerSeconds = 0;
+    let timerRemaining = 0;
+    let timerId = null;
     let isLoadingSuggestions = false;
 
     function addRipple(button, event) {
@@ -1802,6 +2006,12 @@
         const difficulty = titleCase(item.difficulty || "easy");
         const matchPercent = clampInt(item.ingredient_match_percent, 0);
         const ingredientPreview = formatIngredientsPreview(item.ingredients_preview);
+        const nutrition = item.nutrition || {};
+        const macroPreview = `
+          <div class="miniMacro"><span>Protein</span>${clampInt(nutrition.protein_g, 0)}g</div>
+          <div class="miniMacro"><span>Carbs</span>${clampInt(nutrition.carbs_g, 0)}g</div>
+          <div class="miniMacro"><span>Fat</span>${clampInt(nutrition.fat_g, 0)}g</div>
+        `;
 
         card.innerHTML = `
           <div class="foodImg" style="background-image:url('${dishImageUrl(item.name)}');">
@@ -1829,6 +2039,7 @@
             </div>
 
             ${ingredientPreview ? `<p class="ingredientPreview"><strong>Uses</strong> ${escapeHtml(ingredientPreview)}</p>` : ""}
+            <div class="miniMacroRow">${macroPreview}</div>
             <p class="desc">${escapeHtml(desc)}</p>
             <div class="smartStrip">${intelligence}</div>
 
@@ -1885,7 +2096,124 @@
       updatePreferenceHint();
     }
 
+    function normalizeIngredientName(value) {
+      return String(value || "").trim().toLowerCase();
+    }
+
+    function formatQuantity(value) {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return "";
+      const rounded = Math.round(n * 100) / 100;
+      return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+    }
+
+    function scaledIngredientText(item) {
+      const name = titleCase(item?.name || "");
+      const quantity = Number(item?.quantity);
+      const unit = String(item?.unit || "").trim();
+      if (!Number.isFinite(quantity)) return name;
+      const scaled = formatQuantity(quantity * servingMultiplier);
+      return `${scaled}${unit ? ` ${unit}` : ""} ${name}`;
+    }
+
+    function scaleMacro(value) {
+      return clampInt(Number(value || 0) * servingMultiplier, 0);
+    }
+
+    function renderRecipeModalDetails() {
+      if (!activeRecipe) return;
+
+      const calories = scaleMacro(activeRecipe.calories);
+      const time = clampInt(activeRecipe.time_minutes, 0);
+      const difficulty = titleCase(activeRecipe.difficulty || "easy");
+      const nutrition = activeRecipe.nutrition || {};
+      const ingredients = Array.isArray(activeRecipe.ingredients_with_quantities) && activeRecipe.ingredients_with_quantities.length
+        ? activeRecipe.ingredients_with_quantities
+        : (Array.isArray(activeRecipe.ingredients) ? activeRecipe.ingredients.map((name) => ({ name, quantity: null, unit: "" })) : []);
+      const available = new Set(getIngredients().map(normalizeIngredientName));
+      const missing = ingredients
+        .map((item) => normalizeIngredientName(item.name))
+        .filter((name) => name && available.size > 0 && !available.has(name));
+      const substitutions = activeRecipe.substitutions && typeof activeRecipe.substitutions === "object"
+        ? activeRecipe.substitutions
+        : {};
+
+      el.servingCount.textContent = `${servingMultiplier}x`;
+      el.servingMinusBtn.disabled = servingMultiplier <= 1;
+      el.servingPlusBtn.disabled = servingMultiplier >= 4;
+      el.modalMeta.innerHTML = `
+        <div class="modalMetaItem"><span>Time</span>${time || "--"} min</div>
+        <div class="modalMetaItem"><span>Calories</span>${calories || "--"} cal</div>
+        <div class="modalMetaItem"><span>Difficulty</span>${escapeHtml(difficulty)}</div>
+      `;
+      el.macroGrid.innerHTML = `
+        <div class="macroItem"><span>Protein</span>${scaleMacro(nutrition.protein_g)}g</div>
+        <div class="macroItem"><span>Carbs</span>${scaleMacro(nutrition.carbs_g)}g</div>
+        <div class="macroItem"><span>Fat</span>${scaleMacro(nutrition.fat_g)}g</div>
+        <div class="macroItem"><span>Fiber</span>${scaleMacro(nutrition.fiber_g)}g</div>
+      `;
+      el.modalIngredients.innerHTML = ingredients.map((item) => {
+        const normalized = normalizeIngredientName(item.name);
+        const isChecked = available.size === 0 || available.has(normalized);
+        return `
+          <label class="ingredientCheck">
+            <input type="checkbox" ${isChecked ? "checked" : ""} />
+            <span>${escapeHtml(scaledIngredientText(item))}</span>
+          </label>
+        `;
+      }).join("");
+
+      el.missingBox.style.display = missing.length ? "block" : "none";
+      el.missingBox.innerHTML = missing.length
+        ? `<p class="modalSectionTitle">Missing from your ingredients</p><div class="ingredientList">${missing.map((name) => `<span class="ingredientChip">${escapeHtml(titleCase(name))}</span>`).join("")}</div>`
+        : "";
+
+      const substitutionLines = Object.entries(substitutions)
+        .filter(([name]) => missing.length === 0 || missing.includes(normalizeIngredientName(name)))
+        .slice(0, 4)
+        .map(([name, options]) => {
+          const list = Array.isArray(options) ? options.map(titleCase).join(", ") : "";
+          return `<p class="substitutionLine"><strong>${escapeHtml(titleCase(name))}</strong>: ${escapeHtml(list)}</p>`;
+        })
+        .join("");
+      el.substitutionBox.style.display = substitutionLines ? "block" : "none";
+      el.substitutionBox.innerHTML = substitutionLines
+        ? `<p class="modalSectionTitle">Smart substitutions</p>${substitutionLines}`
+        : "";
+    }
+
+    function clearTimer() {
+      if (timerId) clearInterval(timerId);
+      timerId = null;
+      timerSeconds = 0;
+      timerRemaining = 0;
+    }
+
+    function formatTimer(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${String(secs).padStart(2, "0")}`;
+    }
+
+    function stepTimerSeconds(stepText) {
+      const match = String(stepText || "").match(/(\d+)\s*(minute|min|minutes|mins)/i);
+      return match ? clampInt(match[1], 0) * 60 : 0;
+    }
+
+    function updateTimerUI() {
+      if (!timerSeconds) {
+        el.timerRow.style.display = "none";
+        return;
+      }
+      el.timerRow.style.display = "flex";
+      el.timerText.textContent = timerRemaining > 0
+        ? `Timer ${formatTimer(timerRemaining)}`
+        : `Timer ${formatTimer(timerSeconds)}`;
+      el.timerBtn.textContent = timerId ? "Pause" : (timerRemaining > 0 ? "Resume" : "Start");
+    }
+
     function updateModalStep() {
+      clearTimer();
       const stepNo = currentStepIndex + 1;
       const total = modalSteps.length;
       el.stepCountLabel.textContent = `Step ${stepNo} of ${total}`;
@@ -1893,6 +2221,9 @@
       el.stepProgressBar.style.width = total > 0 ? `${Math.round((stepNo / total) * 100)}%` : "0%";
       el.prevStepBtn.disabled = currentStepIndex <= 0;
       el.nextStepBtn.textContent = stepNo >= total ? "Done" : "Next Step";
+      timerSeconds = stepTimerSeconds(el.stepText.textContent);
+      timerRemaining = timerSeconds;
+      updateTimerUI();
     }
 
     async function openRecipeModal(recipeId) {
@@ -1903,19 +2234,10 @@
           headers: { "Accept": "application/json" }
         });
         const recipe = await response.json();
+        activeRecipe = recipe;
+        servingMultiplier = 1;
         el.modalDishName.textContent = recipe.name || "Recipe";
-        const calories = clampInt(recipe.calories, 0);
-        const time = clampInt(recipe.time_minutes, 0);
-        const difficulty = titleCase(recipe.difficulty || "easy");
-        el.modalMeta.innerHTML = `
-          <div class="modalMetaItem"><span>Time</span>${time || "--"} min</div>
-          <div class="modalMetaItem"><span>Calories</span>${calories || "--"} cal</div>
-          <div class="modalMetaItem"><span>Difficulty</span>${escapeHtml(difficulty)}</div>
-        `;
-        const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
-        el.modalIngredients.innerHTML = ingredients
-          .map((ingredient) => `<span class="ingredientChip">${escapeHtml(titleCase(ingredient))}</span>`)
-          .join("");
+        renderRecipeModalDetails();
         modalSteps = Array.isArray(recipe.steps) ? recipe.steps : [];
         currentStepIndex = 0;
         updateModalStep();
@@ -1926,6 +2248,7 @@
     }
 
     function closeRecipeModal() {
+      clearTimer();
       el.recipeModal.classList.remove("open");
     }
 
@@ -2075,6 +2398,38 @@
     el.planBtn.addEventListener("click", (e) => {
       addRipple(el.planBtn, e);
       getMealPlan();
+    });
+
+    el.servingMinusBtn.addEventListener("click", () => {
+      servingMultiplier = Math.max(1, servingMultiplier - 1);
+      renderRecipeModalDetails();
+    });
+
+    el.servingPlusBtn.addEventListener("click", () => {
+      servingMultiplier = Math.min(4, servingMultiplier + 1);
+      renderRecipeModalDetails();
+    });
+
+    el.timerBtn.addEventListener("click", () => {
+      if (!timerSeconds) return;
+      if (timerId) {
+        clearInterval(timerId);
+        timerId = null;
+        updateTimerUI();
+        return;
+      }
+      if (timerRemaining <= 0) timerRemaining = timerSeconds;
+      timerId = setInterval(() => {
+        timerRemaining = Math.max(0, timerRemaining - 1);
+        updateTimerUI();
+        if (timerRemaining <= 0) {
+          clearInterval(timerId);
+          timerId = null;
+          el.timerText.textContent = "Timer complete";
+          el.timerBtn.textContent = "Restart";
+        }
+      }, 1000);
+      updateTimerUI();
     });
 
     el.nextStepBtn.addEventListener("click", (e) => {
