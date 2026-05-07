@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Manrope:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     :root {
       /* Sophisticated World-Class Palette */
@@ -21,9 +22,9 @@
       --borderSoft: rgba(255, 255, 255, 0.5);
       --shadow: 0 20px 50px -12px rgba(15, 23, 42, 0.1);
       --shadow-hover: 0 30px 60px -12px rgba(15, 23, 42, 0.15);
-      --accent: #10b981;
-      --accent2: #059669;
-      --accentGlow: rgba(16, 185, 129, 0.2);
+      --accent: #047857; /* Emerald 700 for AA accessibility */
+      --accent2: #065f46; /* Emerald 800 */
+      --accentGlow: rgba(4, 120, 87, 0.2);
       --radius: 24px;
       --radiusSm: 16px;
       --goldInk: #854d0e;
@@ -449,25 +450,32 @@
     .skeletonCard {
       min-height: 420px;
       border-radius: var(--cardRadius);
-      background: rgba(255,255,255,0.82);
-      border: 1px solid rgba(255,255,255,0.32);
-      box-shadow: var(--shadow-soft);
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      box-shadow: var(--shadow);
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     .skeletonImage,
     .skeletonLine {
-      background: linear-gradient(100deg, rgba(226,232,240,0.7), rgba(248,250,252,0.96), rgba(226,232,240,0.7));
+      background: linear-gradient(100deg, rgba(226, 232, 240, 0.7), rgba(248, 250, 252, 0.96), rgba(226, 232, 240, 0.7));
       background-size: 220% 100%;
-      animation: shimmer 1.25s ease-in-out infinite;
+      animation: shimmer 1.5s ease-in-out infinite;
     }
 
-    .skeletonImage { height: 240px; }
+    .skeletonImage {
+      height: 200px;
+      width: 100%;
+    }
 
     .skeletonBody {
-      padding: 18px;
-      display: grid;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
       gap: 12px;
+      flex: 1;
     }
 
     .skeletonLine {
@@ -726,6 +734,9 @@
       font-size: 0.75rem;
       font-weight: 700;
       letter-spacing: 0.02em;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
     .foodBody {
@@ -797,6 +808,11 @@
       font-size: 1.05rem;
       line-height: 1;
       color: #e11d48;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .heartBtn.isFav .heart {
+      transform: scale(1.2);
     }
 
     .badgeRow {
@@ -950,28 +966,37 @@
 
     .empty {
       grid-column: 1 / -1;
-      padding: 34px 22px;
+      padding: 60px 22px;
       border-radius: var(--radius);
-      border: 1px dashed rgba(15, 23, 42, 0.18);
-      background: rgba(255, 255, 255, 0.70);
+      border: 2px dashed rgba(15, 23, 42, 0.1);
+      background: rgba(255, 255, 255, 0.4);
       text-align: center;
       color: var(--muted);
-      font-weight: 800;
-      box-shadow: var(--shadow-soft);
+      font-weight: 700;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .empty-icon {
+      color: var(--muted2);
+      opacity: 0.5;
     }
 
     .empty strong {
       display: block;
       color: var(--ink);
-      font-size: 1.12rem;
-      margin-bottom: 6px;
+      font-size: 1.25rem;
+      font-family: 'Fraunces', serif;
     }
 
     .empty span {
       display: block;
-      max-width: 360px;
+      max-width: 400px;
       margin: 0 auto;
-      line-height: 1.45;
+      line-height: 1.6;
+      font-size: 1rem;
     }
 
     .planWrap {
@@ -1095,9 +1120,16 @@
       padding: 16px;
       background: rgba(8, 22, 16, 0.42);
       z-index: 1000;
+      transition: background 0.3s ease;
     }
 
     .modalOverlay.open { display: flex; }
+
+    .modalOverlay.immersive {
+      background: var(--ink);
+      align-items: center;
+      padding: 0;
+    }
 
     .modal {
       width: min(100%, 720px);
@@ -1109,7 +1141,20 @@
       padding: 32px;
       overflow-y: auto;
       transform: translateY(20px);
+      transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
       animation: modalIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .modalOverlay.immersive .modal {
+      width: 100%;
+      height: 100%;
+      max-height: 100vh;
+      border-radius: 0;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(24px, 8vw, 80px);
     }
 
     @keyframes modalIn {
@@ -1247,7 +1292,21 @@
       font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      margin-bottom: 2px;
+      margin-bottom: 6px;
+    }
+
+    .macroBar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .macroProgress {
+      height: 100%;
+      background: var(--accent);
+      border-radius: inherit;
     }
 
     .modalSectionTitle {
@@ -1330,6 +1389,45 @@
       font-weight: 600;
       line-height: 1.6;
       font-size: 1.15rem;
+      transition: font-size 0.3s ease;
+    }
+
+    .modalOverlay.immersive .stepText {
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+    }
+
+    .modalOverlay.immersive .modalHead,
+    .modalOverlay.immersive .modalMetaGrid,
+    .modalOverlay.immersive .servingRow,
+    .modalOverlay.immersive .macroGrid,
+    .modalOverlay.immersive .modalSectionTitle,
+    .modalOverlay.immersive .ingredientChecklist,
+    .modalOverlay.immersive .missingBox,
+    .modalOverlay.immersive .substitutionBox {
+      display: none !important;
+    }
+
+    .immersiveToggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg0);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      cursor: pointer;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .immersiveToggle.active {
+      background: var(--ink);
+      color: white;
+      border-color: var(--ink);
     }
 
     .stepProgress {
@@ -1399,7 +1497,7 @@
       <aside class="glass left">
         <div class="stack">
           <div class="section" id="timePanel">
-            <div class="label">Time <span class="hint">how long do you have</span></div>
+            <div class="label"><span style="display:flex; align-items:center; gap:8px;"><i data-lucide="clock" size="16"></i> Time</span> <span class="hint">how long do you have</span></div>
             <div class="seg" role="group" aria-label="Time">
               <button class="chip selected" data-group="time" data-value="15">15 min</button>
               <button class="chip" data-group="time" data-value="30">30 min</button>
@@ -1407,7 +1505,7 @@
           </div>
 
           <div class="section" id="moodPanel">
-            <div class="label">Mood <span class="hint">match the vibe</span></div>
+            <div class="label"><span style="display:flex; align-items:center; gap:8px;"><i data-lucide="smile" size="16"></i> Mood</span> <span class="hint">match the vibe</span></div>
             <div class="seg" role="group" aria-label="Mood">
               <button class="chip selected" data-group="mood" data-value="quick">quick</button>
               <button class="chip" data-group="mood" data-value="healthy">healthy</button>
@@ -1416,9 +1514,10 @@
           </div>
 
           <div class="section" id="categoryPanel">
-            <div class="label">Craving <span class="hint">cuisine or type</span></div>
+            <div class="label"><span style="display:flex; align-items:center; gap:8px;"><i data-lucide="utensils" size="16"></i> Craving</span> <span class="hint">cuisine or type</span></div>
             <div class="seg scroll" role="group" aria-label="Category">
               <button class="chip selected" data-group="category" data-value="all">all</button>
+              <button class="chip" data-group="category" data-value="favorites">❤️ favorites</button>
               <button class="chip" data-group="category" data-value="north-indian">north indian</button>
               <button class="chip" data-group="category" data-value="south-indian">south indian</button>
               <button class="chip" data-group="category" data-value="continental">continental</button>
@@ -1432,7 +1531,7 @@
           </div>
 
           <div class="section" id="dietPanel">
-            <div class="label">Diet <span class="hint">always respected</span></div>
+            <div class="label"><span style="display:flex; align-items:center; gap:8px;"><i data-lucide="leaf" size="16"></i> Diet</span> <span class="hint">always respected</span></div>
             <div class="seg" role="group" aria-label="Diet">
               <button class="chip selected" data-group="diet" data-value="veg">veg</button>
               <button class="chip" data-group="diet" data-value="non-veg">non-veg</button>
@@ -1440,8 +1539,8 @@
           </div>
 
           <div class="section" id="ingredientsPanel">
-            <div class="label">What ingredients do you have? <span class="hint">comma separated</span></div>
-            <input id="ingredientsInput" class="field" placeholder="e.g. egg, onion, bread" autocomplete="off" />
+            <div class="label"><span style="display:flex; align-items:center; gap:8px;"><i data-lucide="shopping-basket" size="16"></i> Ingredients</span> <span class="hint">comma separated</span></div>
+            <input id="ingredientsInput" class="field" aria-label="Ingredients you have" placeholder="e.g. egg, onion, bread" autocomplete="off" />
           </div>
 
           <div class="actions">
@@ -1481,6 +1580,7 @@
         <h2 class="modalTitle" id="modalDishName">Recipe</h2>
         <button class="closeBtn" id="closeModalBtn" type="button">Close</button>
       </div>
+      <button class="immersiveToggle" id="immersiveToggle"><i data-lucide="maximize-2" size="14"></i> Focus Mode</button>
       <div class="modalMetaGrid" id="modalMeta"></div>
       <div class="servingRow">
         <div class="servingLabel">Servings</div>
@@ -1527,6 +1627,7 @@
     };
 
     const el = {
+      shell: document.querySelector(".shell"),
       microcopy: document.getElementById("microcopy"),
       statusText: document.getElementById("statusText"),
       loading: document.getElementById("loading"),
@@ -1555,7 +1656,8 @@
       timerBtn: document.getElementById("timerBtn"),
       prevStepBtn: document.getElementById("prevStepBtn"),
       nextStepBtn: document.getElementById("nextStepBtn"),
-      closeModalBtn: document.getElementById("closeModalBtn")
+      closeModalBtn: document.getElementById("closeModalBtn"),
+      immersiveToggle: document.getElementById("immersiveToggle")
     };
 
     let modalSteps = [];
@@ -1888,34 +1990,54 @@
     }
 
     function renderLoadingCards(mode) {
-      const count = mode === "decide" ? 1 : 3;
+      const count = mode === "decide" ? 1 : (window.innerWidth < 1120 ? 2 : 3);
       el.results.classList.toggle("decideResults", mode === "decide");
       el.results.classList.toggle("hasHero", false);
-      el.results.innerHTML = `
-        <div class="loadingGrid">
-          ${Array.from({ length: count }).map(() => `
-            <article class="skeletonCard">
-              <div class="skeletonImage"></div>
-              <div class="skeletonBody">
-                <div class="skeletonLine short"></div>
-                <div class="skeletonLine medium"></div>
-                <div class="skeletonLine"></div>
-                <div class="skeletonLine medium"></div>
+
+      let cardsHtml = "";
+      for(let i=0; i<count; i++) {
+        cardsHtml += `
+          <article class="skeletonCard glass">
+            <div class="skeletonImage"></div>
+            <div class="skeletonBody">
+              <div class="skeletonLine short"></div>
+              <div class="skeletonLine" style="width: 80%"></div>
+              <div class="skeletonLine" style="width: 60%"></div>
+              <div style="display:flex; gap:8px; margin-top: auto;">
+                <div class="skeletonLine" style="width: 40px; height: 24px;"></div>
+                <div class="skeletonLine" style="width: 40px; height: 24px;"></div>
               </div>
-            </article>
-          `).join("")}
-        </div>
-      `;
+            </div>
+          </article>
+        `;
+      }
+
+      el.results.innerHTML = `<div class="loadingGrid">${cardsHtml}</div>`;
     }
 
     function renderEmpty(message) {
       el.results.classList.remove("decideResults", "hasHero");
       el.results.innerHTML = `
         <div class="empty">
-          <strong>&#x1F373; Let's find something delicious!</strong>
+          <div class="empty-icon"><i data-lucide="utensils-crossed" size="48"></i></div>
+          <strong>Let's find something delicious!</strong>
           <span>${message || "Try a different time, mood, diet, or ingredient combination."}</span>
+          <button class="btn secondary" style="width: auto; padding: 12px 24px;" onclick="resetFilters()">Reset Filters</button>
         </div>
       `;
+      lucide.createIcons();
+    }
+
+    function resetFilters() {
+        state.time_available = 15;
+        state.mood = "quick";
+        state.diet = "veg";
+        state.category = "all";
+        el.ingredientsInput.value = "";
+        applyPreferencesToUI();
+        savePreferences();
+        updateMicrocopy();
+        getSuggestions("normal");
     }
 
     function renderMealPlan(plan) {
@@ -1998,7 +2120,17 @@
 
       const favorites = loadFavorites();
 
-      ordered.forEach((item, index) => {
+      // Filter for favorites if category is favorites
+      let itemsToRender = ordered;
+      if (state.category === "favorites") {
+        itemsToRender = items.filter(it => favorites.has(String(it.id)));
+        if (itemsToRender.length === 0) {
+            renderEmpty("You haven't saved any favorites yet. Heart a meal to see it here!");
+            return;
+        }
+      }
+
+      itemsToRender.forEach((item, index) => {
         const isFirst = index === 0;
         const isDecide = mode === "decide" && isFirst;
         const isFav = favorites.has(String(item.id));
@@ -2036,7 +2168,7 @@
           <div class="foodImg" style="background-image:url('${dishImageUrl(item.name)}');">
             <div class="imageLabel">
               <p class="imageTitle">${escapeHtml(item.name)}</p>
-              <span class="imageTime">&#9201; ${clampInt(item.time_minutes, 0)} min</span>
+              <span class="imageTime"><i data-lucide="clock" size="14"></i> ${clampInt(item.time_minutes, 0)} min</span>
             </div>
           </div>
           <div class="foodBody">
@@ -2051,10 +2183,10 @@
             </div>
 
             <div class="metaRow">
-              <span class="metaItem">&#9201; ${clampInt(item.time_minutes, 0)} min</span>
-              ${calories > 0 ? `<span class="metaItem">&#128293; ${calories} cal</span>` : ""}
-              <span class="metaItem">&#9989; ${escapeHtml(difficulty)}</span>
-              ${matchPercent > 0 ? `<span class="metaItem">&#127919; ${matchPercent}% match</span>` : ""}
+              <span class="metaItem"><i data-lucide="clock" size="14"></i> ${clampInt(item.time_minutes, 0)} min</span>
+              ${calories > 0 ? `<span class="metaItem"><i data-lucide="zap" size="14"></i> ${calories} cal</span>` : ""}
+              <span class="metaItem"><i data-lucide="award" size="14"></i> ${escapeHtml(difficulty)}</span>
+              ${matchPercent > 0 ? `<span class="metaItem"><i data-lucide="target" size="14"></i> ${matchPercent}% match</span>` : ""}
             </div>
 
             ${ingredientPreview ? `<p class="ingredientPreview"><strong>Uses</strong> ${escapeHtml(ingredientPreview)}</p>` : ""}
@@ -2070,12 +2202,18 @@
         `;
 
         const heartBtn = card.querySelector(".heartBtn");
+        if (isFav) heartBtn.classList.add("isFav");
         heartBtn.addEventListener("click", (e) => {
           e.stopPropagation();
           const id = String(item.id);
           const next = loadFavorites();
-          if (next.has(id)) next.delete(id);
-          else next.add(id);
+          if (next.has(id)) {
+            next.delete(id);
+            heartBtn.classList.remove("isFav");
+          } else {
+            next.add(id);
+            heartBtn.classList.add("isFav");
+          }
           saveFavorites(next);
           const heart = heartBtn.querySelector(".heart");
           heart.innerHTML = next.has(id) ? "&#10084;" : "&#9825;";
@@ -2113,6 +2251,7 @@
       });
 
       updatePreferenceHint();
+      lucide.createIcons();
     }
 
     function normalizeIngredientName(value) {
@@ -2145,6 +2284,7 @@
       const calories = scaleMacro(activeRecipe.calories);
       const time = clampInt(activeRecipe.time_minutes, 0);
       const difficulty = titleCase(activeRecipe.difficulty || "easy");
+
       const nutrition = activeRecipe.nutrition || {};
       const ingredients = Array.isArray(activeRecipe.ingredients_with_quantities) && activeRecipe.ingredients_with_quantities.length
         ? activeRecipe.ingredients_with_quantities
@@ -2165,11 +2305,26 @@
         <div class="modalMetaItem"><span>Calories</span>${calories || "--"} cal</div>
         <div class="modalMetaItem"><span>Difficulty</span>${escapeHtml(difficulty)}</div>
       `;
+
+      const maxMacro = Math.max(scaleMacro(nutrition.protein_g), scaleMacro(nutrition.carbs_g), scaleMacro(nutrition.fat_g), scaleMacro(nutrition.fiber_g), 1);
+
       el.macroGrid.innerHTML = `
-        <div class="macroItem"><span>Protein</span>${scaleMacro(nutrition.protein_g)}g</div>
-        <div class="macroItem"><span>Carbs</span>${scaleMacro(nutrition.carbs_g)}g</div>
-        <div class="macroItem"><span>Fat</span>${scaleMacro(nutrition.fat_g)}g</div>
-        <div class="macroItem"><span>Fiber</span>${scaleMacro(nutrition.fiber_g)}g</div>
+        <div class="macroItem">
+            <span>Protein</span>${scaleMacro(nutrition.protein_g)}g
+            <div class="macroBar"><div class="macroProgress" style="width: ${(scaleMacro(nutrition.protein_g)/maxMacro)*100}%"></div></div>
+        </div>
+        <div class="macroItem">
+            <span>Carbs</span>${scaleMacro(nutrition.carbs_g)}g
+            <div class="macroBar"><div class="macroProgress" style="width: ${(scaleMacro(nutrition.carbs_g)/maxMacro)*100}%"></div></div>
+        </div>
+        <div class="macroItem">
+            <span>Fat</span>${scaleMacro(nutrition.fat_g)}g
+            <div class="macroBar"><div class="macroProgress" style="width: ${(scaleMacro(nutrition.fat_g)/maxMacro)*100}%"></div></div>
+        </div>
+        <div class="macroItem">
+            <span>Fiber</span>${scaleMacro(nutrition.fiber_g)}g
+            <div class="macroBar"><div class="macroProgress" style="width: ${(scaleMacro(nutrition.fiber_g)/maxMacro)*100}%"></div></div>
+        </div>
       `;
       el.modalIngredients.innerHTML = ingredients.map((item) => {
         const normalized = normalizeIngredientName(item.name);
@@ -2199,6 +2354,7 @@
       el.substitutionBox.innerHTML = substitutionLines
         ? `<p class="modalSectionTitle">Smart substitutions</p>${substitutionLines}`
         : "";
+      lucide.createIcons();
     }
 
     function clearTimer() {
@@ -2268,7 +2424,10 @@
 
     function closeRecipeModal() {
       clearTimer();
-      el.recipeModal.classList.remove("open");
+      el.recipeModal.classList.remove("open", "immersive");
+      el.immersiveToggle.classList.remove("active");
+      el.immersiveToggle.innerHTML = `<i data-lucide="maximize-2" size="14"></i> Focus Mode`;
+      lucide.createIcons();
     }
 
     function getInitialMode() {
@@ -2470,6 +2629,15 @@
     });
 
     el.closeModalBtn.addEventListener("click", closeRecipeModal);
+
+    el.immersiveToggle.addEventListener("click", () => {
+        const isImmersive = el.recipeModal.classList.toggle("immersive");
+        el.immersiveToggle.classList.toggle("active", isImmersive);
+        el.immersiveToggle.innerHTML = isImmersive
+            ? `<i data-lucide="minimize-2" size="14"></i> Exit Focus Mode`
+            : `<i data-lucide="maximize-2" size="14"></i> Focus Mode`;
+        lucide.createIcons();
+    });
     el.recipeModal.addEventListener("click", (event) => {
       if (event.target === el.recipeModal) closeRecipeModal();
     });
@@ -2481,6 +2649,7 @@
     updateMicrocopy();
     updatePreferenceHint();
     getSuggestions(getInitialMode());
+    lucide.createIcons();
   </script>
 </body>
 </html>
