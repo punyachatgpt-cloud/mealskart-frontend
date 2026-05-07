@@ -9,26 +9,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Manrope:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      /* Sophisticated World-Class Palette */
-      --bg0: #f8fafc;
+      /* Premium Saffron Feast Palette */
+      --bg0: #fff8f2;
       --bg1: #ffffff;
-      --ink: #0f172a;
-      --muted: #64748b;
-      --muted2: #94a3b8;
-      --surface: rgba(255, 255, 255, 0.85);
-      --surfaceStrong: rgba(255, 255, 255, 0.95);
-      --border: rgba(226, 232, 240, 0.8);
+      --ink: #1a0e00;
+      --muted: #78614a;
+      --muted2: #b09a84;
+      --surface: rgba(255, 252, 248, 0.88);
+      --surfaceStrong: rgba(255, 252, 248, 0.97);
+      --border: rgba(240, 220, 200, 0.85);
       --borderSoft: rgba(255, 255, 255, 0.5);
-      --shadow: 0 20px 50px -12px rgba(15, 23, 42, 0.1);
-      --shadow-hover: 0 30px 60px -12px rgba(15, 23, 42, 0.15);
-      --accent: #10b981;
-      --accent2: #059669;
-      --accentGlow: rgba(16, 185, 129, 0.2);
+      --shadow: 0 20px 50px -12px rgba(80, 30, 5, 0.12);
+      --shadow-hover: 0 32px 64px -12px rgba(80, 30, 5, 0.18);
+      --accent: #f97316;
+      --accent2: #ea580c;
+      --accentGlow: rgba(249, 115, 22, 0.22);
       --radius: 24px;
       --radiusSm: 16px;
-      --goldInk: #854d0e;
-      --goldBg: #fefce8;
-      --goldBorder: #fef08a;
+      --goldInk: #7c2d12;
+      --goldBg: #fff7ed;
+      --goldBorder: #fed7aa;
       --cardRadius: 28px;
     }
 
@@ -41,9 +41,9 @@
       font-family: 'Manrope', system-ui, -apple-system, sans-serif;
       color: var(--ink);
       background:
-        radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
-        radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
-        #f8fafc;
+        radial-gradient(circle at 0% 0%, rgba(249, 115, 22, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(249, 115, 22, 0.03) 0%, transparent 50%),
+        #fff8f2;
       min-height: 100vh;
       overflow-x: hidden;
     }
@@ -230,7 +230,7 @@
       position: absolute;
       inset: -4px;
       border-radius: inherit;
-      border: 1px solid rgba(14, 165, 106, 0.18);
+      border: 1px solid rgba(249, 115, 22, 0.18);
       animation: selectedPulse 1.8s ease-in-out infinite;
       pointer-events: none;
     }
@@ -316,7 +316,7 @@
       .btn:hover {
         transform: translateY(-1px) scale(1.01);
         filter: brightness(0.98);
-        box-shadow: 0 26px 54px rgba(14, 165, 106, 0.34);
+        box-shadow: 0 26px 54px rgba(249, 115, 22, 0.34);
       }
       .btn.secondary:hover {
         transform: translateY(-1px) scale(1.01);
@@ -335,7 +335,7 @@
     .servingBtn:focus-visible,
     .timerBtn:focus-visible,
     .foodCard:focus-visible {
-      outline: 3px solid rgba(14, 165, 106, 0.32);
+      outline: 3px solid rgba(249, 115, 22, 0.32);
       outline-offset: 3px;
     }
 
@@ -468,7 +468,7 @@
       height: 16px;
       border-radius: 50%;
       border: 2px solid rgba(15, 23, 42, 0.14);
-      border-top-color: rgba(14, 165, 106, 0.98);
+      border-top-color: rgba(249, 115, 22, 0.98);
       animation: spin 0.8s linear infinite;
     }
 
@@ -485,7 +485,7 @@
     .decideHint {
       display: none;
       margin: 8px 0 0;
-      color: rgba(15, 47, 34, 0.76);
+      color: rgba(120, 40, 8, 0.76);
       font-weight: 800;
       font-size: 0.95rem;
     }
@@ -612,7 +612,7 @@
     }
 
     .foodCard.decideCard {
-      border-color: rgba(14, 165, 106, 0.24);
+      border-color: rgba(249, 115, 22, 0.24);
       box-shadow: 0 30px 90px rgba(2, 8, 23, 0.18);
     }
 
@@ -728,9 +728,9 @@
       gap: 6px;
       padding: 7px 10px;
       border-radius: 999px;
-      color: rgba(7, 77, 55, 0.96);
-      background: rgba(14, 165, 106, 0.10);
-      border: 1px solid rgba(14, 165, 106, 0.18);
+      color: rgba(124, 45, 18, 0.96);
+      background: rgba(249, 115, 22, 0.10);
+      border: 1px solid rgba(249, 115, 22, 0.18);
       font-size: 0.78rem;
       font-weight: 900;
       box-shadow: inset 0 1px 0 rgba(255,255,255,0.65);
@@ -851,7 +851,7 @@
     }
 
     .ingredientPreview {
-      color: rgba(15, 47, 34, 0.72);
+      color: rgba(120, 40, 8, 0.72);
       font-weight: 800;
       font-size: 0.86rem;
       line-height: 1.4;
@@ -859,7 +859,7 @@
     }
 
     .ingredientPreview strong {
-      color: rgba(15, 47, 34, 0.94);
+      color: rgba(120, 40, 8, 0.94);
       font-weight: 950;
     }
 
@@ -1044,8 +1044,8 @@
     .groceryBox {
       border-radius: 18px;
       padding: 14px;
-      background: linear-gradient(135deg, rgba(14, 165, 106, 0.08), rgba(255, 255, 255, 0.86));
-      border: 1px solid rgba(14, 165, 106, 0.16);
+      background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(255, 255, 255, 0.86));
+      border: 1px solid rgba(249, 115, 22, 0.16);
       box-shadow: var(--shadow-soft);
     }
 
@@ -1153,9 +1153,9 @@
     .ingredientChip {
       border-radius: 999px;
       padding: 7px 10px;
-      background: rgba(14, 165, 106, 0.10);
-      border: 1px solid rgba(14, 165, 106, 0.18);
-      color: rgba(7, 77, 55, 0.96);
+      background: rgba(249, 115, 22, 0.10);
+      border: 1px solid rgba(249, 115, 22, 0.18);
+      color: rgba(124, 45, 18, 0.96);
       font-weight: 900;
       font-size: 0.8rem;
     }
@@ -1188,9 +1188,9 @@
 
     .servingBtn,
     .timerBtn {
-      border: 1px solid rgba(15, 47, 34, 0.12);
+      border: 1px solid rgba(120, 40, 8, 0.12);
       background: rgba(255, 255, 255, 0.82);
-      color: rgba(15, 47, 34, 0.88);
+      color: rgba(120, 40, 8, 0.88);
       border-radius: 999px;
       min-width: 34px;
       min-height: 34px;
@@ -1276,8 +1276,8 @@
     }
 
     .substitutionBox {
-      background: rgba(14, 165, 106, 0.07);
-      border-color: rgba(14, 165, 106, 0.16);
+      background: rgba(249, 115, 22, 0.07);
+      border-color: rgba(249, 115, 22, 0.16);
     }
 
     .substitutionLine {
@@ -1289,9 +1289,9 @@
     }
 
     .closeBtn {
-      border: 1px solid rgba(15, 47, 34, 0.12);
+      border: 1px solid rgba(120, 40, 8, 0.12);
       background: rgba(255, 255, 255, 0.78);
-      color: rgba(15, 47, 34, 0.86);
+      color: rgba(120, 40, 8, 0.86);
       border-radius: 999px;
       padding: 10px 12px;
       font-weight: 900;
@@ -1402,12 +1402,12 @@
 
     /* ── Ingredients hero highlight ─────────────── */
     #ingredientsPanel {
-      background: linear-gradient(135deg, rgba(16,185,129,0.07), rgba(255,255,255,0.4));
-      border: 1.5px solid rgba(16,185,129,0.18);
+      background: linear-gradient(135deg, rgba(249,115,22,0.07), rgba(255,255,255,0.4));
+      border: 1.5px solid rgba(249,115,22,0.18);
       border-radius: 16px;
       padding: 14px;
     }
-    #ingredientsPanel .label { color: rgba(7,77,55,0.9); }
+    #ingredientsPanel .label { color: rgba(124,45,18,0.9); }
 
     /* ── Social proof on cards ──────────────────── */
     .socialRow {
@@ -1459,12 +1459,12 @@
       gap: 14px;
       border-radius: 20px;
       padding: 14px 18px;
-      background: linear-gradient(135deg, rgba(16,185,129,0.09), rgba(255,255,255,0.94));
-      border: 1px solid rgba(16,185,129,0.22);
+      background: linear-gradient(135deg, rgba(249,115,22,0.09), rgba(255,255,255,0.94));
+      border: 1px solid rgba(249,115,22,0.22);
       cursor: pointer;
       transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
     }
-    .cookAgainCard:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(16,185,129,0.14); }
+    .cookAgainCard:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(249,115,22,0.14); }
     .cookAgainThumb {
       width: 54px;
       height: 54px;
@@ -1472,7 +1472,7 @@
       background-size: cover;
       background-position: center;
       flex: 0 0 auto;
-      border: 1px solid rgba(16,185,129,0.14);
+      border: 1px solid rgba(249,115,22,0.14);
     }
     .cookAgainBody { flex: 1; min-width: 0; }
     .cookAgainBody strong { display: block; font-weight: 900; font-size: 0.95rem; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1568,6 +1568,189 @@
     .mobileBar {
       display: none;
     }
+    /* ═══════════════════════════════════════════════════
+       WORLD-CLASS ANIMATION LAYER
+       ═══════════════════════════════════════════════════ */
+
+    /* ── Animated gradient brand headline ─────────── */
+    .brand h1 {
+      background: linear-gradient(
+        120deg,
+        var(--ink) 0%,
+        #c2410c 30%,
+        var(--accent) 50%,
+        #c2410c 70%,
+        var(--ink) 100%
+      );
+      background-size: 280% 280%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: brandGradient 7s ease-in-out infinite;
+    }
+    @keyframes brandGradient {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* ── Warm animated background mesh ───────────── */
+    body {
+      background:
+        radial-gradient(ellipse 70% 50% at 8% 12%, rgba(249,115,22,0.08) 0%, transparent 65%),
+        radial-gradient(ellipse 55% 45% at 92% 88%, rgba(234,88,12,0.06) 0%, transparent 65%),
+        radial-gradient(ellipse 90% 70% at 50% 50%, rgba(249,115,22,0.03) 0%, transparent 75%),
+        #fff8f2;
+    }
+
+    /* ── Floating food particles ─────────────────── */
+    .foodParticle {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      user-select: none;
+      animation: floatUp var(--dur, 18s) var(--delay, 0s) ease-in-out infinite;
+      opacity: 0;
+      will-change: transform, opacity;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(105vh) rotate(0deg)   scale(1);    opacity: 0; }
+      6%   { opacity: 0.13; }
+      90%  { opacity: 0.08; }
+      100% { transform: translateY(-8vh)  rotate(540deg) scale(0.8);  opacity: 0; }
+    }
+
+    /* ── CTA primary pulse ring ───────────────────── */
+    #decideBtn { overflow: visible; }
+    #decideBtn::before {
+      content: "";
+      position: absolute;
+      inset: -4px;
+      border-radius: inherit;
+      border: 2.5px solid var(--accent);
+      animation: pulseRing 2.8s ease-out infinite;
+      opacity: 0;
+      pointer-events: none;
+    }
+    @keyframes pulseRing {
+      0%   { transform: scale(1);    opacity: 0.55; }
+      75%  { transform: scale(1.12); opacity: 0; }
+      100% { transform: scale(1.12); opacity: 0; }
+    }
+
+    /* ── Enhanced chip selected glow ─────────────── */
+    .chip.selected {
+      animation: chipGlow 2.2s ease-in-out infinite;
+    }
+    @keyframes chipGlow {
+      0%, 100% { box-shadow: 0 4px 14px var(--accentGlow); }
+      50%       { box-shadow: 0 6px 24px var(--accentGlow), 0 0 0 4px rgba(249,115,22,0.07); }
+    }
+
+    /* ── Card hover: warm glow lift ──────────────── */
+    @media (hover: hover) and (pointer: fine) {
+      .foodCard:hover {
+        transform: translateY(-10px) scale(1.009);
+        box-shadow:
+          0 0 0 1.5px var(--accent),
+          0 44px 88px -16px rgba(249,115,22,0.22),
+          0 20px 40px -12px rgba(80,30,5,0.1);
+        border-color: var(--accent);
+      }
+      .foodCard:hover .foodImg {
+        transform: scale(1.07);
+      }
+    }
+
+    /* ── Staggered card entrance ──────────────────── */
+    .foodCard:nth-child(1) { animation-delay: 0ms; }
+    .foodCard:nth-child(2) { animation-delay: 90ms; }
+    .foodCard:nth-child(3) { animation-delay: 180ms; }
+
+    /* ── Section reveal on load ───────────────────── */
+    .left.glass  { animation: sectionReveal 0.65s cubic-bezier(0.2,0.9,0.2,1) both; animation-delay: 0ms; }
+    .right.glass { animation: sectionReveal 0.65s cubic-bezier(0.2,0.9,0.2,1) both; animation-delay: 110ms; }
+    @keyframes sectionReveal {
+      from { opacity: 0; transform: translateY(22px) scale(0.99); }
+      to   { opacity: 1; transform: translateY(0)    scale(1); }
+    }
+
+    /* ── Warm skeleton shimmer ────────────────────── */
+    .skeletonImage, .skeletonLine {
+      background: linear-gradient(
+        100deg,
+        rgba(251,228,210,0.75) 0%,
+        rgba(255,248,242,0.97) 50%,
+        rgba(251,228,210,0.75) 100%
+      );
+      background-size: 220% 100%;
+      animation: shimmer 1.25s ease-in-out infinite;
+    }
+
+    /* ── Count number reveal ─────────────────────── */
+    .countNum {
+      display: inline-block;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Image cinematic enter ───────────────────── */
+    @keyframes cardEnter {
+      from { opacity: 0; transform: translateY(28px) scale(0.97); filter: blur(5px); }
+      to   { opacity: 1; transform: translateY(0)    scale(1);    filter: blur(0); }
+    }
+
+    /* ── Heartbeat on favorite ───────────────────── */
+    @keyframes heartBeat {
+      0%   { transform: scale(1); }
+      35%  { transform: scale(1.4); }
+      65%  { transform: scale(0.88); }
+      100% { transform: scale(1); }
+    }
+    .heartBtn.beating { animation: heartBeat 0.38s cubic-bezier(0.2,0.9,0.2,1) both; }
+
+    /* ── Modal entrance spring ───────────────────── */
+    .modal {
+      transform-origin: bottom center;
+    }
+
+    /* ── Ingredient checklist check accent ───────── */
+    .ingredientCheck input { accent-color: var(--accent); }
+
+    /* ── Status text slide in ────────────────────── */
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(12px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .statusText:not(:empty) { animation: slideInRight 0.3s ease both; }
+
+    /* ── Cook again card pulse border ────────────── */
+    .cookAgainCard {
+      background: linear-gradient(135deg, rgba(249,115,22,0.09), rgba(255,255,255,0.95));
+      border: 1px solid rgba(249,115,22,0.24);
+    }
+    .cookAgainCard:hover {
+      box-shadow: 0 12px 32px rgba(249,115,22,0.18);
+      border-color: var(--accent);
+    }
+
+    /* ── Streak banner warm glow ─────────────────── */
+    .streakBanner.show {
+      animation: streakReveal 0.5s cubic-bezier(0.2,0.9,0.2,1) both;
+    }
+    @keyframes streakReveal {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Glass panel warm tint ───────────────────── */
+    .glass {
+      background: rgba(255, 252, 248, 0.9);
+      border: 1px solid rgba(240, 210, 175, 0.7);
+    }
+
+    /* ── Ingredient hero darker label ───────────── */
+    #ingredientsPanel .label { color: rgba(120,40,8,0.9); font-weight: 800; }
+
     @media (max-width: 980px) {
       .mobileBar {
         display: flex;
@@ -2424,11 +2607,11 @@
       el.results.innerHTML = `
         <div class="empty">
           <svg width="72" height="72" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto 14px;display:block;opacity:0.55" aria-hidden="true">
-            <circle cx="36" cy="36" r="34" stroke="#10b981" stroke-width="2.5" stroke-dasharray="6 4"/>
-            <path d="M22 44c0-7.732 6.268-14 14-14s14 6.268 14 14" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"/>
-            <circle cx="28" cy="28" r="3" fill="#10b981" opacity="0.7"/>
-            <circle cx="44" cy="28" r="3" fill="#10b981" opacity="0.7"/>
-            <path d="M36 20v-6M36 14l-3 3M36 14l3 3" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="36" cy="36" r="34" stroke="#f97316" stroke-width="2.5" stroke-dasharray="6 4"/>
+            <path d="M22 44c0-7.732 6.268-14 14-14s14 6.268 14 14" stroke="#f97316" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="28" cy="28" r="3" fill="#f97316" opacity="0.7"/>
+            <circle cx="44" cy="28" r="3" fill="#f97316" opacity="0.7"/>
+            <path d="M36 20v-6M36 14l-3 3M36 14l3 3" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           <strong>Nothing matched — let's try again</strong>
           <span>${message || "Adjust your time, mood, diet or add some ingredients you have at home."}</span>
@@ -2565,7 +2748,7 @@
                 <h3 class="foodName">${escapeHtml(item.name)}</h3>
                 <div class="socialRow">
                   <span class="ratingChip">&#9733; ${stats.rating}</span>
-                  <span class="cookedCount">${stats.count} cooked this week</span>
+                  <span class="cookedCount"><span class="countNum" data-target="${stats.count}">0</span> cooked this week</span>
                 </div>
               </div>
               <button class="heartBtn" type="button" aria-label="Toggle favorite">
@@ -2623,11 +2806,26 @@
         });
 
         el.results.appendChild(card);
+
+        // Animate cooked-count numbers when card scrolls into view
+        card.querySelectorAll(".countNum").forEach((n) => counterObserver.observe(n));
+
+        // Heartbeat on favorite toggle
+        const heartBtn2 = card.querySelector(".heartBtn");
+        if (heartBtn2) {
+          heartBtn2.addEventListener("click", () => {
+            heartBtn2.classList.remove("beating");
+            void heartBtn2.offsetWidth; // reflow to restart animation
+            heartBtn2.classList.add("beating");
+            heartBtn2.addEventListener("animationend", () => heartBtn2.classList.remove("beating"), { once: true });
+          });
+        }
+
         const imageEl = card.querySelector(".foodImg");
         const image = new Image();
         image.onload = () => imageEl.classList.add("imageLoaded");
         image.onerror = () => {
-          imageEl.style.backgroundImage = "linear-gradient(135deg, rgba(14, 165, 106, 0.36), rgba(7, 77, 55, 0.62))";
+          imageEl.style.backgroundImage = "linear-gradient(135deg, rgba(249, 115, 22, 0.36), rgba(124, 45, 18, 0.62))";
           imageEl.classList.add("imageLoaded");
         };
         image.src = dishImageUrl(item.name);
@@ -3074,7 +3272,75 @@
       });
     }
 
-    // Boot
+    // ── Counter animation ─────────────────────────────────────────────────
+    function animateCounter(el, target, duration) {
+      const start = performance.now();
+      const update = (now) => {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(target * eased);
+        if (progress < 1) requestAnimationFrame(update);
+        else el.textContent = target;
+      };
+      requestAnimationFrame(update);
+    }
+
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const node = entry.target;
+        const target = parseInt(node.dataset.target || "0", 10);
+        if (!isNaN(target) && target > 0) {
+          animateCounter(node, target, 900);
+          counterObserver.unobserve(node);
+        }
+      });
+    }, { threshold: 0.6 });
+
+    // ── Floating food particles ───────────────────────────────────────────
+    (function spawnParticles() {
+      const foods = ["🌶️","🧄","🫑","🍅","🫚","🧅","🍋","🫛","🌿","🫐","🧂","🍳"];
+      for (let i = 0; i < 8; i++) {
+        const p = document.createElement("span");
+        p.className = "foodParticle";
+        p.setAttribute("aria-hidden", "true");
+        p.textContent = foods[i % foods.length];
+        p.style.cssText = `left:${8 + Math.random() * 84}vw;font-size:${1.1 + Math.random() * 0.9}rem;--dur:${14 + Math.random() * 14}s;--delay:${Math.random() * 10}s;`;
+        document.body.appendChild(p);
+      }
+    })();
+
+    // ── Rotating placeholder in ingredients input ─────────────────────────
+    const placeholderExamples = [
+      "e.g. egg, onion, bread",
+      "e.g. paneer, tomato, spinach",
+      "e.g. rice, dal, ghee",
+      "e.g. chicken, garlic, ginger",
+      "e.g. pasta, cheese, basil",
+      "e.g. oats, banana, honey"
+    ];
+    let phIdx = 0;
+    setInterval(() => {
+      if (el.ingredientsInput && document.activeElement !== el.ingredientsInput && !el.ingredientsInput.value) {
+        phIdx = (phIdx + 1) % placeholderExamples.length;
+        el.ingredientsInput.placeholder = placeholderExamples[phIdx];
+      }
+    }, 3200);
+
+    // ── Hero card parallax on mouse move ─────────────────────────────────
+    document.addEventListener("mousemove", (e) => {
+      const heroImgs = document.querySelectorAll(".heroCard .foodImg");
+      heroImgs.forEach((img) => {
+        const rect = img.getBoundingClientRect();
+        if (rect.width === 0) return;
+        const dx = (e.clientX - rect.left - rect.width  / 2) / rect.width;
+        const dy = (e.clientY - rect.top  - rect.height / 2) / rect.height;
+        img.style.backgroundPositionX = `${50 + dx * 7}%`;
+        img.style.backgroundPositionY = `${50 + dy * 7}%`;
+      });
+    });
+
+    // ── Boot
     bindInputs();
     loadPreferences();
     applyPreferencesToUI();
