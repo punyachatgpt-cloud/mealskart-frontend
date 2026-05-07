@@ -45,6 +45,11 @@
       min-height: 100vh;
       overflow-x: hidden;
       position: relative;
+      cursor: default;
+    }
+
+    body.is-loading {
+      cursor: wait !important;
     }
 
     body::before {
@@ -59,6 +64,16 @@
         radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
       filter: blur(80px);
       animation: meshPulse 20s ease-in-out infinite alternate;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      opacity: 0.03;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
     }
 
     @keyframes meshPulse {
@@ -98,6 +113,12 @@
       background: linear-gradient(to bottom right, var(--ink), #334155);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      animation: titleFade 1.2s cubic-bezier(0.19, 1, 0.22, 1) both;
+    }
+
+    @keyframes titleFade {
+      from { opacity: 0; transform: translateY(-20px); filter: blur(10px); }
+      to { opacity: 1; transform: translateY(0); filter: blur(0); }
     }
 
     .brand p {
@@ -132,11 +153,11 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(20px) saturate(180%);
-      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      backdrop-filter: blur(24px) saturate(200%);
+      -webkit-backdrop-filter: blur(24px) saturate(200%);
       min-width: 0;
       max-width: 100%;
-      transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
     }
 
     .left {
@@ -149,6 +170,12 @@
       overflow-y: auto;
       overflow-x: hidden;
       scrollbar-gutter: stable;
+      animation: slideInLeft 0.8s cubic-bezier(0.19, 1, 0.22, 1) both;
+    }
+
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
     }
 
     .section {
@@ -159,7 +186,19 @@
       box-shadow: none;
       overflow: visible;
       margin-bottom: 24px;
+      animation: sectionFade 0.8s cubic-bezier(0.19, 1, 0.22, 1) both;
     }
+
+    @keyframes sectionFade {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section:nth-child(1) { animation-delay: 0.1s; }
+    .section:nth-child(2) { animation-delay: 0.2s; }
+    .section:nth-child(3) { animation-delay: 0.3s; }
+    .section:nth-child(4) { animation-delay: 0.4s; }
+    .section:nth-child(5) { animation-delay: 0.5s; }
 
     .stack {
       display: flex;
@@ -391,6 +430,28 @@
       z-index: 1;
     }
 
+    .loadingBar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--accent), var(--accent2), transparent);
+      background-size: 200% 100%;
+      animation: loadingBarMove 2s linear infinite;
+      display: none;
+      z-index: 10;
+    }
+
+    body.is-loading .loadingBar {
+      display: block;
+    }
+
+    @keyframes loadingBarMove {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
     .statusRow {
       display: flex;
       align-items: center;
@@ -399,6 +460,7 @@
       margin-bottom: 18px;
       padding-bottom: 16px;
       border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+      position: relative;
     }
 
     .statusRow .headline {
@@ -612,8 +674,8 @@
       overflow: hidden;
       cursor: pointer;
       transform: perspective(1000px) translateY(0) rotateX(0);
-      transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-      animation: cardEnter 0.6s cubic-bezier(.2,.9,.2,1) both;
+      transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+      animation: cardEnter 0.8s cubic-bezier(0.19, 1, 0.22, 1) both;
       min-height: 100%;
       min-width: 0;
       display: flex;
@@ -648,9 +710,16 @@
     }
 
     @keyframes cardEnter {
-      from { opacity: 0; transform: translateY(24px) scale(0.985); filter: blur(6px); }
+      from { opacity: 0; transform: translateY(40px) scale(0.95); filter: blur(10px); }
       to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
     }
+
+    /* Staggered Entrance */
+    .results > *:nth-child(1) { animation-delay: 0.1s; }
+    .results > *:nth-child(2) { animation-delay: 0.2s; }
+    .results > *:nth-child(3) { animation-delay: 0.3s; }
+    .results > *:nth-child(4) { animation-delay: 0.4s; }
+    .results > *:nth-child(5) { animation-delay: 0.5s; }
 
     @media (hover: hover) and (pointer: fine) {
       .foodCard:hover {
@@ -1126,7 +1195,7 @@
     .modalOverlay.open { display: flex; }
 
     .modalOverlay.immersive {
-      background: var(--ink);
+      background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
       align-items: center;
       padding: 0;
     }
@@ -1141,8 +1210,8 @@
       padding: 32px;
       overflow-y: auto;
       transform: translateY(20px);
-      transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-      animation: modalIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+      animation: modalIn 0.5s cubic-bezier(0.19, 1, 0.22, 1) both;
     }
 
     .modalOverlay.immersive .modal {
@@ -1155,6 +1224,20 @@
       flex-direction: column;
       justify-content: center;
       padding: clamp(24px, 8vw, 80px);
+      background: transparent;
+      box-shadow: none;
+      color: white;
+    }
+
+    .modalOverlay.immersive .modalTitle,
+    .modalOverlay.immersive .stepLabel,
+    .modalOverlay.immersive .stepText {
+      color: white;
+      text-align: center;
+    }
+
+    .modalOverlay.immersive .stepText {
+      text-shadow: 0 0 40px rgba(255,255,255,0.15);
     }
 
     @keyframes modalIn {
@@ -1481,6 +1564,29 @@
         transition-duration: 0.01ms !important;
       }
     }
+
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      z-index: 2000;
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+      pointer-events: none;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -1553,6 +1659,7 @@
       </aside>
 
       <main class="glass right">
+        <div class="loadingBar"></div>
         <div class="statusRow">
           <div>
             <p class="headline" id="headline">Your meals, served fresh</p>
@@ -1627,6 +1734,7 @@
     };
 
     const el = {
+      body: document.body,
       shell: document.querySelector(".shell"),
       microcopy: document.getElementById("microcopy"),
       statusText: document.getElementById("statusText"),
@@ -2210,9 +2318,11 @@
           if (next.has(id)) {
             next.delete(id);
             heartBtn.classList.remove("isFav");
+            showToast("Removed from favorites");
           } else {
             next.add(id);
             heartBtn.classList.add("isFav");
+            showToast("Added to favorites!");
           }
           saveFavorites(next);
           const heart = heartBtn.querySelector(".heart");
@@ -2443,6 +2553,7 @@
       if (isLoadingSuggestions) return;
       isLoadingSuggestions = true;
 
+      el.body.classList.add("is-loading");
       el.suggestBtn.disabled = true;
       el.decideBtn.disabled = true;
       el.planBtn.disabled = true;
@@ -2494,6 +2605,7 @@
         el.statusText.innerHTML = "&#9888; Something went wrong. Please try again.";
         renderEmpty("No dishes found. Try different options.");
       } finally {
+        el.body.classList.remove("is-loading");
         el.loading.style.display = "none";
         el.suggestBtn.disabled = false;
         el.decideBtn.disabled = false;
@@ -2506,6 +2618,7 @@
       if (isLoadingSuggestions) return;
       isLoadingSuggestions = true;
 
+      el.body.classList.add("is-loading");
       el.suggestBtn.disabled = true;
       el.decideBtn.disabled = true;
       el.planBtn.disabled = true;
@@ -2536,6 +2649,7 @@
         el.statusText.innerHTML = "&#9888; Could not build your plan. Please try again.";
         renderEmpty("No plan found. Try different options.");
       } finally {
+        el.body.classList.remove("is-loading");
         el.loading.style.display = "none";
         el.suggestBtn.disabled = false;
         el.decideBtn.disabled = false;
@@ -2641,6 +2755,18 @@
     el.recipeModal.addEventListener("click", (event) => {
       if (event.target === el.recipeModal) closeRecipeModal();
     });
+
+    function showToast(message) {
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.classList.add("show"), 10);
+      setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 500);
+      }, 3000);
+    }
 
     // Boot
     bindInputs();
