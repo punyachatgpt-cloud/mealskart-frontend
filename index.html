@@ -9,44 +9,41 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Manrope:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      /* Neutral base + single accent (Stripe/Linear-ish) */
-      --bg0: #f4f6f8;
+      /* Sophisticated World-Class Palette */
+      --bg0: #f8fafc;
       --bg1: #ffffff;
-      --ink: #0b1220;
-      --muted: rgba(11, 18, 32, 0.72);
-      --muted2: rgba(11, 18, 32, 0.56);
-      --surface: rgba(255, 255, 255, 0.72);
-      --surfaceStrong: rgba(255, 255, 255, 0.86);
-      --border: rgba(15, 23, 42, 0.10);
-      --borderSoft: rgba(255, 255, 255, 0.30);
-      --shadow: 0 22px 64px rgba(2, 8, 23, 0.13);
-      --shadow-soft: 0 14px 34px rgba(2, 8, 23, 0.10);
-      --accent: #0ea56a;
-      --accent2: #074d37;
-      --accentGlow: rgba(14, 165, 106, 0.36);
-      --radius: 18px;
-      --radiusSm: 14px;
-      --goldInk: #3b2a00;
-      --goldBg: rgba(255, 245, 200, 0.92);
-      --goldBorder: rgba(240, 206, 98, 0.95);
-      --cardRadius: 22px;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --muted2: #94a3b8;
+      --surface: rgba(255, 255, 255, 0.85);
+      --surfaceStrong: rgba(255, 255, 255, 0.95);
+      --border: rgba(226, 232, 240, 0.8);
+      --borderSoft: rgba(255, 255, 255, 0.5);
+      --shadow: 0 20px 50px -12px rgba(15, 23, 42, 0.1);
+      --shadow-hover: 0 30px 60px -12px rgba(15, 23, 42, 0.15);
+      --accent: #10b981;
+      --accent2: #059669;
+      --accentGlow: rgba(16, 185, 129, 0.2);
+      --radius: 24px;
+      --radiusSm: 16px;
+      --goldInk: #854d0e;
+      --goldBg: #fefce8;
+      --goldBorder: #fef08a;
+      --cardRadius: 28px;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 
-    html, body { height: 100%; }
+    html, body { height: 100%; scroll-behavior: smooth; }
 
     body {
       margin: 0;
-      font-family: Manrope, system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+      font-family: 'Manrope', system-ui, -apple-system, sans-serif;
       color: var(--ink);
       background:
-        linear-gradient(115deg, rgba(246, 250, 248, 0.96), rgba(246, 250, 248, 0.90)),
-        url("https://images.unsplash.com/photo-1543353071-10c8ba85a904?auto=format&fit=crop&w=1800&q=80"),
-        radial-gradient(900px 520px at 12% 10%, rgba(14, 165, 106, 0.18) 0%, rgba(14, 165, 106, 0) 62%),
-        linear-gradient(135deg, #e6f4ec, #f8faf9);
-      background-attachment: fixed;
-      background-size: cover;
+        radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
+        #f8fafc;
       min-height: 100vh;
       overflow-x: hidden;
     }
@@ -75,20 +72,23 @@
 
     .brand h1 {
       margin: 0;
-      font-family: Fraunces, Georgia, serif;
-      font-size: clamp(28px, 3.2vw, 42px);
+      font-family: 'Fraunces', serif;
+      font-size: clamp(32px, 5vw, 48px);
       font-weight: 900;
-      letter-spacing: 0;
-      overflow-wrap: anywhere;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      background: linear-gradient(to bottom right, var(--ink), #334155);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .brand p {
-      margin: 8px 0 0;
+      margin: 12px 0 0;
       color: var(--muted);
-      font-size: 1.02rem;
-      line-height: 1.45;
-      max-width: 58ch;
-      overflow-wrap: break-word;
+      font-size: 1.1rem;
+      font-weight: 500;
+      line-height: 1.6;
+      max-width: 45ch;
     }
 
     .microcopy {
@@ -111,13 +111,14 @@
 
     .glass {
       background: var(--surface);
-      border: 1px solid var(--borderSoft);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
       min-width: 0;
       max-width: 100%;
+      transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .left {
@@ -133,39 +134,41 @@
     }
 
     .section {
-      padding: 15px;
+      padding: 0;
       border-radius: var(--radiusSm);
-      background: rgba(255, 255, 255, 0.82);
-      border: 1px solid var(--border);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.70);
-      overflow: hidden;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      overflow: visible;
+      margin-bottom: 24px;
     }
 
     .stack {
-      display: grid;
-      gap: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
     }
 
     .label {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
       gap: 10px;
-      margin: 0 0 10px;
-      font-weight: 900;
+      margin: 0 0 12px;
+      font-weight: 700;
       letter-spacing: -0.01em;
-      color: rgba(11, 18, 32, 0.92);
-      font-size: 0.98rem;
-      line-height: 1.22;
+      color: var(--ink);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .hint {
-      font-weight: 600;
-      font-size: 0.85rem;
+      font-weight: 500;
+      font-size: 0.75rem;
       color: var(--muted2);
-      line-height: 1.2;
-      text-align: right;
-      max-width: 120px;
+      text-transform: none;
+      letter-spacing: 0;
     }
 
     .seg {
@@ -196,26 +199,30 @@
 
     .chip {
       position: relative;
-      border: 1px solid rgba(15, 23, 42, 0.12);
-      background: rgba(255, 255, 255, 0.90);
-      color: rgba(11, 18, 32, 0.92);
-      padding: 11px 14px;
-      min-height: 44px;
-      border-radius: 999px;
-      font-weight: 800;
-      font-size: 0.92rem;
-      letter-spacing: -0.01em;
+      border: 1.5px solid var(--border);
+      background: var(--bg1);
+      color: var(--muted);
+      padding: 10px 18px;
+      min-height: 42px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.875rem;
       cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .chip:active { transform: scale(0.98); }
+    .chip:active { transform: scale(0.96); }
 
     .chip.selected {
-      border-color: rgba(14, 165, 106, 0.55);
-      background: rgba(14, 165, 106, 0.10);
-      box-shadow: 0 12px 28px rgba(14, 165, 106, 0.16);
+      border-color: var(--accent);
+      background: var(--bg1);
+      color: var(--accent);
+      box-shadow: 0 4px 12px var(--accentGlow);
+      font-weight: 700;
     }
 
     .chip.selected::after {
@@ -234,29 +241,31 @@
 
     .field {
       width: 100%;
-      border-radius: 16px;
-      border: 1px solid rgba(15, 23, 42, 0.14);
-      background: rgba(255, 255, 255, 0.92);
-      padding: 12px 14px;
-      font-size: 1rem;
+      border-radius: 14px;
+      border: 1.5px solid var(--border);
+      background: var(--bg1);
+      padding: 14px 16px;
+      font-size: 0.95rem;
+      font-weight: 500;
       min-width: 0;
       outline: none;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      transition: all 0.2s ease;
     }
 
     .field:focus {
-      border-color: rgba(14, 165, 106, 0.65);
-      box-shadow: 0 0 0 6px rgba(14, 165, 106, 0.12);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accentGlow);
     }
 
     .actions {
-      display: grid;
-      gap: 10px;
-      margin-top: 2px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 8px;
       position: sticky;
       bottom: 0;
-      padding-top: 12px;
-      background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,0.88) 28%, rgba(255,255,255,0.96));
+      padding-top: 24px;
+      background: linear-gradient(to top, var(--surfaceStrong) 80%, transparent);
       z-index: 3;
     }
 
@@ -264,18 +273,17 @@
       position: relative;
       width: 100%;
       border: none;
-      border-radius: 999px;
-      padding: 14px 16px;
-      min-height: 50px;
-      font-weight: 900;
-      letter-spacing: -0.01em;
+      border-radius: 14px;
+      padding: 16px;
+      min-height: 54px;
+      font-weight: 700;
+      font-size: 1rem;
       cursor: pointer;
       color: white;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      box-shadow: 0 18px 40px rgba(14, 165, 106, 0.28);
-      transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+      background: var(--accent);
+      box-shadow: 0 4px 12px var(--accentGlow);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       overflow: hidden;
-      isolation: isolate;
     }
 
     .btn::after {
@@ -570,25 +578,24 @@
     }
 
     .foodCard {
-      background: rgba(255, 255, 255, 0.90);
-      border: 1px solid rgba(255, 255, 255, 0.30);
+      background: var(--bg1);
+      border: 1px solid var(--border);
       border-radius: var(--cardRadius);
-      box-shadow: var(--shadow-soft);
+      box-shadow: var(--shadow);
       overflow: hidden;
       cursor: pointer;
       transform: translateY(0);
-      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, filter 0.22s ease;
-      animation: cardEnter 520ms cubic-bezier(.2,.9,.2,1) both;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: cardEnter 0.6s cubic-bezier(.2,.9,.2,1) both;
       min-height: 100%;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
     }
 
     .foodCard.heroCard {
       grid-row: span 2;
-      background: rgba(255, 255, 255, 0.95);
-      box-shadow: 0 32px 94px rgba(2, 8, 23, 0.17);
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15);
     }
 
     .foodCard.heroCard .foodImg {
@@ -620,25 +627,22 @@
 
     @media (hover: hover) and (pointer: fine) {
       .foodCard:hover {
-        transform: translateY(-6px) scale(1.02);
-        box-shadow: var(--shadow);
-        border-color: rgba(14, 165, 106, 0.18);
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-hover);
+        border-color: var(--accent);
       }
       .foodCard:hover .foodImg {
-        transform: scale(1.04);
+        transform: scale(1.05);
       }
     }
 
     .foodImg {
-      height: 220px;
+      height: 200px;
       width: 100%;
-      background:
-        linear-gradient(135deg, rgba(14, 165, 106, 0.16), rgba(2, 8, 23, 0.12)),
-        #dff3e8;
       background-size: cover;
       background-position: center;
       position: relative;
-      transition: transform 0.25s ease;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
       overflow: hidden;
     }
 
@@ -685,23 +689,24 @@
 
     .imageTitle {
       margin: 0;
-      font-size: 1.12rem;
-      line-height: 1.15;
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      line-height: 1.1;
       font-weight: 900;
-      text-shadow: 0 2px 16px rgba(0, 0, 0, 0.42);
+      text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
     }
 
     .imageTime {
       flex: 0 0 auto;
-      border-radius: 999px;
-      padding: 7px 10px;
-      color: rgba(255, 255, 255, 0.96);
-      background: rgba(2, 8, 23, 0.42);
-      border: 1px solid rgba(255, 255, 255, 0.22);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      font-size: 0.8rem;
-      font-weight: 900;
+      border-radius: 10px;
+      padding: 6px 10px;
+      color: white;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
     }
 
     .foodBody {
@@ -740,15 +745,16 @@
 
     .foodName {
       margin: 0;
-      font-family: Fraunces, Georgia, serif;
-      font-size: 1.24rem;
+      font-family: 'Fraunces', serif;
+      font-size: 1.4rem;
       font-weight: 900;
-      letter-spacing: 0;
+      letter-spacing: -0.01em;
       line-height: 1.2;
+      color: var(--ink);
     }
 
     .foodTop .foodName {
-      margin-top: 8px;
+      margin-top: 12px;
     }
 
     .heartBtn {
@@ -893,27 +899,23 @@
     }
 
     .whyBox {
-      background: linear-gradient(135deg, rgba(14, 165, 106, 0.08), rgba(14, 165, 106, 0.03));
-      border: 1px solid rgba(14, 165, 106, 0.18);
+      background: var(--bg0);
       border-radius: 16px;
-      padding: 12px 14px;
-      color: rgba(11, 18, 32, 0.88);
-      font-weight: 750;
-      font-size: 0.9rem;
-      line-height: 1.45;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.60);
+      padding: 16px;
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 0.875rem;
+      line-height: 1.5;
       position: relative;
+      margin-top: auto;
     }
 
-    .whyBox::before {
-      content: "";
-      position: absolute;
-      left: 12px;
-      top: 12px;
-      bottom: 12px;
-      width: 3px;
-      border-radius: 999px;
-      background: linear-gradient(180deg, var(--accent), var(--accent2));
+    .whyBox strong {
+      display: block;
+      color: var(--ink);
+      font-weight: 700;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
     }
 
     .whyBox strong,
@@ -1079,18 +1081,16 @@
     .modalOverlay.open { display: flex; }
 
     .modal {
-      width: min(100%, 680px);
-      max-height: calc(100vh - 32px);
-      border-radius: 22px;
-      background: rgba(255, 255, 255, 0.92);
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.22);
-      padding: 18px;
+      width: min(100%, 720px);
+      max-height: calc(100vh - 40px);
+      border-radius: 32px;
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      box-shadow: 0 50px 100px -20px rgba(15, 23, 42, 0.25);
+      padding: 32px;
       overflow-y: auto;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      transform: translateY(10px);
-      animation: modalIn 0.2s ease both;
+      transform: translateY(20px);
+      animation: modalIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
     }
 
     @keyframes modalIn {
@@ -1107,28 +1107,28 @@
 
     .modalTitle {
       margin: 0;
-      font-family: Fraunces, Georgia, serif;
-      font-size: 1.2rem;
+      font-family: 'Fraunces', serif;
+      font-size: 2rem;
       font-weight: 900;
-      letter-spacing: 0;
+      line-height: 1.1;
+      color: var(--ink);
     }
 
     .modalMetaGrid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      margin: 8px 0 12px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 24px 0;
     }
 
     .modalMetaItem {
-      border-radius: 16px;
-      padding: 11px 12px;
-      background: rgba(248, 250, 252, 0.92);
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      color: rgba(11, 18, 32, 0.88);
-      font-weight: 900;
-      font-size: 0.88rem;
-      line-height: 1.25;
+      border-radius: 20px;
+      padding: 16px;
+      background: var(--bg0);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 1rem;
     }
 
     .modalMetaItem span {
@@ -1306,11 +1306,11 @@
     }
 
     .stepText {
-      margin: 0 0 14px;
-      color: rgba(15, 47, 34, 0.88);
-      font-weight: 750;
-      line-height: 1.55;
-      font-size: 1rem;
+      margin: 0 0 24px;
+      color: var(--ink);
+      font-weight: 600;
+      line-height: 1.6;
+      font-size: 1.15rem;
     }
 
     .stepProgress {
