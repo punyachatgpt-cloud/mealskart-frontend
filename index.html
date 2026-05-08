@@ -3601,6 +3601,101 @@
     /* Expand goalBar to be clickable as dashboard launcher */
     .goalBar { cursor: pointer; }
     .goalBar:hover { border-color: var(--accent); }
+
+    /* ════════════════════════════════════════════════════
+       AI RECIPE REMIX — STYLES
+       ════════════════════════════════════════════════════ */
+
+    /* Remix strip on each food card */
+    .remixStrip {
+      display: flex; gap: 6px; flex-wrap: wrap;
+      margin-top: 10px; padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+    .remixBtn {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 5px 12px; border-radius: 999px;
+      border: 1.5px solid var(--border);
+      background: var(--bg0); color: var(--muted);
+      font-family: inherit; font-size: 0.74rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .remixBtn:hover {
+      border-color: var(--accent); color: var(--accent);
+      background: rgba(200,105,14,0.07);
+      transform: translateY(-1px) scale(1.04);
+    }
+    .remixBtn:active { transform: scale(0.95); }
+    [data-theme="dark"] .remixBtn { background: var(--bg1); }
+
+    /* Badge for remixed card */
+    .badge.remixed {
+      background: linear-gradient(135deg, rgba(200,105,14,0.18), rgba(200,105,14,0.08));
+      color: var(--accent);
+      border: 1px solid rgba(200,105,14,0.28);
+      border-radius: 999px; padding: 3px 10px;
+      font-size: 0.72rem; font-weight: 800;
+      animation: tagPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+
+    /* Loading overlay on top of card while remixing */
+    .remixLoadOverlay {
+      position: absolute; inset: 0;
+      border-radius: inherit;
+      background: rgba(10,5,0,0.72);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 10px; z-index: 10;
+      animation: obFadeIn 0.2s ease both;
+      border-radius: var(--cardRadius);
+    }
+    .remixSpinner {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 3px solid rgba(232,160,32,0.20);
+      border-top-color: #E8A020;
+      animation: spin 0.85s linear infinite;
+    }
+    .remixLoadOverlay span {
+      font-size: 0.82rem; font-weight: 700;
+      color: rgba(255,255,255,0.80);
+    }
+    .foodCard { position: relative; } /* ensure overlay positions correctly */
+
+    /* "Just remixed" flash animation */
+    @keyframes remixedFlash {
+      0%   { box-shadow: 0 0 0 0 rgba(200,105,14,0.50); }
+      60%  { box-shadow: 0 0 0 10px rgba(200,105,14,0); }
+      100% { box-shadow: none; }
+    }
+    .foodCard.justRemixed {
+      animation: remixedFlash 0.8s ease-out both;
+    }
+
+    /* Undo / error chips inside remix strip */
+    .remixDoneChip {
+      font-size: 0.74rem; font-weight: 800;
+      color: var(--accent); display: flex;
+      align-items: center; gap: 4px;
+    }
+    .remixUndoBtn {
+      background: none; border: 1px solid var(--border);
+      border-radius: 999px; padding: 4px 10px;
+      font-family: inherit; font-size: 0.72rem; font-weight: 700;
+      color: var(--muted); cursor: pointer; transition: all 0.15s;
+    }
+    .remixUndoBtn:hover { border-color: var(--accent); color: var(--accent); }
+    .remixError {
+      font-size: 0.74rem; font-weight: 700; color: #e11d48;
+      padding: 5px 10px; border-radius: 999px;
+      background: rgba(225,29,72,0.08);
+      border: 1px solid rgba(225,29,72,0.20);
+      margin-top: 6px; animation: tagPop 0.2s ease both;
+    }
+
     .goalBarViewAll {
       font-size: 0.72rem; font-weight: 700;
       color: var(--accent); margin-top: 6px;
@@ -5434,6 +5529,12 @@
               <strong>Why this dish?</strong>
               <span>${escapeHtml(whyText)}</span>
             </div>
+
+            <div class="remixStrip" aria-label="Remix this recipe">
+              <button class="remixBtn" data-remix="healthier" type="button">🥗 Healthier</button>
+              <button class="remixBtn" data-remix="spicier"   type="button">🌶 Spicier</button>
+              <button class="remixBtn" data-remix="quicker"   type="button">⚡ Quicker</button>
+            </div>
           </div>
         `;
 
@@ -5458,16 +5559,20 @@
           });
         }
 
+        // Store current item on card so remixCard() can swap it
+        card._item = item;
+
         function open() {
+          const activeItem = card._item; // remix may have swapped this
           try {
-            localStorage.setItem(LAST_COOKED_KEY, String(item.id));
-            pushRecentCookedId(item.id);
-            logCookEntry(item);
-            logMealToday(item);
+            localStorage.setItem(LAST_COOKED_KEY, String(activeItem.id));
+            pushRecentCookedId(activeItem.id);
+            logCookEntry(activeItem);
+            logMealToday(activeItem);
           } catch (error) {}
           updatePreferenceHint();
-          trackInteraction("cook", item.id);
-          openRecipeModal(item.id);
+          trackInteraction("cook", activeItem.id);
+          openRecipeModal(activeItem.id);
         }
 
         card.addEventListener("click", () => open());
@@ -5476,6 +5581,14 @@
             e.preventDefault();
             open();
           }
+        });
+
+        // Wire remix buttons — stopPropagation so card click doesn't fire
+        card.querySelectorAll(".remixBtn").forEach(btn => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            remixCard(card, btn.dataset.remix);
+          });
         });
 
         el.results.appendChild(card);
@@ -7261,6 +7374,243 @@
     // ══════════════════════════════════════════════
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+
+    // ══════════════════════════════════════════════
+    // AI RECIPE REMIX (F)
+    // ══════════════════════════════════════════════
+    const REMIX_CONFIGS = {
+      healthier: {
+        label: "Healthier",
+        emoji: "🥗",
+        stateOverride: { mood: "healthy" },
+        queryPrefix: "healthy low-calorie version of"
+      },
+      spicier: {
+        label: "Spicier",
+        emoji: "🌶️",
+        stateOverride: {},
+        queryPrefix: "spicy hot version of"
+      },
+      quicker: {
+        label: "Quicker",
+        emoji: "⚡",
+        stateOverride: { time_available: 15 },
+        queryPrefix: "quick 15-minute version of"
+      }
+    };
+
+    async function remixCard(card, remixType) {
+      const cfg = REMIX_CONFIGS[remixType];
+      if (!cfg || card._remixing) return;
+
+      const originalItem = card._item;
+      if (!originalItem) return;
+
+      // ── Loading state ─────────────────────────────
+      card._remixing = true;
+      const loadOverlay = document.createElement("div");
+      loadOverlay.className = "remixLoadOverlay";
+      loadOverlay.innerHTML = `
+        <div class="remixSpinner"></div>
+        <span>${cfg.emoji} Finding ${cfg.label} version…</span>
+      `;
+      card.appendChild(loadOverlay);
+
+      try {
+        const ingredients = getIngredients();
+        const response = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...state,
+            ...cfg.stateOverride,
+            mode: "suggest",
+            query: `${cfg.queryPrefix} ${originalItem.name}`,
+            ingredients
+          })
+        });
+
+        const data = await response.json();
+        const results = Array.isArray(data) ? data : [];
+        if (results.length === 0) throw new Error("empty");
+
+        const newItem = results[0];
+
+        // ── In-place DOM update ───────────────────────
+        // Image
+        const imgEl = card.querySelector(".foodImg");
+        if (imgEl) {
+          imgEl.classList.remove("imageLoaded");
+          imgEl.style.backgroundImage = `url('${dishImageUrl(newItem.name)}')`;
+          const img2 = new Image();
+          img2.onload  = () => imgEl.classList.add("imageLoaded");
+          img2.onerror = () => { imgEl.style.backgroundImage = "linear-gradient(135deg,rgba(249,115,22,0.36),rgba(124,45,18,0.62))"; imgEl.classList.add("imageLoaded"); };
+          img2.src = dishImageUrl(newItem.name);
+        }
+
+        const q = s => card.querySelector(s);
+
+        // Image overlay
+        const imageTitle = q(".imageTitle");
+        if (imageTitle) imageTitle.textContent = newItem.name;
+        const imageTime = q(".imageTime");
+        if (imageTime) imageTime.textContent = `⏱ ${clampInt(newItem.time_minutes, 0)} min`;
+
+        // Badge row
+        const badgeRow = q(".badgeRow");
+        if (badgeRow) badgeRow.innerHTML = `<span class="badge remixed">${cfg.emoji} ${cfg.label} Remix</span>`;
+
+        // Name
+        const foodName = q(".foodName");
+        if (foodName) foodName.textContent = newItem.name;
+
+        // Meta row
+        const metaRow = q(".metaRow");
+        if (metaRow) {
+          const cals = clampInt(newItem.calories, 0);
+          metaRow.innerHTML = `
+            <span class="metaItem">⏱ ${clampInt(newItem.time_minutes, 0)} min</span>
+            ${cals > 0 ? `<span class="metaItem">🔥 ${cals} cal</span>` : ""}
+            <span class="metaItem">✅ ${escapeHtml(titleCase(newItem.difficulty || "easy"))}</span>
+          `;
+        }
+
+        // Description
+        const descEl = q(".desc");
+        if (descEl) descEl.textContent = newItem.reason || "A remixed version tailored to your preference.";
+
+        // Macros
+        const nut = newItem.nutrition || {};
+        const macroRow = q(".miniMacroRow");
+        if (macroRow) macroRow.innerHTML = `
+          <div class="miniMacro"><span>Protein</span>${clampInt(nut.protein_g, 0)}g</div>
+          <div class="miniMacro"><span>Carbs</span>${clampInt(nut.carbs_g, 0)}g</div>
+          <div class="miniMacro"><span>Fat</span>${clampInt(nut.fat_g, 0)}g</div>
+        `;
+
+        // Ingredient preview
+        const prevText = formatIngredientsPreview(newItem.ingredients_preview);
+        const ingredPrev = q(".ingredientPreview");
+        if (ingredPrev) {
+          if (prevText) { ingredPrev.innerHTML = `<strong>Uses</strong> ${escapeHtml(prevText)}`; ingredPrev.style.display = ""; }
+          else ingredPrev.style.display = "none";
+        }
+
+        // Smart chips
+        const strip = q(".smartStrip");
+        if (strip) strip.innerHTML = smartBadges(newItem, 0, "suggest");
+
+        // Why box
+        const whySpan = q(".whyBox span");
+        if (whySpan) whySpan.textContent = buildWhyText(newItem);
+
+        // Remix strip — show "done" state + Undo button
+        const remixStrip = q(".remixStrip");
+        if (remixStrip) {
+          remixStrip.innerHTML = `
+            <span class="remixDoneChip">${cfg.emoji} Remixed to ${cfg.label}</span>
+            <button class="remixUndoBtn" type="button">↩ Undo</button>
+          `;
+          remixStrip.querySelector(".remixUndoBtn")?.addEventListener("click", (e) => {
+            e.stopPropagation();
+            undoRemix(card, originalItem);
+          });
+        }
+
+        // Swap card's active item so clicking opens the remixed recipe
+        card._item      = newItem;
+        card._origItem  = originalItem; // stash for undo
+        card._remixType = remixType;
+
+        // Flash animation
+        card.classList.add("justRemixed");
+        card.addEventListener("animationend", () => card.classList.remove("justRemixed"), { once: true });
+
+      } catch (e) {
+        // Error chip in remix strip
+        const remixStrip = card.querySelector(".remixStrip");
+        if (remixStrip) {
+          const errChip = document.createElement("div");
+          errChip.className = "remixError";
+          errChip.textContent = "⚠ Couldn't remix — try again";
+          remixStrip.appendChild(errChip);
+          setTimeout(() => errChip.remove(), 3000);
+        }
+      } finally {
+        loadOverlay.remove();
+        card._remixing = false;
+      }
+    }
+
+    // Undo a remix — restores original card content
+    function undoRemix(card, originalItem) {
+      if (!originalItem) return;
+      const q = s => card.querySelector(s);
+
+      // Restore image
+      const imgEl = card.querySelector(".foodImg");
+      if (imgEl) {
+        imgEl.classList.remove("imageLoaded");
+        imgEl.style.backgroundImage = `url('${dishImageUrl(originalItem.name)}')`;
+        const img2 = new Image();
+        img2.onload  = () => imgEl.classList.add("imageLoaded");
+        img2.onerror = () => imgEl.classList.add("imageLoaded");
+        img2.src = dishImageUrl(originalItem.name);
+      }
+
+      const imageTitle = q(".imageTitle");
+      if (imageTitle) imageTitle.textContent = originalItem.name;
+      const imageTime = q(".imageTime");
+      if (imageTime) imageTime.textContent = `⏱ ${clampInt(originalItem.time_minutes, 0)} min`;
+
+      const badgeRow = q(".badgeRow");
+      if (badgeRow) badgeRow.innerHTML = `<span class="badge gold">⭐ Recommended</span>`;
+
+      const foodName = q(".foodName");
+      if (foodName) foodName.textContent = originalItem.name;
+
+      const cals = clampInt(originalItem.calories, 0);
+      const metaRow = q(".metaRow");
+      if (metaRow) metaRow.innerHTML = `
+        <span class="metaItem">⏱ ${clampInt(originalItem.time_minutes, 0)} min</span>
+        ${cals > 0 ? `<span class="metaItem">🔥 ${cals} cal</span>` : ""}
+        <span class="metaItem">✅ ${escapeHtml(titleCase(originalItem.difficulty || "easy"))}</span>
+      `;
+
+      const descEl = q(".desc");
+      if (descEl) descEl.textContent = originalItem.reason || "A good match for your preferences.";
+
+      const nut = originalItem.nutrition || {};
+      const macroRow = q(".miniMacroRow");
+      if (macroRow) macroRow.innerHTML = `
+        <div class="miniMacro"><span>Protein</span>${clampInt(nut.protein_g, 0)}g</div>
+        <div class="miniMacro"><span>Carbs</span>${clampInt(nut.carbs_g, 0)}g</div>
+        <div class="miniMacro"><span>Fat</span>${clampInt(nut.fat_g, 0)}g</div>
+      `;
+
+      const whySpan = q(".whyBox span");
+      if (whySpan) whySpan.textContent = buildWhyText(originalItem);
+
+      // Restore remix strip
+      const remixStrip = q(".remixStrip");
+      if (remixStrip) {
+        remixStrip.innerHTML = `
+          <button class="remixBtn" data-remix="healthier" type="button">🥗 Healthier</button>
+          <button class="remixBtn" data-remix="spicier"   type="button">🌶 Spicier</button>
+          <button class="remixBtn" data-remix="quicker"   type="button">⚡ Quicker</button>
+        `;
+        remixStrip.querySelectorAll(".remixBtn").forEach(btn => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            remixCard(card, btn.dataset.remix);
+          });
+        });
+      }
+
+      card._item = originalItem;
+      delete card._origItem;
+      delete card._remixType;
     }
 
     // ══════════════════════════════════════════════
