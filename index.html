@@ -2136,6 +2136,136 @@
       margin: 0 0 24px;
     }
 
+    /* ══════════════════════════════════════════════
+       WEEKLY REPORT OVERLAY
+       ══════════════════════════════════════════════ */
+    .reportOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(26,14,0,0.72);
+      backdrop-filter: blur(14px) saturate(160%);
+      -webkit-backdrop-filter: blur(14px) saturate(160%);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 0;
+      animation: obFadeIn 0.35s ease both;
+    }
+    .reportOverlay.hidden { display: none; }
+
+    .reportSheet {
+      background: var(--bg0);
+      border-radius: 28px 28px 0 0;
+      padding: 32px 28px 40px;
+      width: min(540px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 -20px 60px rgba(80,30,5,0.2);
+      animation: reportSlideUp 0.4s cubic-bezier(0.34,1.08,0.64,1) both;
+      position: relative;
+    }
+    @keyframes reportSlideUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+
+    .reportDrag {
+      width: 40px; height: 4px;
+      background: var(--border);
+      border-radius: 999px;
+      margin: 0 auto 24px;
+    }
+
+    .reportHero {
+      font-size: 2.4rem;
+      text-align: center;
+      animation: obBounce 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+      display: block;
+      margin-bottom: 8px;
+    }
+    .reportTitle {
+      font-family: 'Fraunces', serif;
+      font-size: 1.55rem;
+      font-weight: 900;
+      color: var(--ink);
+      text-align: center;
+      margin: 0 0 4px;
+    }
+    .reportSubtitle {
+      color: var(--muted);
+      font-size: 0.88rem;
+      text-align: center;
+      margin: 0 0 24px;
+    }
+
+    .reportStats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .reportStat {
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      animation: reportStatPop 0.5s cubic-bezier(0.34,1.3,0.64,1) both;
+    }
+    .reportStat:nth-child(1) { animation-delay: 0.05s; }
+    .reportStat:nth-child(2) { animation-delay: 0.12s; }
+    .reportStat:nth-child(3) { animation-delay: 0.19s; }
+    .reportStat:nth-child(4) { animation-delay: 0.26s; }
+    @keyframes reportStatPop {
+      from { transform: scale(0.82) translateY(12px); opacity: 0; }
+      to   { transform: scale(1) translateY(0);       opacity: 1; }
+    }
+    .reportStatEmoji { font-size: 1.5rem; line-height: 1; }
+    .reportStatValue {
+      font-family: 'Fraunces', serif;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--accent);
+      line-height: 1;
+    }
+    .reportStatLabel {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .reportTopDish {
+      background: linear-gradient(135deg, rgba(249,115,22,0.08) 0%, rgba(234,88,12,0.05) 100%);
+      border: 1px solid rgba(249,115,22,0.2);
+      border-radius: 16px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      animation: reportStatPop 0.5s cubic-bezier(0.34,1.3,0.64,1) 0.32s both;
+    }
+    .reportTopDishEmoji { font-size: 2rem; }
+    .reportTopDishLabel { font-size: 0.72rem; font-weight: 800; color: var(--accent); text-transform: uppercase; letter-spacing: 0.05em; }
+    .reportTopDishName  { font-size: 1.05rem; font-weight: 800; color: var(--ink); margin-top: 2px; }
+
+    .reportActions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* ── Personalised badge ───────────────────────── */
+    .badge.personalised {
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      color: #fff;
+    }
+
     /* ── Offline banner ──────────────────────────── */
     .offlineBanner {
       display: none;
@@ -2164,7 +2294,15 @@
         <h1><span class="brandFlame">&#x1F525;</span> Simmer.</h1>
         <p>Stop scrolling. Start cooking.</p>
       </div>
-      <div class="microcopy" id="microcopy">Dinner ready in 15 mins &#9889;</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <div class="microcopy" id="microcopy">Dinner ready in 15 mins &#9889;</div>
+        <button id="weeklyReportBtn" type="button"
+          style="background:none;border:1px solid var(--border);border-radius:999px;padding:4px 12px;font-family:inherit;font-size:0.72rem;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all 0.15s"
+          onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
+          onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+          📊 My week
+        </button>
+      </div>
     </header>
 
     <div class="trendingBar" aria-label="Trending dishes">
@@ -2346,6 +2484,13 @@
         <button class="starBtn" type="button" aria-label="5 stars">&#9733;</button>
       </div>
       <button class="skipRating" id="skipRatingBtn" type="button">Skip for now</button>
+    </div>
+  </div>
+
+  <!-- Weekly report overlay -->
+  <div class="reportOverlay hidden" id="reportOverlay" role="dialog" aria-modal="true" aria-label="Your weekly cooking report">
+    <div class="reportSheet" id="reportSheet">
+      <!-- Injected by JS -->
     </div>
   </div>
 
@@ -2940,6 +3085,7 @@
         const existing = raw ? JSON.parse(raw) : {};
         existing[String(recipeId)] = { stars, at: Date.now() };
         localStorage.setItem("foodai_ratings", JSON.stringify(existing));
+        updateCookLogRating(recipeId, stars);
       } catch {}
     }
 
@@ -3176,25 +3322,38 @@
         ordered.splice(1, ordered.length - 1, ...tail);
       }
 
-      const favorites = loadFavorites();
+      const favorites  = loadFavorites();
+      const profile    = getPersonalisationProfile();
+      const topCat     = profile?.topCategory || null;
+
+      // Personalised sub-headline
+      if (profile && profile.lovedDishes.length > 0 && mode !== "decide") {
+        const subline = document.getElementById("subline");
+        if (subline) {
+          subline.textContent = `Curated for you based on your love of ${profile.lovedDishes[0]}.`;
+        }
+      }
 
       ordered.forEach((item, index) => {
-        const isFirst = index === 0;
+        const isFirst  = index === 0;
         const isDecide = mode === "decide" && isFirst;
-        const isFav = favorites.has(String(item.id));
-        const isHero = mode !== "decide" && isFirst;
+        const isFav    = favorites.has(String(item.id));
+        const isHero   = mode !== "decide" && isFirst;
+        const isPersonalised = topCat && (item.category || "").toLowerCase().includes(topCat.toLowerCase());
 
         const card = document.createElement("article");
         card.className = [
           "foodCard",
           isDecide ? "decideCard" : "",
-          isHero ? "heroCard" : ""
+          isHero   ? "heroCard"   : ""
         ].filter(Boolean).join(" ");
         card.tabIndex = 0;
         card.style.animationDelay = `${index * 100}ms`;
 
         const badges = [
-          isDecide ? '<span class="badge gold">&#11088; Your Meal is Decided</span>' : (isFirst ? '<span class="badge gold">&#11088; Recommended</span>' : ""),
+          isDecide ? '<span class="badge gold">&#11088; Your Meal is Decided</span>'
+                   : isFirst ? '<span class="badge gold">&#11088; Recommended</span>' : "",
+          isPersonalised && !isFirst ? '<span class="badge personalised">💛 Picked for you</span>' : "",
           tagBadges(state.diet, item.tags, item.category)
         ].filter(Boolean).join("");
 
@@ -3270,6 +3429,7 @@
           try {
             localStorage.setItem(LAST_COOKED_KEY, String(item.id));
             pushRecentCookedId(item.id);
+            logCookEntry(item);
           } catch (error) {}
           updatePreferenceHint();
           trackInteraction("cook", item.id);
@@ -3850,6 +4010,207 @@
     });
 
     // ══════════════════════════════════════════════
+    // PERSONALISATION MEMORY
+    // ══════════════════════════════════════════════
+    const COOK_LOG_KEY    = "simmer_cook_log_v1";
+    const REPORT_LAST_KEY = "simmer_report_last";
+
+    function getCookLog() {
+      try { return JSON.parse(localStorage.getItem(COOK_LOG_KEY) || "[]"); }
+      catch { return []; }
+    }
+
+    function logCookEntry(item) {
+      try {
+        const log = getCookLog();
+        // Avoid double-logging within 5 minutes
+        const now = Date.now();
+        const recent = log.find(e => e.id === item.id && now - e.ts < 5 * 60 * 1000);
+        if (recent) return;
+        log.push({
+          id:       item.id,
+          name:     item.name,
+          category: item.category  || state.category,
+          mood:     item.mood      || state.mood,
+          diet:     state.diet,
+          time:     item.time_minutes || state.time_available,
+          calories: item.calories || 0,
+          stars:    0,
+          ts:       now
+        });
+        // Keep last 200 entries
+        if (log.length > 200) log.splice(0, log.length - 200);
+        localStorage.setItem(COOK_LOG_KEY, JSON.stringify(log));
+      } catch {}
+    }
+
+    function updateCookLogRating(recipeId, stars) {
+      try {
+        const log = getCookLog();
+        // Update most recent entry for this recipe
+        for (let i = log.length - 1; i >= 0; i--) {
+          if (String(log[i].id) === String(recipeId)) {
+            log[i].stars = stars;
+            break;
+          }
+        }
+        localStorage.setItem(COOK_LOG_KEY, JSON.stringify(log));
+      } catch {}
+    }
+
+    function getPersonalisationProfile() {
+      try {
+        const log = getCookLog();
+        if (log.length < 2) return null;
+
+        // Count frequency of each category, only from 4+ star entries
+        const catCount = {};
+        const lovedDishes = [];
+        const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
+        log.forEach(e => {
+          const cat = e.category || "all";
+          catCount[cat] = (catCount[cat] || 0) + 1;
+          if (e.stars >= 4) lovedDishes.push(e.name);
+        });
+
+        const topCategory = Object.entries(catCount)
+          .filter(([k]) => k !== "all")
+          .sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+
+        const weekEntries = log.filter(e => e.ts >= sevenDaysAgo);
+        const uniqueCuisines = [...new Set(weekEntries.map(e => e.category).filter(c => c && c !== "all"))];
+        const timeSavedMin   = weekEntries.reduce((s, e) => s + (Number(e.time) || 30), 0);
+        const topDish        = weekEntries.length
+          ? weekEntries.reduce((acc, e) => {
+              acc[e.name] = (acc[e.name] || 0) + 1; return acc;
+            }, {})
+          : {};
+        const topDishName = Object.entries(topDish).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
+
+        return {
+          topCategory,
+          lovedDishes:    [...new Set(lovedDishes)].slice(0, 3),
+          totalCooks:     log.length,
+          weekCooks:      weekEntries.length,
+          uniqueCuisines,
+          timeSavedMin,
+          topDishName
+        };
+      } catch { return null; }
+    }
+
+    // ══════════════════════════════════════════════
+    // WEEKLY REPORT
+    // ══════════════════════════════════════════════
+    function shouldShowWeeklyReport() {
+      const log = getCookLog();
+      if (log.length < 3) return false;
+      const lastShown = Number(localStorage.getItem(REPORT_LAST_KEY) || 0);
+      return Date.now() - lastShown > 7 * 24 * 60 * 60 * 1000;
+    }
+
+    function openWeeklyReport() {
+      const profile = getPersonalisationProfile();
+      if (!profile) return;
+
+      const overlay = document.getElementById("reportOverlay");
+      const sheet   = document.getElementById("reportSheet");
+
+      const streak    = getStreak();
+      const timeSaved = Math.round(profile.timeSavedMin / 60 * 10) / 10;
+      const timeTxt   = timeSaved >= 1 ? `${timeSaved}h` : `${profile.timeSavedMin}m`;
+      const cuisinesTxt = profile.uniqueCuisines.length || 0;
+
+      const dateRange = (() => {
+        const now = new Date();
+        const week = new Date(now - 7 * 24 * 60 * 60 * 1000);
+        const fmt  = d => d.toLocaleDateString("en-IN", { day:"numeric", month:"short" });
+        return `${fmt(week)} – ${fmt(now)}`;
+      })();
+
+      sheet.innerHTML = `
+        <div class="reportDrag"></div>
+        <span class="reportHero">📊</span>
+        <h2 class="reportTitle">Your Week in Simmer</h2>
+        <p class="reportSubtitle">${dateRange}</p>
+
+        <div class="reportStats">
+          <div class="reportStat">
+            <span class="reportStatEmoji">🍳</span>
+            <span class="reportStatValue">${profile.weekCooks}</span>
+            <span class="reportStatLabel">Meals cooked</span>
+          </div>
+          <div class="reportStat">
+            <span class="reportStatEmoji">🌍</span>
+            <span class="reportStatValue">${cuisinesTxt}</span>
+            <span class="reportStatLabel">Cuisines explored</span>
+          </div>
+          <div class="reportStat">
+            <span class="reportStatEmoji">⏱️</span>
+            <span class="reportStatValue">${timeTxt}</span>
+            <span class="reportStatLabel">Time in kitchen</span>
+          </div>
+          <div class="reportStat">
+            <span class="reportStatEmoji">🔥</span>
+            <span class="reportStatValue">${streak}</span>
+            <span class="reportStatLabel">Day streak</span>
+          </div>
+        </div>
+
+        ${profile.topDishName ? `
+        <div class="reportTopDish">
+          <span class="reportTopDishEmoji">⭐</span>
+          <div>
+            <div class="reportTopDishLabel">This week's favourite</div>
+            <div class="reportTopDishName">${escapeHtml(profile.topDishName)}</div>
+          </div>
+        </div>` : ""}
+
+        <div class="reportActions">
+          <button class="btn secondary" id="reportShareBtn" type="button">📤 Share report</button>
+          <button class="btn" id="reportCloseBtn" type="button">Keep cooking 🔥</button>
+        </div>
+      `;
+
+      overlay.classList.remove("hidden");
+      localStorage.setItem(REPORT_LAST_KEY, String(Date.now()));
+
+      document.getElementById("reportCloseBtn").addEventListener("click", closeWeeklyReport);
+      document.getElementById("reportShareBtn").addEventListener("click", () => {
+        const text = `This week on Simmer 🔥\n🍳 ${profile.weekCooks} meals cooked\n🌍 ${cuisinesTxt} cuisines\n⏱️ ${timeTxt} in the kitchen\n🔥 ${streak}-day streak\n\nStop scrolling. Start cooking → https://mealskart-frontend.vercel.app/`;
+        if (navigator.share) {
+          navigator.share({ title: "My week on Simmer", text }).catch(() => {});
+        } else {
+          navigator.clipboard.writeText(text).then(() => {
+            document.getElementById("reportShareBtn").textContent = "✅ Copied!";
+          }).catch(() => {});
+        }
+      });
+
+      overlay.addEventListener("click", e => {
+        if (e.target === overlay) closeWeeklyReport();
+      });
+    }
+
+    function closeWeeklyReport() {
+      const overlay = document.getElementById("reportOverlay");
+      overlay.style.transition = "opacity 0.25s ease";
+      overlay.style.opacity = "0";
+      setTimeout(() => {
+        overlay.classList.add("hidden");
+        overlay.style.opacity = "";
+        overlay.style.transition = "";
+      }, 250);
+    }
+
+    function maybeShowWeeklyReport() {
+      if (shouldShowWeeklyReport()) {
+        setTimeout(openWeeklyReport, 2000);
+      }
+    }
+
+    // ══════════════════════════════════════════════
     // ONBOARDING
     // ══════════════════════════════════════════════
     const ONBOARDING_KEY = "simmer_onboarded_v1";
@@ -4063,6 +4424,21 @@
     maybeShowOnboarding();
     if (localStorage.getItem(ONBOARDING_KEY)) {
       getSuggestions(getInitialMode());
+    }
+    maybeShowWeeklyReport();
+
+    // "My week" button — always opens report regardless of 7-day gate
+    const weeklyReportBtn = document.getElementById("weeklyReportBtn");
+    if (weeklyReportBtn) {
+      weeklyReportBtn.addEventListener("click", () => {
+        const profile = getPersonalisationProfile();
+        if (profile) {
+          openWeeklyReport();
+        } else {
+          weeklyReportBtn.textContent = "Cook 3+ meals first!";
+          setTimeout(() => { weeklyReportBtn.textContent = "📊 My week"; }, 2500);
+        }
+      });
     }
   </script>
 </body>
