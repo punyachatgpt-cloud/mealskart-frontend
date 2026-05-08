@@ -7423,7 +7423,6 @@
             ...state,
             ...cfg.stateOverride,
             mode: "suggest",
-            query: originalItem.name,
             ingredients
           })
         });
@@ -7525,6 +7524,7 @@
         card.addEventListener("animationend", () => card.classList.remove("justRemixed"), { once: true });
 
       } catch (e) {
+        console.error("[Remix] failed", remixType, e?.message, e);
         // Error chip in remix strip
         const remixStrip = card.querySelector(".remixStrip");
         if (remixStrip) {
