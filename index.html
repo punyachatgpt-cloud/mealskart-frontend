@@ -3134,6 +3134,127 @@
     .filterChip { border-radius: 999px !important; }
 
     /* ════════════════════════════════════════════════════
+       CUISINE EXPLORER — STYLES
+       ════════════════════════════════════════════════════ */
+    .cuisineOverlay {
+      position: fixed; inset: 0; z-index: 220;
+      background: rgba(8,4,0,0.80);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px;
+      animation: obFadeIn 0.3s ease both;
+    }
+    .cuisineOverlay.hidden { display: none; }
+    .cuisineSheet {
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      width: min(620px, 100%);
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 24px 22px 28px;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.35);
+      animation: modalIn 0.4s cubic-bezier(0.2,0.9,0.2,1) both;
+      scrollbar-width: thin;
+    }
+    .cuisineSheetHead {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 10px;
+      margin-bottom: 18px;
+    }
+    .cuisineSheetTitle {
+      font-family: 'Fraunces', serif;
+      font-size: 1.4rem; font-weight: 900;
+      color: var(--ink); margin: 0;
+    }
+    .cuisineSheetSub {
+      font-size: 0.82rem; font-weight: 600;
+      color: var(--muted); margin: 4px 0 0;
+    }
+    .cuisineSheetClose {
+      background: none; border: 1px solid var(--border);
+      border-radius: 999px; width: 32px; height: 32px;
+      cursor: pointer; font-size: 1rem;
+      display: grid; place-items: center;
+      color: var(--muted2); flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .cuisineSheetClose:hover { border-color: var(--accent); color: var(--ink); }
+    .cuisineChallenge {
+      background: linear-gradient(135deg, rgba(200,105,14,0.10), rgba(200,105,14,0.04));
+      border: 1px solid rgba(200,105,14,0.20);
+      border-radius: 18px; padding: 14px 16px; margin-bottom: 20px;
+    }
+    [data-theme="dark"] .cuisineChallenge {
+      background: linear-gradient(135deg, rgba(232,160,32,0.12), rgba(232,160,32,0.04));
+      border-color: rgba(232,160,32,0.22);
+    }
+    .cuisineChalHead {
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 8px; margin-bottom: 8px;
+    }
+    .cuisineChalTitle { font-size: 0.82rem; font-weight: 800; color: var(--ink); }
+    .cuisineChalBadge {
+      font-size: 0.72rem; font-weight: 800; color: var(--accent);
+      background: rgba(200,105,14,0.10); border-radius: 999px; padding: 3px 10px;
+    }
+    .cuisineChalTrack { height: 7px; border-radius: 999px; background: rgba(200,105,14,0.12); overflow: hidden; }
+    .cuisineChalFill {
+      height: 100%; border-radius: 999px; background: var(--ember-gradient);
+      transition: width 0.8s cubic-bezier(0.34,1,0.64,1);
+    }
+    .cuisineChalSub { font-size: 0.72rem; font-weight: 600; color: var(--muted); margin-top: 6px; }
+    .cuisineGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 12px;
+    }
+    .cuisineCard {
+      border: 1.5px solid var(--border); border-radius: 20px;
+      padding: 16px 14px; cursor: pointer;
+      transition: all var(--transition-spring);
+      display: flex; flex-direction: column; gap: 8px;
+      position: relative; background: var(--bg0); overflow: hidden;
+    }
+    .cuisineCard:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 12px 32px rgba(200,105,14,0.18);
+    }
+    .cuisineCard:active { transform: scale(0.97); }
+    .cuisineCard.explored {
+      border-color: rgba(200,105,14,0.35);
+      background: linear-gradient(135deg, rgba(200,105,14,0.06), var(--bg0));
+    }
+    [data-theme="dark"] .cuisineCard { background: var(--bg1); }
+    [data-theme="dark"] .cuisineCard.explored {
+      background: linear-gradient(135deg, rgba(232,160,32,0.09), var(--bg1));
+    }
+    .cuisineFlag { font-size: 2.2rem; line-height: 1; display: block; margin-bottom: 2px; }
+    .cuisineName { font-size: 0.88rem; font-weight: 800; color: var(--ink); line-height: 1.2; }
+    .cuisineDesc { font-size: 0.72rem; font-weight: 500; color: var(--muted); line-height: 1.4; }
+    .cuisineExploredBadge {
+      display: none; position: absolute; top: 10px; right: 10px;
+      font-size: 0.62rem; font-weight: 800; color: #fff;
+      background: var(--accent); border-radius: 999px; padding: 2px 7px;
+    }
+    .cuisineCard.explored .cuisineExploredBadge { display: block; }
+    .cuisineCookBtn {
+      margin-top: auto; font-size: 0.72rem; font-weight: 800;
+      color: var(--accent); display: flex; align-items: center; gap: 4px;
+    }
+    .exploreLink {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 12px; border-radius: 12px;
+      border: 1px solid var(--border); background: var(--bg0);
+      cursor: pointer; font-family: inherit;
+      font-size: 0.8rem; font-weight: 700; color: var(--ink); width: 100%;
+      transition: all 0.18s; margin-top: 2px;
+    }
+    .exploreLink:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ════════════════════════════════════════════════════
        NUTRITION DASHBOARD — STYLES
        ════════════════════════════════════════════════════ */
     .nutDashOverlay {
@@ -3659,6 +3780,10 @@
                 <span style="font-size:0.72rem;color:var(--muted2)" id="goalBtnLabel">Set</span>
               </button>
             </div>
+            <button class="exploreLink" id="exploreBtn" type="button">
+              <span>🌍 Cuisine Explorer</span>
+              <span id="exploreBadge" style="font-size:0.7rem;color:var(--accent);font-weight:800"></span>
+            </button>
             <div class="trust">&#9889; Takes less than 5 seconds</div>
           </div>
         </div>
@@ -3776,6 +3901,11 @@
   <!-- Nutrition Dashboard overlay -->
   <div class="nutDashOverlay hidden" id="nutDashOverlay" role="dialog" aria-modal="true" aria-label="Nutrition Dashboard">
     <div class="nutDashSheet" id="nutDashSheet"><!-- injected by JS --></div>
+  </div>
+
+  <!-- Cuisine Explorer overlay -->
+  <div class="cuisineOverlay hidden" id="cuisineOverlay" role="dialog" aria-modal="true" aria-label="Cuisine Explorer">
+    <div class="cuisineSheet" id="cuisineSheet"><!-- injected by JS --></div>
   </div>
 
   <!-- Weekly report overlay -->
@@ -6901,6 +7031,125 @@
     }
 
     // ══════════════════════════════════════════════
+    // CUISINE EXPLORER (C)
+    // ══════════════════════════════════════════════
+    const CUISINES = [
+      { value: "north-indian",  label: "North Indian",  flag: "🍛",  desc: "Rich curries, tandoori & breads" },
+      { value: "south-indian",  label: "South Indian",  flag: "🥘",  desc: "Dosas, idlis, sambar & coconut" },
+      { value: "continental",   label: "Continental",   flag: "🍝",  desc: "Pasta, grills & European classics" },
+      { value: "chinese",       label: "Chinese",       flag: "🥢",  desc: "Stir-fries, dumplings & noodles" },
+      { value: "salad",         label: "Salads",        flag: "🥗",  desc: "Fresh, crunchy, colourful bowls" },
+      { value: "drinks",        label: "Drinks",        flag: "🥤",  desc: "Smoothies, lassis & refreshing teas" },
+      { value: "snacks",        label: "Snacks",        flag: "🍿",  desc: "Quick bites & street food" },
+      { value: "sweets",        label: "Sweets",        flag: "🍯",  desc: "Mithai, desserts & indulgences" },
+      { value: "other",         label: "Other",         flag: "🌎",  desc: "Global fusions & more" },
+    ];
+    const CUISINE_CHALLENGE_TOTAL = CUISINES.length;
+
+    function getExploredCuisines() {
+      // Returns a Map: cuisineValue → count of times cooked this month
+      const log = getCookLog();
+      const now = new Date();
+      const monthKey = `${now.getFullYear()}-${now.getMonth()}`;
+      const counts = new Map();
+      log.forEach(entry => {
+        const entryDate = entry.ts ? new Date(entry.ts) : null;
+        if (!entryDate) return;
+        const eKey = `${entryDate.getFullYear()}-${entryDate.getMonth()}`;
+        if (eKey !== monthKey) return;
+        const cat = (entry.category || "other").toLowerCase();
+        counts.set(cat, (counts.get(cat) || 0) + 1);
+      });
+      return counts;
+    }
+
+    function updateExploreBadge() {
+      const badge = document.getElementById("exploreBadge");
+      if (!badge) return;
+      const explored = getExploredCuisines();
+      const count = CUISINES.filter(c => explored.has(c.value)).length;
+      badge.textContent = count > 0 ? `${count}/${CUISINE_CHALLENGE_TOTAL}` : "New";
+    }
+
+    function selectCuisineAndSearch(value) {
+      // Select the cuisine chip in the sidebar
+      document.querySelectorAll('[data-group="category"]').forEach(btn => {
+        btn.classList.toggle("selected", btn.dataset.value === value);
+      });
+      state.category = value;
+      closeCuisineExplorer();
+      getSuggestions("suggest");
+    }
+
+    function openCuisineExplorer() {
+      const overlay = document.getElementById("cuisineOverlay");
+      const sheet   = document.getElementById("cuisineSheet");
+      if (!overlay || !sheet) return;
+
+      const explored = getExploredCuisines();
+      const exploredCount = CUISINES.filter(c => explored.has(c.value)).length;
+      const pct = Math.round((exploredCount / CUISINE_CHALLENGE_TOTAL) * 100);
+
+      const challengeMsg = exploredCount === 0
+        ? "Start cooking different cuisines to complete the challenge!"
+        : exploredCount === CUISINE_CHALLENGE_TOTAL
+          ? "🏆 You've explored all cuisines this month! Amazing!"
+          : `${CUISINE_CHALLENGE_TOTAL - exploredCount} more to go — keep exploring!`;
+
+      const cardsHTML = CUISINES.map(c => {
+        const times = explored.get(c.value) || 0;
+        const isExplored = times > 0;
+        return `
+          <div class="cuisineCard ${isExplored ? "explored" : ""}" data-cuisine="${c.value}">
+            <span class="cuisineExploredBadge">${times}×</span>
+            <span class="cuisineFlag">${c.flag}</span>
+            <div class="cuisineName">${c.label}</div>
+            <div class="cuisineDesc">${c.desc}</div>
+            <div class="cuisineCookBtn">Cook ${c.label} →</div>
+          </div>
+        `;
+      }).join("");
+
+      sheet.innerHTML = `
+        <div class="cuisineSheetHead">
+          <div>
+            <h2 class="cuisineSheetTitle">🌍 Cuisine Explorer</h2>
+            <p class="cuisineSheetSub">Pick a cuisine and discover new dishes</p>
+          </div>
+          <button class="cuisineSheetClose" id="cuisineCloseBtn" type="button" aria-label="Close">✕</button>
+        </div>
+
+        <div class="cuisineChallenge">
+          <div class="cuisineChalHead">
+            <span class="cuisineChalTitle">🏅 Monthly Challenge</span>
+            <span class="cuisineChalBadge">${exploredCount}/${CUISINE_CHALLENGE_TOTAL} cuisines</span>
+          </div>
+          <div class="cuisineChalTrack">
+            <div class="cuisineChalFill" style="width:${pct}%"></div>
+          </div>
+          <div class="cuisineChalSub">${challengeMsg}</div>
+        </div>
+
+        <div class="cuisineGrid" id="cuisineGrid">
+          ${cardsHTML}
+        </div>
+      `;
+
+      // Wire card clicks
+      sheet.querySelectorAll(".cuisineCard").forEach(card => {
+        card.addEventListener("click", () => selectCuisineAndSearch(card.dataset.cuisine));
+      });
+      document.getElementById("cuisineCloseBtn")?.addEventListener("click", closeCuisineExplorer);
+
+      overlay.classList.remove("hidden");
+      overlay.addEventListener("click", (e) => { if (e.target === overlay) closeCuisineExplorer(); }, { once: true });
+    }
+
+    function closeCuisineExplorer() {
+      document.getElementById("cuisineOverlay")?.classList.add("hidden");
+    }
+
+    // ══════════════════════════════════════════════
     // NUTRITION DASHBOARD (B)
     // ══════════════════════════════════════════════
 
@@ -7310,6 +7559,8 @@
 
     document.getElementById("collectionsBtn")?.addEventListener("click", openCollectionsSheet);
     document.getElementById("goalBtn")?.addEventListener("click", openGoalSetup);
+    document.getElementById("exploreBtn")?.addEventListener("click", openCuisineExplorer);
+    updateExploreBadge();
 
     // "My week" button — always opens report regardless of 7-day gate
     const weeklyReportBtn = document.getElementById("weeklyReportBtn");
