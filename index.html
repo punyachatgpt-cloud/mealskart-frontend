@@ -1502,6 +1502,89 @@
       border-color: var(--accent);
       box-shadow: 0 0 0 4px var(--accentGlow);
     }
+    .searchInput.hasValue { padding-right: 36px; }
+
+    /* ── Search clear button ─────────────────────── */
+    .searchClear {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      font-size: 0.85rem; padding: 4px 6px; border-radius: 6px;
+      display: none; transition: color 0.13s, background 0.13s;
+      line-height: 1; z-index: 2;
+    }
+    .searchClear.visible { display: block; }
+    .searchClear:hover { color: var(--ink); background: rgba(200,105,14,0.10); }
+
+    /* ══════════════════════════════════════════════
+       SEARCH DROPDOWN 2.0
+       ══════════════════════════════════════════════ */
+    .searchDropdown {
+      position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: 90;
+      background: var(--surfaceStrong);
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow-hover);
+      overflow: hidden;
+      display: none;
+      animation: obFadeIn 0.18s ease both;
+      backdrop-filter: blur(20px);
+    }
+    .searchDropdown.visible { display: block; }
+
+    .searchDropSection { padding: 10px 12px 4px; }
+    .searchDropSectionTitle {
+      font-size: 0.66rem; font-weight: 800; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 4px; padding: 0 2px;
+    }
+    .searchDropItem {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px; border-radius: 11px;
+      cursor: pointer; transition: background 0.12s;
+      font-size: 0.86rem; font-weight: 600; color: var(--ink);
+    }
+    .searchDropItem:hover { background: rgba(200,105,14,0.09); }
+    .searchDropIcon { color: var(--muted); font-size: 0.88rem; flex-shrink: 0; min-width: 16px; text-align: center; }
+    .searchDropText { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .searchDropRemoveBtn {
+      background: none; border: none; padding: 2px 6px;
+      border-radius: 6px; color: var(--muted); cursor: pointer;
+      font-size: 0.72rem; font-family: inherit;
+      transition: color 0.12s, background 0.12s; flex-shrink: 0;
+    }
+    .searchDropRemoveBtn:hover { color: #e11d48; background: rgba(225,29,72,0.09); }
+
+    .searchDropDivider { height: 1px; background: var(--border); margin: 6px 12px; }
+
+    .searchQuickFilters { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px 12px; }
+    .searchQuickChip {
+      padding: 5px 12px; border-radius: 999px;
+      font-size: 0.76rem; font-weight: 800; cursor: pointer;
+      border: 1.5px solid var(--border); background: none;
+      color: var(--muted); font-family: inherit;
+      transition: all 0.13s;
+    }
+    .searchQuickChip:hover, .searchQuickChip.active {
+      border-color: var(--accent); color: var(--accent);
+      background: rgba(200,105,14,0.09);
+    }
+
+    /* ── "Did you mean?" ─────────────────────────── */
+    .didYouMean {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; margin-top: 10px;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: 14px; font-size: 0.86rem; color: var(--muted);
+    }
+    .didYouMean span { font-weight: 700; }
+    .didYouMeanLink {
+      font-weight: 800; color: var(--accent); cursor: pointer;
+      text-decoration: underline; text-underline-offset: 3px;
+    }
+    .didYouMeanLink:hover { opacity: 0.75; }
+
+    /* ── Highlight match in card names ───────────── */
+    .searchHighlight { background: rgba(200,105,14,0.22); border-radius: 3px; padding: 0 1px; }
 
     /* ── Ingredients hero highlight ─────────────── */
     #ingredientsPanel {
@@ -2926,6 +3009,8 @@
         <div class="searchWrap">
           <span class="searchIcon">&#128269;</span>
           <input id="searchInput" class="searchInput" placeholder="Search dishes, ingredients…" autocomplete="off" aria-label="Search recipes" />
+          <button class="searchClear" id="searchClearBtn" type="button" aria-label="Clear search">✕</button>
+          <div class="searchDropdown" id="searchDropdown"></div>
         </div>
         <div class="stack">
           <div class="section" id="timePanel">
@@ -3770,18 +3855,239 @@
       }
     }
 
-    // ── Search filter ─────────────────────────────────────────────────────
+    // ══════════════════════════════════════════════
+    // SEARCH 2.0
+    // ══════════════════════════════════════════════
+    const SEARCH_HISTORY_KEY = "simmer_search_history_v1";
     let currentResults = [];
     let searchDebounce = null;
+    let dropdownOpen = false;
+
+    const QUICK_FILTERS = [
+      { label: "⚡ Quick (<20 min)", mood: "quick", time: 20 },
+      { label: "🥗 Healthy",         mood: "healthy" },
+      { label: "🫂 Comfort",         mood: "comfort" },
+      { label: "🌱 Veg",             diet: "veg" },
+      { label: "🍗 Non-veg",         diet: "non-veg" },
+      { label: "🇮🇳 North Indian",   category: "north indian" },
+      { label: "🌶️ South Indian",    category: "south indian" },
+    ];
+
+    function getSearchHistory() {
+      try { return JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY) || "[]"); }
+      catch { return []; }
+    }
+    function pushSearchHistory(q) {
+      if (!q || q.length < 2) return;
+      let hist = getSearchHistory().filter(h => h.toLowerCase() !== q.toLowerCase());
+      hist.unshift(q);
+      hist = hist.slice(0, 8);
+      try { localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(hist)); } catch {}
+    }
+    function removeSearchHistoryItem(q) {
+      const hist = getSearchHistory().filter(h => h.toLowerCase() !== q.toLowerCase());
+      try { localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(hist)); } catch {}
+    }
+
+    // Get dish names from current visible cards
+    function getCardSuggestions(q) {
+      const cards = el.results.querySelectorAll(".foodCard .cardName, .foodCard h3, .foodCard .heroTitle");
+      const names = [];
+      cards.forEach(c => {
+        const name = c.textContent.trim();
+        if (name && name.toLowerCase().includes(q.toLowerCase()) && !names.includes(name)) {
+          names.push(name);
+        }
+      });
+      return names.slice(0, 5);
+    }
+
+    // Simple levenshtein for "did you mean"
+    function levenshtein(a, b) {
+      const m = a.length, n = b.length;
+      const dp = Array.from({ length: m+1 }, (_, i) => Array.from({ length: n+1 }, (_, j) => i||j));
+      for (let i = 1; i <= m; i++)
+        for (let j = 1; j <= n; j++)
+          dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+      return dp[m][n];
+    }
+
+    function findClosestDish(q) {
+      const cards = el.results.querySelectorAll(".foodCard .cardName, .foodCard h3, .foodCard .heroTitle");
+      let best = null, bestScore = Infinity;
+      cards.forEach(c => {
+        const name = c.textContent.trim();
+        if (!name) return;
+        const words = name.toLowerCase().split(" ");
+        const qWords = q.toLowerCase().split(" ");
+        qWords.forEach(qw => {
+          words.forEach(w => {
+            const s = levenshtein(qw, w);
+            if (s < bestScore && s <= 3 && s < qw.length * 0.6) { bestScore = s; best = name; }
+          });
+        });
+      });
+      return best;
+    }
+
+    function buildSearchDropdown(q) {
+      const dropdown = document.getElementById("searchDropdown");
+      if (!dropdown) return;
+
+      const history = getSearchHistory();
+      const suggestions = q ? getCardSuggestions(q) : [];
+      const sections = [];
+
+      // Recent searches
+      if (history.length > 0 && !q) {
+        const items = history.map(h => `
+          <div class="searchDropItem" data-search="${escapeHtml(h)}">
+            <span class="searchDropIcon">🕐</span>
+            <span class="searchDropText">${escapeHtml(h)}</span>
+            <button class="searchDropRemoveBtn" data-remove="${escapeHtml(h)}" type="button">✕</button>
+          </div>`).join("");
+        sections.push(`
+          <div class="searchDropSection">
+            <div class="searchDropSectionTitle">Recent</div>
+            ${items}
+          </div>`);
+      }
+
+      // Live suggestions
+      if (suggestions.length > 0) {
+        const items = suggestions.map(s => `
+          <div class="searchDropItem" data-search="${escapeHtml(s)}">
+            <span class="searchDropIcon">🍽️</span>
+            <span class="searchDropText">${escapeHtml(s)}</span>
+          </div>`).join("");
+        if (sections.length) sections.push('<div class="searchDropDivider"></div>');
+        sections.push(`
+          <div class="searchDropSection">
+            <div class="searchDropSectionTitle">Matches</div>
+            ${items}
+          </div>`);
+      }
+
+      // Quick filters (always show when no query)
+      if (!q) {
+        if (sections.length) sections.push('<div class="searchDropDivider"></div>');
+        const chips = QUICK_FILTERS.map(f => `
+          <button class="searchQuickChip" type="button"
+            data-qf-mood="${f.mood||""}" data-qf-diet="${f.diet||""}"
+            data-qf-category="${f.category||""}" data-qf-time="${f.time||""}">
+            ${escapeHtml(f.label)}
+          </button>`).join("");
+        sections.push(`
+          <div class="searchDropSection">
+            <div class="searchDropSectionTitle">Quick filters</div>
+          </div>
+          <div class="searchQuickFilters">${chips}</div>`);
+      }
+
+      if (sections.length === 0) { closeSearchDropdown(); return; }
+
+      dropdown.innerHTML = sections.join("");
+      dropdown.classList.add("visible");
+      dropdownOpen = true;
+
+      // Wire item clicks
+      dropdown.querySelectorAll(".searchDropItem[data-search]").forEach(item => {
+        item.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          const q = item.dataset.search;
+          el.searchInput.value = q;
+          el.searchInput.classList.add("hasValue");
+          document.getElementById("searchClearBtn")?.classList.add("visible");
+          closeSearchDropdown();
+          commitSearch(q);
+        });
+      });
+
+      // Wire remove buttons
+      dropdown.querySelectorAll(".searchDropRemoveBtn[data-remove]").forEach(btn => {
+        btn.addEventListener("mousedown", (e) => {
+          e.preventDefault(); e.stopPropagation();
+          removeSearchHistoryItem(btn.dataset.remove);
+          buildSearchDropdown(el.searchInput?.value || "");
+        });
+      });
+
+      // Wire quick filter chips
+      dropdown.querySelectorAll(".searchQuickChip").forEach(chip => {
+        chip.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          const mood = chip.dataset.qfMood;
+          const diet = chip.dataset.qfDiet;
+          const cat  = chip.dataset.qfCategory;
+          const time = Number(chip.dataset.qfTime);
+          if (mood) { state.mood = mood; setSelected("mood", mood); }
+          if (diet) { state.diet = diet; setSelected("diet", diet); }
+          if (cat)  { state.category = cat; setSelected("category", cat); }
+          if (time) { state.time_available = time; setSelected("time", time); }
+          savePreferences(); updateMicrocopy();
+          closeSearchDropdown();
+          getSuggestions("normal");
+        });
+      });
+    }
+
+    function closeSearchDropdown() {
+      const dropdown = document.getElementById("searchDropdown");
+      dropdown?.classList.remove("visible");
+      dropdownOpen = false;
+    }
+
+    function commitSearch(q) {
+      pushSearchHistory(q);
+      clearTimeout(autoFetchDebounce);
+      getSuggestions("normal", q);
+    }
 
     function applySearch(query) {
       const q = String(query || "").trim().toLowerCase();
       const cards = el.results.querySelectorAll(".foodCard");
-      if (!q) { cards.forEach((c) => { c.style.display = ""; }); return; }
-      cards.forEach((c) => {
+      let visibleCount = 0;
+
+      if (!q) {
+        cards.forEach(c => { c.style.display = ""; });
+        removeDYM();
+        return;
+      }
+
+      cards.forEach(c => {
         const text = c.textContent.toLowerCase();
-        c.style.display = text.includes(q) ? "" : "none";
+        const match = text.includes(q);
+        c.style.display = match ? "" : "none";
+        if (match) visibleCount++;
       });
+
+      // Did You Mean?
+      if (visibleCount === 0 && cards.length > 0) {
+        const closest = findClosestDish(q);
+        showDYM(closest, q);
+      } else {
+        removeDYM();
+      }
+    }
+
+    function showDYM(closest, q) {
+      removeDYM();
+      const dym = document.createElement("div");
+      dym.className = "didYouMean"; dym.id = "didYouMean";
+      dym.innerHTML = `<span>🔍</span> No results for "<span>${escapeHtml(q)}</span>"${closest ? `. Did you mean <span class="didYouMeanLink" id="dymLink">${escapeHtml(closest)}</span>?` : ". Try a different search."}`;
+      el.results.prepend(dym);
+      document.getElementById("dymLink")?.addEventListener("click", () => {
+        if (el.searchInput) {
+          el.searchInput.value = closest;
+          el.searchInput.classList.add("hasValue");
+          document.getElementById("searchClearBtn")?.classList.add("visible");
+          applySearch(closest);
+          removeDYM();
+        }
+      });
+    }
+    function removeDYM() {
+      document.getElementById("didYouMean")?.remove();
     }
 
     function smartBadges(item, index, mode) {
@@ -4457,8 +4763,9 @@
       renderLoadingCards(mode);
 
       try {
-        const ingredients = queryOverride ? [queryOverride] : getIngredients();
-        const cacheKey = JSON.stringify({ ...state, mode, ingredients });
+        const searchQ    = queryOverride || (el.searchInput?.value?.trim() || "");
+        const ingredients = searchQ ? [searchQ, ...getIngredients()] : getIngredients();
+        const cacheKey = JSON.stringify({ ...state, mode, ingredients, searchQ });
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
           try {
@@ -4482,7 +4789,8 @@
           body: JSON.stringify({
             ...state,
             mode,
-            ingredients
+            ingredients,
+            ...(searchQ ? { query: searchQ } : {})
           })
         });
 
@@ -4572,19 +4880,63 @@
         });
       });
 
-      // Live search filter over rendered cards
+      // ── Search 2.0 wiring ────────────────────────────────────────────────
       if (el.searchInput) {
-        el.searchInput.addEventListener("input", () => {
-          clearTimeout(searchDebounce);
-          searchDebounce = setTimeout(() => applySearch(el.searchInput.value), 200);
+        const clearBtn = document.getElementById("searchClearBtn");
+
+        el.searchInput.addEventListener("focus", () => {
+          buildSearchDropdown(el.searchInput.value);
         });
+
+        el.searchInput.addEventListener("blur", () => {
+          // Small delay so clicks in dropdown register first
+          setTimeout(closeSearchDropdown, 180);
+        });
+
+        el.searchInput.addEventListener("input", () => {
+          const val = el.searchInput.value;
+          clearBtn?.classList.toggle("visible", val.length > 0);
+          el.searchInput.classList.toggle("hasValue", val.length > 0);
+
+          // Update dropdown suggestions live
+          clearTimeout(searchDebounce);
+          searchDebounce = setTimeout(() => {
+            buildSearchDropdown(val);
+            applySearch(val);
+          }, 160);
+        });
+
         el.searchInput.addEventListener("keydown", (e) => {
           if (e.key === "Enter") {
             e.preventDefault();
-            clearTimeout(autoFetchDebounce);
-            getSuggestions("normal");
+            const q = el.searchInput.value.trim();
+            closeSearchDropdown();
+            if (q) {
+              commitSearch(q);
+            } else {
+              getSuggestions("normal");
+            }
             el.searchInput.blur();
           }
+          if (e.key === "Escape") {
+            closeSearchDropdown();
+            el.searchInput.blur();
+          }
+        });
+
+        clearBtn?.addEventListener("click", () => {
+          el.searchInput.value = "";
+          el.searchInput.classList.remove("hasValue");
+          clearBtn.classList.remove("visible");
+          removeDYM();
+          applySearch("");
+          closeSearchDropdown();
+          el.searchInput.focus();
+        });
+
+        // Close dropdown on outside click
+        document.addEventListener("click", (e) => {
+          if (!e.target.closest(".searchWrap")) closeSearchDropdown();
         });
       }
     }
