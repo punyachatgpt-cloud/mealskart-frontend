@@ -964,115 +964,209 @@
       line-height: 1.45;
     }
 
+    /* ══════════════════════════════════════════════
+       PREMIUM MEAL PLANNER
+       ══════════════════════════════════════════════ */
     .planWrap {
       grid-column: 1 / -1;
-      display: grid;
-      gap: 16px;
-    }
-
-    .planHeader {
       display: flex;
-      align-items: flex-end;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── Plan hero header ── */
+    .planHero {
+      display: flex;
+      align-items: center;
       justify-content: space-between;
-      gap: 14px;
-      padding: 2px 2px 0;
+      gap: 16px;
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+    }
+    .planHeroLeft { flex: 1; min-width: 0; }
+    .planHeroTitle {
+      font-family: 'Fraunces', serif;
+      font-size: 1.3rem; font-weight: 900;
+      color: var(--ink); margin: 0 0 4px;
+      line-height: 1.2;
+    }
+    .planHeroSub { font-size: 0.84rem; color: var(--muted); font-weight: 600; margin: 0; }
+    .planHeroRight { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .planNutriBadge {
+      display: flex; flex-direction: column; align-items: center;
+      background: var(--goldBg); border: 1px solid var(--goldBorder);
+      border-radius: 14px; padding: 8px 14px;
+    }
+    .planNutriBadge strong { font-size: 1.1rem; font-weight: 900; color: var(--goldInk); line-height: 1; }
+    .planNutriBadge span { font-size: 0.67rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+    .planShareBtn {
+      background: none; border: 1.5px solid var(--border); border-radius: 12px;
+      padding: 8px 13px; font-family: inherit; font-size: 0.8rem; font-weight: 700;
+      color: var(--muted); cursor: pointer; transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .planShareBtn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Nutrition week bar ── */
+    .planNutriBar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .planNutriStat {
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: 14px; padding: 12px 14px; text-align: center;
+    }
+    .planNutriStat strong { display: block; font-size: 1.05rem; font-weight: 900; color: var(--ink); }
+    .planNutriStat span { font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; display: block; }
+
+    /* ── Day duration toggle ── */
+    .planDurationRow {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .planDurationLabel { font-size: 0.8rem; font-weight: 700; color: var(--muted); }
+    .planDurBtn {
+      padding: 5px 13px; border-radius: 999px;
+      font-family: inherit; font-size: 0.8rem; font-weight: 800;
+      border: 1.5px solid var(--border); background: none; color: var(--muted);
+      cursor: pointer; transition: all 0.15s;
+    }
+    .planDurBtn.active, .planDurBtn:hover {
+      border-color: var(--accent); color: var(--accent);
+      background: rgba(200,105,14,0.07);
     }
 
-    .planHeader h3 {
-      margin: 0;
-      font-size: 1.22rem;
-      font-weight: 950;
-      color: rgba(11, 18, 32, 0.94);
-    }
-
-    .planHeader p {
-      margin: 5px 0 0;
-      color: var(--muted);
-      font-weight: 750;
-      font-size: 0.92rem;
-    }
-
-    .planCalories {
-      flex: 0 0 auto;
-      border-radius: 999px;
-      padding: 8px 11px;
-      background: rgba(255, 241, 194, 0.92);
-      border: 1px solid rgba(240, 210, 122, 0.95);
-      color: var(--goldInk);
-      font-weight: 950;
-      font-size: 0.86rem;
-    }
-
+    /* ── Day cards grid ── */
     .planDays {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
+      gap: 14px;
     }
+    .planDays.days5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .planDays.days7 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
     .planDay {
-      border-radius: 18px;
-      padding: 14px;
-      background: rgba(255, 255, 255, 0.88);
-      border: 1px solid rgba(15, 23, 42, 0.08);
-      box-shadow: var(--shadow-soft);
+      border-radius: 20px;
+      padding: 16px;
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
       min-width: 0;
+      display: flex; flex-direction: column; gap: 2px;
+      transition: border-color 0.18s, box-shadow 0.18s;
     }
+    .planDay:hover { border-color: rgba(200,105,14,0.35); }
+    .planDay.today { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accentGlow); }
 
-    .planDay h4 {
-      margin: 0 0 10px;
-      font-size: 0.94rem;
-      font-weight: 950;
-      color: rgba(11, 18, 32, 0.92);
+    .planDayHead {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
     }
+    .planDayName {
+      font-size: 0.78rem; font-weight: 800; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .planDayLabel {
+      font-size: 0.88rem; font-weight: 900; color: var(--ink);
+      font-family: 'Fraunces', serif;
+    }
+    .planDayToday {
+      font-size: 0.65rem; font-weight: 800; padding: 2px 8px;
+      border-radius: 999px; background: var(--accent); color: #fff;
+      letter-spacing: 0.04em;
+    }
+    .planDayCalBadge {
+      font-size: 0.7rem; font-weight: 800;
+      color: var(--muted); background: rgba(200,105,14,0.09);
+      border-radius: 999px; padding: 2px 8px;
+    }
+    .planRegenerateBtn {
+      background: none; border: 1px solid var(--border); border-radius: 8px;
+      padding: 3px 8px; font-family: inherit; font-size: 0.68rem; font-weight: 700;
+      color: var(--muted); cursor: pointer; transition: all 0.13s; flex-shrink: 0;
+    }
+    .planRegenerateBtn:hover { border-color: var(--accent); color: var(--accent); }
+    .planRegenerateBtn.spinning { animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ── Meal rows inside day ── */
     .planMeal {
-      display: grid;
-      gap: 5px;
+      display: flex; flex-direction: column; gap: 4px;
       padding: 10px 0;
-      border-top: 1px solid rgba(15, 23, 42, 0.08);
+      border-top: 1px solid var(--border);
+      cursor: pointer; transition: opacity 0.15s;
+      border-radius: 4px;
+    }
+    .planMeal:first-of-type { border-top: none; padding-top: 4px; }
+    .planMeal:hover { opacity: 0.78; }
+
+    .planMealType {
+      font-size: 0.65rem; font-weight: 800; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .planMealType.lunch::before { content: "🌤️ "; }
+    .planMealType.dinner::before { content: "🌙 "; }
+
+    .planMealName {
+      font-size: 0.88rem; font-weight: 800; color: var(--ink);
+      line-height: 1.3; transition: color 0.13s;
+    }
+    .planMeal:hover .planMealName { color: var(--accent); }
+
+    .planMealMeta {
+      font-size: 0.74rem; font-weight: 700; color: var(--muted);
+      display: flex; gap: 8px; flex-wrap: wrap;
     }
 
-    .planMeal:first-of-type {
-      border-top: 0;
-      padding-top: 0;
+    /* ── Progress tracker ── */
+    .planProgress {
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: 16px; padding: 14px 18px;
+      display: flex; align-items: center; gap: 14px;
     }
-
-    .planMeal strong {
-      color: rgba(11, 18, 32, 0.94);
-      font-weight: 950;
-      line-height: 1.25;
+    .planProgressBar {
+      flex: 1; height: 6px; background: rgba(200,105,14,0.12);
+      border-radius: 999px; overflow: hidden;
     }
-
-    .planMeal span {
-      color: var(--muted);
-      font-size: 0.82rem;
-      font-weight: 800;
-      line-height: 1.35;
+    .planProgressFill {
+      height: 100%; border-radius: inherit;
+      background: linear-gradient(90deg, #C8690E, #9E4E08);
+      transition: width 0.6s cubic-bezier(0.34,1,0.64,1);
     }
+    .planProgressLabel { font-size: 0.78rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+    .planProgressLabel strong { color: var(--accent); }
 
+    /* ── Grocery section ── */
+    .planGrocerySection { }
+    .planGroceryHead {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .planGroceryHead h4 {
+      margin: 0; font-size: 1rem; font-weight: 900; color: var(--ink);
+    }
+    .planGrocerySub { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
     .groceryBox {
       border-radius: 18px;
-      padding: 14px;
-      background: linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(255, 255, 255, 0.86));
-      border: 1px solid rgba(249, 115, 22, 0.16);
-      box-shadow: var(--shadow-soft);
+      padding: 16px;
+      background: linear-gradient(135deg, rgba(200,105,14,0.06), rgba(255,255,255,0.88));
+      border: 1px solid rgba(200,105,14,0.15);
+      box-shadow: var(--shadow);
     }
-
-    .groceryBox h4 {
-      margin: 0 0 10px;
-      font-size: 0.98rem;
-      font-weight: 950;
-    }
-
-    .groceryList {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
+    .groceryBox h4 { margin: 0 0 10px; font-size: 0.98rem; font-weight: 950; }
+    .groceryList { display: flex; flex-wrap: wrap; gap: 8px; }
 
     @media (max-width: 980px) {
-      .planDays { grid-template-columns: 1fr; }
-      .planHeader { align-items: flex-start; flex-direction: column; }
+      .planDays, .planDays.days5, .planDays.days7 { grid-template-columns: 1fr 1fr; }
+      .planNutriBar { grid-template-columns: repeat(2, 1fr); }
+      .planHero { flex-direction: column; align-items: flex-start; }
+      .planHeroRight { width: 100%; justify-content: space-between; }
+    }
+    @media (max-width: 540px) {
+      .planDays, .planDays.days5, .planDays.days7 { grid-template-columns: 1fr; }
     }
 
     /* Modal */
@@ -2893,7 +2987,13 @@
             <button class="btn" id="decideBtn" type="button">&#127860; Decide for me</button>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
               <button class="btn secondary" id="suggestBtn" type="button">Show options</button>
-              <button class="btn secondary" id="planBtn" type="button">Plan 3 days</button>
+              <button class="btn secondary" id="planBtn" type="button">🗓️ Meal plan</button>
+            </div>
+            <div class="planDurationRow" id="planDurationRow" style="display:none">
+              <span class="planDurationLabel">Days:</span>
+              <button class="planDurBtn active" data-dur="3" type="button">3</button>
+              <button class="planDurBtn" data-dur="5" type="button">5</button>
+              <button class="planDurBtn" data-dur="7" type="button">7</button>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px">
               <button class="collectionsLink" id="collectionsBtn" type="button">
@@ -3042,7 +3142,7 @@
   <div class="mobileBar" id="mobileBar" aria-hidden="true">
     <button class="btn" id="decideBtnMobile" type="button">&#127860; Decide</button>
     <button class="btn secondary" id="suggestBtnMobile" type="button">Options</button>
-    <button class="btn secondary" id="planBtnMobile" type="button">Plan</button>
+    <button class="btn secondary" id="planBtnMobile" type="button">🗓️ Plan</button>
   </div>
 
   <script>
@@ -3777,52 +3877,208 @@
       `;
     }
 
+    // Meal planner state
+    const PLAN_KEY = "simmer_meal_plan_v1";
+    let activePlan = null;
+    let planDays = 3;
+
+    function savePlan(plan) { try { localStorage.setItem(PLAN_KEY, JSON.stringify(plan)); } catch {} }
+    function loadSavedPlan() { try { return JSON.parse(localStorage.getItem(PLAN_KEY) || "null"); } catch { return null; } }
+
+    function getDayName(dayIndex) {
+      const today = new Date();
+      const d = new Date(today); d.setDate(today.getDate() + dayIndex);
+      const names = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      const full  = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+      return { short: names[d.getDay()], full: full[d.getDay()], isToday: dayIndex === 0 };
+    }
+
+    function buildPlanText(plan) {
+      const days = plan?.days || [];
+      const lines = ["🍽️ Simmer Meal Plan\n"];
+      days.forEach((day, i) => {
+        const dn = getDayName(i);
+        lines.push(`\n${dn.full}`);
+        (day.recipes || []).forEach((r, mi) => {
+          lines.push(`  ${mi === 0 ? "🌤️ Lunch" : "🌙 Dinner"}: ${r.name} (${clampInt(r.calories,0)} cal · ${clampInt(r.time_minutes,0)} min)`);
+        });
+      });
+      lines.push("\nsimmer.vercel.app");
+      return lines.join("\n");
+    }
+
+    function getCookedMealIds() {
+      try { return new Set((JSON.parse(localStorage.getItem(COOK_LOG_KEY) || "[]")).map(e => String(e.id))); }
+      catch { return new Set(); }
+    }
+
     function renderMealPlan(plan) {
-      const days = Array.isArray(plan?.days) ? plan.days : [];
+      const days      = Array.isArray(plan?.days) ? plan.days : [];
       const groceries = Array.isArray(plan?.grocery_list) ? plan.grocery_list : [];
-      const totalCalories = clampInt(plan?.total_calories, 0);
+      const totalCal  = clampInt(plan?.total_calories, 0);
 
       el.results.classList.remove("decideResults", "hasHero");
+      activePlan = plan;
+      savePlan(plan);
 
       if (days.length === 0) {
-        renderEmpty("No plan found. Try a longer time window or a different diet.");
+        renderEmpty("No plan found. Try a longer time window or different filters.");
         return;
       }
 
-      const dayHtml = days.map((day) => {
+      // Nutrition aggregates
+      let totalProtein = 0, totalCarbs = 0, totalFat = 0, mealCount = 0;
+      days.forEach(d => (d.recipes || []).forEach(r => {
+        totalProtein += clampInt(r.nutrition?.protein_g || r.protein_g, 0);
+        totalCarbs   += clampInt(r.nutrition?.carbs_g   || r.carbs_g,   0);
+        totalFat     += clampInt(r.nutrition?.fat_g     || r.fat_g,     0);
+        mealCount++;
+      }));
+
+      const cooked   = getCookedMealIds();
+      const allIds   = days.flatMap(d => (d.recipes||[]).map(r => String(r.id)));
+      const cookedN  = allIds.filter(id => cooked.has(id)).length;
+      const pct      = allIds.length ? Math.round((cookedN / allIds.length) * 100) : 0;
+
+      const dayHtml = days.map((day, i) => {
         const recipes = Array.isArray(day.recipes) ? day.recipes : [];
-        const meals = recipes.map((recipe) => `
-          <div class="planMeal">
-            <strong>${escapeHtml(recipe.name)}</strong>
-            <span>&#9201; ${clampInt(recipe.time_minutes, 0)} min &middot; &#128293; ${clampInt(recipe.calories, 0)} cal &middot; ${escapeHtml(titleCase(recipe.category || "meal"))}</span>
-          </div>
-        `).join("");
+        const dn = getDayName(i);
+        const dayCal = recipes.reduce((s, r) => s + clampInt(r.calories, 0), 0);
+        const mealTypes = ["lunch", "dinner", "snack"];
+
+        const mealsHtml = recipes.map((recipe, mi) => {
+          const mtype = mealTypes[mi] || "meal";
+          const minTime = clampInt(recipe.time_minutes, 0);
+          const cal     = clampInt(recipe.calories, 0);
+          const cat     = escapeHtml(titleCase(recipe.category || ""));
+          return `
+            <div class="planMeal" data-recipe-id="${escapeHtml(String(recipe.id))}" data-recipe-json="${escapeHtml(JSON.stringify(recipe))}">
+              <div class="planMealType ${mtype}">${mtype.charAt(0).toUpperCase() + mtype.slice(1)}</div>
+              <div class="planMealName">${escapeHtml(recipe.name)}</div>
+              <div class="planMealMeta">
+                <span>⏱ ${minTime} min</span>
+                <span>🔥 ${cal} cal</span>
+                ${cat ? `<span>${cat}</span>` : ""}
+              </div>
+            </div>`;
+        }).join("");
 
         return `
-          <article class="planDay">
-            <h4>Day ${clampInt(day.day, 0)}</h4>
-            ${meals}
-          </article>
-        `;
+          <article class="planDay${dn.isToday ? " today" : ""}" data-day-index="${i}">
+            <div class="planDayHead">
+              <div>
+                <div class="planDayName">${dn.short}</div>
+                <div class="planDayLabel">${dn.isToday ? "Today" : dn.full}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px">
+                ${dayCal ? `<div class="planDayCalBadge">${dayCal} cal</div>` : ""}
+                ${dn.isToday ? `<div class="planDayToday">Today</div>` : ""}
+                <button class="planRegenerateBtn" data-day="${i}" title="Regenerate this day">↺</button>
+              </div>
+            </div>
+            ${mealsHtml}
+          </article>`;
       }).join("");
 
+      const nutriHtml = (totalCal > 0 || totalProtein > 0) ? `
+        <div class="planNutriBar">
+          ${totalCal > 0     ? `<div class="planNutriStat"><strong>${totalCal}</strong><span>Total cal</span></div>` : ""}
+          ${totalProtein > 0 ? `<div class="planNutriStat"><strong>${totalProtein}g</strong><span>Protein</span></div>` : ""}
+          ${totalCarbs > 0   ? `<div class="planNutriStat"><strong>${totalCarbs}g</strong><span>Carbs</span></div>` : ""}
+          ${totalFat > 0     ? `<div class="planNutriStat"><strong>${totalFat}g</strong><span>Fat</span></div>` : ""}
+        </div>` : "";
+
       el.results.innerHTML = `
-        <section class="planWrap">
-          <div class="planHeader">
-            <div>
-              <h3>3-day meal plan</h3>
-              <p>Built from your current time, mood, diet and craving.</p>
+        <section class="planWrap" id="planWrap">
+          <!-- Hero header -->
+          <div class="planHero">
+            <div class="planHeroLeft">
+              <h2 class="planHeroTitle">🗓️ Your ${days.length}-Day Meal Plan</h2>
+              <p class="planHeroSub">Tap any meal to view the full recipe &amp; start cooking</p>
             </div>
-            ${totalCalories > 0 ? `<div class="planCalories">${totalCalories} total cal</div>` : ""}
+            <div class="planHeroRight">
+              ${totalCal > 0 ? `<div class="planNutriBadge"><strong>${totalCal}</strong><span>Total cal</span></div>` : ""}
+              <button class="planShareBtn" id="planShareBtn">📤 Share plan</button>
+            </div>
           </div>
-          <div class="planDays">${dayHtml}</div>
+
+          <!-- Nutrition week bar -->
+          ${nutriHtml}
+
+          <!-- Progress tracker -->
+          ${allIds.length > 0 ? `
+          <div class="planProgress">
+            <span class="planProgressLabel">Cooked <strong>${cookedN}</strong> of ${allIds.length} meals</span>
+            <div class="planProgressBar"><div class="planProgressFill" style="width:${pct}%"></div></div>
+            <span class="planProgressLabel">${pct}%</span>
+          </div>` : ""}
+
+          <!-- Day cards -->
+          <div class="planDays${days.length === 5 ? " days5" : days.length === 7 ? " days7" : ""}" id="planDaysGrid">${dayHtml}</div>
+
+          <!-- Smart grocery list -->
+          ${groceries.length > 0 ? `
           <div class="groceryBox">
-            <h4>🛒 Smart grocery list</h4>
+            <div class="planGroceryHead">
+              <h4>🛒 Weekly Grocery List</h4>
+              <span class="planGrocerySub">${groceries.length} items · auto-generated from your plan</span>
+            </div>
             <div id="groceryListContainer"></div>
-          </div>
-        </section>
-      `;
-      renderSmartGrocery(groceries.slice(0, 40), document.getElementById("groceryListContainer"));
+          </div>` : ""}
+        </section>`;
+
+      // Wire grocery list
+      if (groceries.length > 0) {
+        renderSmartGrocery(groceries.slice(0, 60), document.getElementById("groceryListContainer"));
+      }
+
+      // Wire meal clicks → open modal
+      el.results.querySelectorAll(".planMeal[data-recipe-json]").forEach(mealEl => {
+        mealEl.addEventListener("click", () => {
+          try {
+            const recipe = JSON.parse(mealEl.dataset.recipeJson);
+            if (recipe) openModal(recipe);
+          } catch {}
+        });
+      });
+
+      // Wire regenerate day buttons
+      el.results.querySelectorAll(".planRegenerateBtn[data-day]").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          const dayIdx = Number(btn.dataset.day);
+          btn.classList.add("spinning"); btn.disabled = true;
+          try {
+            const res = await fetchWithRetry(`${API_BASE_URL}/meal-plan`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ days: 1, meals_per_day: 2, time_available: state.time_available, mood: state.mood, diet: state.diet, category: state.category })
+            });
+            const newPlan = await res.json();
+            if (activePlan && newPlan?.days?.length > 0) {
+              activePlan.days[dayIdx] = newPlan.days[0];
+              activePlan.days[dayIdx].day = dayIdx + 1;
+              savePlan(activePlan);
+              renderMealPlan(activePlan);
+            }
+          } catch {} finally {
+            btn.classList.remove("spinning"); btn.disabled = false;
+          }
+        });
+      });
+
+      // Share plan button
+      document.getElementById("planShareBtn")?.addEventListener("click", () => {
+        const text = buildPlanText(activePlan);
+        if (navigator.share) {
+          navigator.share({ title: "My Simmer Meal Plan", text }).catch(() => {});
+        } else {
+          navigator.clipboard.writeText(text).then(() => {
+            const btn = document.getElementById("planShareBtn");
+            if (btn) { btn.textContent = "✅ Copied!"; setTimeout(() => { btn.textContent = "📤 Share plan"; }, 2200); }
+          }).catch(() => {});
+        }
+      });
     }
 
     function renderResults(items, mode) {
@@ -4268,7 +4524,7 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            days: 3,
+            days: planDays,
             meals_per_day: 2,
             time_available: state.time_available,
             mood: state.mood,
@@ -4345,7 +4601,20 @@
 
     el.planBtn.addEventListener("click", (e) => {
       addRipple(el.planBtn, e);
+      // Toggle duration row visibility
+      const durRow = document.getElementById("planDurationRow");
+      if (durRow) durRow.style.display = durRow.style.display === "none" ? "flex" : "none";
       getMealPlan();
+    });
+
+    // Duration picker
+    document.querySelectorAll(".planDurBtn[data-dur]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".planDurBtn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        planDays = Number(btn.dataset.dur);
+        getMealPlan();
+      });
     });
 
     el.servingMinusBtn.addEventListener("click", () => {
