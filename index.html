@@ -2545,6 +2545,188 @@
     }
     .groceryProgress span { color: var(--accent); font-weight: 800; }
 
+    /* ══════════════════════════════════════════════
+       DARK MODE
+       ══════════════════════════════════════════════ */
+    [data-theme="dark"] {
+      --bg0:          #0f0a05;
+      --bg1:          #1c1209;
+      --ink:          #fdf4e8;
+      --muted:        #c4a57a;
+      --muted2:       #8a6840;
+      --surface:      rgba(28, 18, 9, 0.94);
+      --surfaceStrong:rgba(28, 18, 9, 0.99);
+      --border:       rgba(90, 55, 20, 0.55);
+      --borderSoft:   rgba(255, 255, 255, 0.08);
+      --shadow:       0 20px 50px -12px rgba(0,0,0,0.55);
+      --shadow-hover: 0 32px 64px -12px rgba(0,0,0,0.65);
+      --accentGlow:   rgba(249, 115, 22, 0.18);
+      --goldBg:       rgba(120, 50, 10, 0.28);
+      --goldInk:      #fdba74;
+      --goldBorder:   rgba(120, 60, 10, 0.45);
+    }
+    [data-theme="dark"] body {
+      background:
+        radial-gradient(circle at 0% 0%,   rgba(249,115,22,0.08) 0%, transparent 50%),
+        radial-gradient(circle at 100% 100%, rgba(249,115,22,0.04) 0%, transparent 50%),
+        #0f0a05;
+    }
+    [data-theme="dark"] .glass {
+      background: var(--surface);
+      border-color: var(--border);
+    }
+    [data-theme="dark"] .btn.secondary {
+      background: rgba(40,25,10,0.9);
+      color: var(--ink);
+      border-color: var(--border);
+    }
+    [data-theme="dark"] .foodCard,
+    [data-theme="dark"] .miniRecipeCard,
+    [data-theme="dark"] .groceryItem,
+    [data-theme="dark"] .colPicker,
+    [data-theme="dark"] .reportSheet,
+    [data-theme="dark"] .collectionsSheet,
+    [data-theme="dark"] .goalSetupSheet,
+    [data-theme="dark"] .onboardCard {
+      background: var(--bg1);
+      border-color: var(--border);
+    }
+    [data-theme="dark"] .obChoice { background: #241508; }
+    [data-theme="dark"] .modal { background: var(--bg1); }
+    [data-theme="dark"] .tagInputWrap { background: #1c1209; }
+    [data-theme="dark"] .goalMacroItem { background: rgba(249,115,22,0.1); }
+
+    * { transition: background-color 0.25s ease, border-color 0.25s ease, color 0.18s ease; }
+
+    .themeBtn {
+      background: none; border: 1px solid var(--border);
+      border-radius: 999px; width: 32px; height: 32px;
+      font-size: 0.9rem; cursor: pointer;
+      display: grid; place-items: center; transition: all 0.18s;
+    }
+    .themeBtn:hover { border-color: var(--accent); }
+
+    /* ══════════════════════════════════════════════
+       SHAREABLE RECIPE CARD
+       ══════════════════════════════════════════════ */
+    .shareCardOverlay {
+      position: fixed; inset: 0; z-index: 210;
+      background: rgba(0,0,0,0.86);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px; padding: 20px;
+      animation: obFadeIn 0.3s ease both;
+    }
+    .shareCardOverlay.hidden { display: none; }
+
+    .shareCard {
+      width: min(400px, 90vw);
+      aspect-ratio: 1;
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+    }
+    .shareCardImg {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+    }
+    .shareCardGrad {
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        to top,
+        rgba(15,5,0,0.92) 0%,
+        rgba(15,5,0,0.55) 45%,
+        rgba(15,5,0,0.1)  100%
+      );
+    }
+    .shareCardContent {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      justify-content: flex-end; padding: 24px;
+    }
+    .shareCardBrand {
+      position: absolute; top: 18px; right: 20px;
+      font-family: 'Fraunces', serif; font-weight: 900;
+      font-size: 1rem; color: rgba(255,255,255,0.85);
+      letter-spacing: -0.01em;
+    }
+    .shareCardName {
+      font-family: 'Fraunces', serif; font-weight: 900;
+      font-size: clamp(1.2rem, 5vw, 1.6rem);
+      color: #fff; line-height: 1.15; margin-bottom: 8px;
+    }
+    .shareCardMeta {
+      display: flex; gap: 12px;
+      font-size: 0.82rem; font-weight: 700; color: rgba(255,255,255,0.8);
+    }
+    .shareCardMetaItem { display: flex; align-items: center; gap: 4px; }
+    .shareCardTag {
+      display: inline-block;
+      background: rgba(249,115,22,0.85);
+      color: #fff; border-radius: 999px;
+      padding: 4px 12px; font-size: 0.72rem;
+      font-weight: 800; margin-bottom: 10px;
+      text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .shareCardCTA {
+      margin-top: 8px; font-size: 0.7rem;
+      color: rgba(255,255,255,0.5);
+    }
+    .shareCardActions {
+      display: flex; gap: 10px;
+    }
+    .shareCardBtn {
+      flex: 1; padding: 13px; border-radius: 12px;
+      font-family: inherit; font-size: 0.88rem; font-weight: 800;
+      cursor: pointer; transition: all 0.15s; border: none;
+    }
+    .shareCardBtn.dl { background: #fff; color: #1a0e00; }
+    .shareCardBtn.sh {
+      background: linear-gradient(135deg,#f97316,#c2410c);
+      color: #fff; box-shadow: 0 4px 14px rgba(249,115,22,0.45);
+    }
+    .shareCardClose {
+      background: none; border: none; color: rgba(255,255,255,0.7);
+      font-size: 0.88rem; font-weight: 700; cursor: pointer;
+      padding: 4px 12px;
+    }
+
+    /* ══════════════════════════════════════════════
+       COMMUNITY FEED
+       ══════════════════════════════════════════════ */
+    .communityBar {
+      padding: 10px 20px 10px;
+      display: flex; align-items: center; gap: 12px;
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .communityLabel {
+      font-size: 0.72rem; font-weight: 800;
+      color: var(--muted); white-space: nowrap;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      padding-right: 10px; border-right: 1px solid var(--border);
+    }
+    .communityFeedTrack { overflow: hidden; flex: 1; }
+    .communityFeedInner {
+      display: inline-flex; gap: 10px; white-space: nowrap;
+      animation: tickerScroll 44s linear infinite;
+    }
+    .communityFeedInner:hover { animation-play-state: paused; }
+    .communityPill {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: 999px; padding: 5px 12px 5px 5px;
+      font-size: 0.74rem; font-weight: 600; color: var(--ink);
+    }
+    .communityAvatar {
+      width: 22px; height: 22px; border-radius: 999px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      display: grid; place-items: center;
+      font-size: 0.62rem; font-weight: 900; color: #fff; flex: 0 0 auto;
+    }
+    .communityTime { color: var(--muted2); font-weight: 600; }
+
     /* ── Offline banner ──────────────────────────── */
     .offlineBanner {
       display: none;
@@ -2574,7 +2756,10 @@
         <p>Stop scrolling. Start cooking.</p>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-        <div class="microcopy" id="microcopy">Dinner ready in 15 mins &#9889;</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="themeBtn" id="themeBtn" type="button" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
+          <div class="microcopy" id="microcopy">Dinner ready in 15 mins &#9889;</div>
+        </div>
         <button id="weeklyReportBtn" type="button"
           style="background:none;border:1px solid var(--border);border-radius:999px;padding:4px 12px;font-family:inherit;font-size:0.72rem;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all 0.15s"
           onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
@@ -2609,6 +2794,13 @@
           <span>Aloo Paratha</span><span class="tDot">·</span>
           <span>Mutton Rogan Josh</span><span class="tDot">·</span>
         </span>
+      </div>
+    </div>
+
+    <div class="communityBar" id="communityBar" aria-label="Community activity">
+      <span class="communityLabel">👥 Live</span>
+      <div class="communityFeedTrack">
+        <div class="communityFeedInner" id="communityFeed"><!-- injected by JS --></div>
       </div>
     </div>
 
@@ -2750,6 +2942,7 @@
       <div class="substitutionBox" id="substitutionBox"></div>
       <div class="recipeActionRow">
         <button class="actionChip" id="shareRecipeBtn" type="button">&#128279; Share</button>
+        <button class="actionChip" id="shareCardBtn" type="button">🖼️ Card</button>
         <button class="actionChip" id="exportGroceryBtn" type="button">&#128722; Grocery list</button>
       </div>
       <p class="stepLabel" id="stepCountLabel">Step 1</p>
@@ -2781,6 +2974,16 @@
       </div>
       <button class="skipRating" id="skipRatingBtn" type="button">Skip for now</button>
     </div>
+  </div>
+
+  <!-- Shareable recipe card overlay -->
+  <div class="shareCardOverlay hidden" id="shareCardOverlay">
+    <div class="shareCard" id="shareCardEl"><!-- injected by JS --></div>
+    <div class="shareCardActions">
+      <button class="shareCardBtn dl" id="shareCardDownload" type="button">⬇️ Download</button>
+      <button class="shareCardBtn sh" id="shareCardShare" type="button">📤 Share</button>
+    </div>
+    <button class="shareCardClose" id="shareCardClose" type="button">✕ Close</button>
   </div>
 
   <!-- Collections overlay -->
@@ -2870,6 +3073,7 @@
       nextStepBtn: document.getElementById("nextStepBtn"),
       closeModalBtn: document.getElementById("closeModalBtn"),
       shareRecipeBtn: document.getElementById("shareRecipeBtn"),
+      shareCardBtn: document.getElementById("shareCardBtn"),
       exportGroceryBtn: document.getElementById("exportGroceryBtn"),
       searchInput: document.getElementById("searchInput"),
       streakBanner: document.getElementById("streakBanner"),
@@ -4192,6 +4396,11 @@
         if (activeRecipe) shareRecipe(activeRecipe);
       });
     }
+    if (el.shareCardBtn) {
+      el.shareCardBtn.addEventListener("click", () => {
+        if (activeRecipe) buildShareCard(activeRecipe);
+      });
+    }
     if (el.exportGroceryBtn) {
       el.exportGroceryBtn.addEventListener("click", () => {
         if (activeRecipe) exportGrocery(activeRecipe);
@@ -4323,6 +4532,189 @@
         img.style.backgroundPositionY = `${50 + dy * 7}%`;
       });
     });
+
+    // ══════════════════════════════════════════════
+    // DARK MODE
+    // ══════════════════════════════════════════════
+    const THEME_KEY = "simmer_theme_v1";
+
+    function applyTheme(dark) {
+      document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+      const btn = document.getElementById("themeBtn");
+      if (btn) btn.textContent = dark ? "☀️" : "🌙";
+    }
+
+    function initTheme() {
+      const saved = localStorage.getItem(THEME_KEY);
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const isDark = saved ? saved === "dark" : prefersDark;
+      applyTheme(isDark);
+      document.getElementById("themeBtn")?.addEventListener("click", () => {
+        const nowDark = document.documentElement.getAttribute("data-theme") === "dark";
+        applyTheme(!nowDark);
+        localStorage.setItem(THEME_KEY, !nowDark ? "dark" : "light");
+      });
+    }
+
+    // ══════════════════════════════════════════════
+    // SHAREABLE RECIPE CARD
+    // ══════════════════════════════════════════════
+    function buildShareCard(recipe) {
+      const overlay  = document.getElementById("shareCardOverlay");
+      const cardEl   = document.getElementById("shareCardEl");
+      if (!overlay || !cardEl || !recipe) return;
+
+      const imgUrl   = dishImageUrl(recipe.name);
+      const time     = clampInt(recipe.time_minutes, 0);
+      const cal      = clampInt(recipe.calories, 0);
+      const diff     = titleCase(recipe.difficulty || "easy");
+      const cat      = titleCase(recipe.category   || "");
+
+      cardEl.innerHTML = `
+        <div class="shareCardImg" style="background-image:url('${imgUrl}')"></div>
+        <div class="shareCardGrad"></div>
+        <div class="shareCardContent">
+          <span class="shareCardBrand">🔥 Simmer</span>
+          ${cat ? `<span class="shareCardTag">${escapeHtml(cat)}</span>` : ""}
+          <div class="shareCardName">${escapeHtml(recipe.name)}</div>
+          <div class="shareCardMeta">
+            <span class="shareCardMetaItem">⏱️ ${time} min</span>
+            ${cal ? `<span class="shareCardMetaItem">🔥 ${cal} cal</span>` : ""}
+            <span class="shareCardMetaItem">⭐ ${diff}</span>
+          </div>
+          <div class="shareCardCTA">simmer.vercel.app</div>
+        </div>
+      `;
+
+      overlay.classList.remove("hidden");
+
+      // Download via canvas
+      document.getElementById("shareCardDownload").onclick = () => {
+        const canvas  = document.createElement("canvas");
+        canvas.width  = 1080; canvas.height = 1080;
+        const ctx     = canvas.getContext("2d");
+        const img     = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          // background image
+          ctx.drawImage(img, 0, 0, 1080, 1080);
+          // gradient overlay
+          const grad = ctx.createLinearGradient(0, 400, 0, 1080);
+          grad.addColorStop(0, "rgba(15,5,0,0.1)");
+          grad.addColorStop(0.45, "rgba(15,5,0,0.6)");
+          grad.addColorStop(1, "rgba(15,5,0,0.92)");
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, 1080, 1080);
+          // Simmer brand
+          ctx.fillStyle = "rgba(255,255,255,0.85)";
+          ctx.font = "bold 38px serif";
+          ctx.textAlign = "right";
+          ctx.fillText("🔥 Simmer", 1050, 60);
+          // category tag
+          if (cat) {
+            ctx.fillStyle = "#f97316";
+            ctx.beginPath(); ctx.roundRect(60, 820, cat.length * 22 + 40, 46, 23); ctx.fill();
+            ctx.fillStyle = "#fff";
+            ctx.font = "bold 28px sans-serif";
+            ctx.textAlign = "left";
+            ctx.fillText(cat.toUpperCase(), 80, 852);
+          }
+          // recipe name
+          ctx.fillStyle = "#fff";
+          ctx.font = "bold 68px serif";
+          ctx.textAlign = "left";
+          const words = recipe.name.split(" ");
+          let line = ""; let y = cat ? 920 : 880;
+          words.forEach(w => {
+            const test = line + w + " ";
+            if (ctx.measureText(test).width > 960 && line) { ctx.fillText(line, 60, y); line = w + " "; y += 78; }
+            else line = test;
+          });
+          ctx.fillText(line, 60, y);
+          // meta
+          ctx.fillStyle = "rgba(255,255,255,0.75)";
+          ctx.font = "600 32px sans-serif";
+          ctx.fillText(`⏱ ${time} min  •  🔥 ${cal || "~"} cal`, 60, y + 52);
+          // cta
+          ctx.fillStyle = "rgba(255,255,255,0.45)";
+          ctx.font = "500 24px sans-serif";
+          ctx.fillText("simmer.vercel.app", 60, 1050);
+          // download
+          canvas.toBlob(blob => {
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `${recipe.name.replace(/\s+/g,"-")}-simmer.png`;
+            a.click();
+          });
+        };
+        img.onerror = () => {
+          // fallback: orange bg
+          ctx.fillStyle = "#f97316";
+          ctx.fillRect(0, 0, 1080, 1080);
+          ctx.fillStyle = "#fff";
+          ctx.font = "bold 72px serif";
+          ctx.textAlign = "center";
+          ctx.fillText(recipe.name, 540, 540);
+          canvas.toBlob(blob => {
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = `${recipe.name.replace(/\s+/g,"-")}-simmer.png`;
+            a.click();
+          });
+        };
+        img.src = imgUrl;
+      };
+
+      // Share
+      document.getElementById("shareCardShare").onclick = () => {
+        const text = `🔥 Just cooked ${recipe.name} on Simmer!\n⏱ ${time} min · ${cal ? `🔥 ${cal} cal` : ""}\n\nFind your next meal → https://mealskart-frontend.vercel.app/`;
+        if (navigator.share) navigator.share({ title: recipe.name, text }).catch(() => {});
+        else navigator.clipboard.writeText(text).then(() => {
+          document.getElementById("shareCardShare").textContent = "✅ Copied!";
+          setTimeout(() => { document.getElementById("shareCardShare").textContent = "📤 Share"; }, 2000);
+        }).catch(() => {});
+      };
+
+      document.getElementById("shareCardClose").onclick = closeShareCard;
+      overlay.onclick = e => { if (e.target === overlay) closeShareCard(); };
+    }
+
+    function closeShareCard() {
+      const overlay = document.getElementById("shareCardOverlay");
+      overlay.style.opacity = "0"; overlay.style.transition = "opacity 0.22s ease";
+      setTimeout(() => { overlay.classList.add("hidden"); overlay.style.opacity = ""; overlay.style.transition = ""; }, 220);
+    }
+
+    // ══════════════════════════════════════════════
+    // COMMUNITY FEED
+    // ══════════════════════════════════════════════
+    function initCommunityFeed() {
+      const names  = ["Priya","Arjun","Neha","Rahul","Ananya","Vikram","Pooja","Karan","Divya","Rohan","Meera","Aditya","Sonia","Nikhil","Kavya","Amit","Sneha","Rajesh","Deepika","Suresh"];
+      const dishes = ["Butter Chicken","Paneer Tikka","Dal Makhani","Chicken Biryani","Palak Paneer","Masala Dosa","Chole Bhature","Aloo Paratha","Mutton Rogan Josh","Pav Bhaji","Rajma Chawal","Kadai Paneer","Fish Curry","Sambar Rice","Chicken Curry","Baingan Bharta","Egg Bhurji","Panner Butter Masala","Methi Malai Murg","Dahi Puri"];
+      const times  = ["just now","2 min ago","5 min ago","8 min ago","12 min ago","18 min ago","22 min ago","30 min ago","45 min ago","1 hr ago"];
+
+      // Deterministic seed from current 10-min window so it "updates" periodically
+      const seed   = Math.floor(Date.now() / (10 * 60 * 1000));
+      const seeded = (n) => ((seed * 1664525 + 1013904223 + n * 22695477) >>> 0);
+
+      const feed = document.getElementById("communityFeed");
+      if (!feed) return;
+
+      const items = Array.from({ length: 24 }, (_, i) => {
+        const nameIdx  = seeded(i * 3)     % names.length;
+        const dishIdx  = seeded(i * 3 + 1) % dishes.length;
+        const timeIdx  = seeded(i * 3 + 2) % times.length;
+        const initial  = names[nameIdx][0];
+        return `
+          <div class="communityPill">
+            <div class="communityAvatar">${initial}</div>
+            <span><strong>${names[nameIdx]}</strong> cooked ${dishes[dishIdx]}</span>
+            <span class="communityTime">· ${times[timeIdx]}</span>
+          </div>`;
+      }).join("");
+
+      feed.innerHTML = items + items; // duplicate for seamless loop
+    }
 
     // ══════════════════════════════════════════════
     // VOICE INPUT
@@ -5289,6 +5681,8 @@
     }
 
     // ── Boot
+    initTheme();
+    initCommunityFeed();
     initVoiceInput();
     bindInputs();
     loadPreferences();
