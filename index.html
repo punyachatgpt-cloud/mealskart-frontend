@@ -15,7 +15,7 @@
   <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=192&h=192&fit=crop" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Manrope:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
       /* Midnight Spice Market — Premium Culinary Palette */
@@ -2946,6 +2946,192 @@
       from { transform: translateY(-100%); }
       to   { transform: translateY(0); }
     }
+
+    /* ════════════════════════════════════════════════════
+       EMBER DESIGN SYSTEM — SURGICAL ENHANCEMENT LAYER
+       Purely additive. No feature CSS removed.
+       ════════════════════════════════════════════════════ */
+
+    /* ① Extended design tokens */
+    :root {
+      --ember-gradient:     linear-gradient(135deg, #C8690E 0%, #9E4E08 65%, #7C3500 100%);
+      --ember-glow:         0 6px 24px rgba(200,105,14,0.38), 0 1px 3px rgba(0,0,0,0.12);
+      --ember-glow-lg:      0 14px 44px rgba(200,105,14,0.50), 0 2px 6px rgba(0,0,0,0.15);
+      --transition-spring:  0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+      --transition-smooth:  0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      --font-body-new:      'Inter', 'Manrope', system-ui, sans-serif;
+    }
+    [data-theme="dark"] {
+      --ember-gradient:  linear-gradient(135deg, #E8A020 0%, #C07808 65%, #9E5C00 100%);
+      --ember-glow:      0 6px 24px rgba(232,160,32,0.40), 0 1px 3px rgba(0,0,0,0.25);
+      --ember-glow-lg:   0 14px 44px rgba(232,160,32,0.52), 0 2px 6px rgba(0,0,0,0.30);
+    }
+
+    /* ② Body — switch to Inter for body copy */
+    body { font-family: 'Inter', 'Manrope', system-ui, sans-serif; }
+
+    /* ③ Pill-shaped chips with spring micro-interaction */
+    .chip {
+      border-radius: 999px;
+      padding: 9px 20px;
+      transition: transform var(--transition-spring),
+                  box-shadow var(--transition-smooth),
+                  border-color var(--transition-smooth),
+                  background var(--transition-smooth);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .chip:hover {
+        transform: translateY(-2px) scale(1.04);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+      }
+      .chip.selected:hover { transform: translateY(-2px) scale(1.05); }
+    }
+    .chip:active { transform: scale(0.94) !important; transition-duration: 0.1s !important; }
+    .chip.selected { transform: scale(1.02); }
+
+    /* ④ Primary CTA — ember gradient + boosted glow */
+    .btn:not(.secondary) {
+      background: var(--ember-gradient);
+      box-shadow: var(--ember-glow);
+    }
+    @media (hover: hover) and (pointer: fine) {
+      .btn:not(.secondary):hover {
+        box-shadow: var(--ember-glow-lg);
+        filter: brightness(1.06);
+      }
+    }
+
+    /* ⑤ Hero card — cinematic 380px image + deep overlay */
+    .foodCard.heroCard .foodImg { height: 380px; }
+    .foodCard.heroCard .foodImg::after {
+      background: linear-gradient(
+        180deg,
+        rgba(0,0,0,0.00)  0%,
+        rgba(0,0,0,0.08) 40%,
+        rgba(0,0,0,0.70) 82%,
+        rgba(0,0,0,0.90) 100%
+      );
+    }
+    .foodCard.heroCard .imageTitle {
+      font-size: 1.6rem;
+      line-height: 1.08;
+      text-shadow: 0 2px 28px rgba(0,0,0,0.70), 0 1px 4px rgba(0,0,0,0.45);
+    }
+
+    /* ⑥ Trending strip — editorial fade masks + pill items */
+    .trendingBar {
+      position: relative;
+      mask-image: linear-gradient(90deg,
+        transparent 0px, black 36px, black calc(100% - 36px), transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg,
+        transparent 0px, black 36px, black calc(100% - 36px), transparent 100%);
+    }
+
+    /* ⑦ Community bar — feed fade masks */
+    .communityFeedTrack {
+      mask-image: linear-gradient(90deg,
+        transparent 0px, black 20px, black calc(100% - 20px), transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg,
+        transparent 0px, black 20px, black calc(100% - 20px), transparent 100%);
+    }
+    /* Live pulse dot */
+    .communityLiveDot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      margin-right: 5px;
+      vertical-align: middle;
+      flex-shrink: 0;
+      animation: livePulse 2.2s ease-in-out infinite;
+    }
+    @keyframes livePulse {
+      0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,197,94,0.6); }
+      50%      { opacity: 0.8; box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+    }
+
+    /* ⑧ Streak flame flicker */
+    .streakFlame {
+      display: inline-block;
+      transform-origin: center bottom;
+      animation: flickerFlame 1.9s ease-in-out infinite;
+    }
+    @keyframes flickerFlame {
+      0%,100% { transform: scale(1.00) rotate(-3deg); filter: brightness(1.00); }
+      20%     { transform: scale(1.22) rotate( 4deg); filter: brightness(1.18); }
+      45%     { transform: scale(1.08) rotate(-2deg); filter: brightness(0.94); }
+      70%     { transform: scale(1.18) rotate( 3deg); filter: brightness(1.12); }
+    }
+
+    /* ⑨ Brand h1 — warm ember sweep in dark mode */
+    [data-theme="dark"] .brand h1 {
+      background: linear-gradient(
+        120deg,
+        #F2E5CC 0%,
+        #E8A020 22%,
+        #F5C060 50%,
+        #E8A020 78%,
+        #F2E5CC 100%
+      );
+      background-size: 280% 280%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: brandGradient 6.5s ease-in-out infinite;
+    }
+
+    /* ⑩ Smart chips on recipe cards — pill */
+    .smartChip { border-radius: 999px; }
+
+    /* ⑪ Food card hover — ring + lift */
+    @media (hover: hover) and (pointer: fine) {
+      .foodCard:hover {
+        box-shadow: 0 28px 56px -8px rgba(15,23,42,0.22),
+                    0 0 0 1.5px var(--accent);
+      }
+      [data-theme="dark"] .foodCard:hover {
+        box-shadow: 0 28px 56px -8px rgba(0,0,0,0.55),
+                    0 0 0 1.5px var(--accent);
+      }
+    }
+
+    /* ⑫ Mobile bar — dark mode glass */
+    [data-theme="dark"] .mobileBar {
+      background: rgba(18,9,4,0.97);
+      border-color: rgba(180,110,45,0.28);
+    }
+
+    /* ⑬ Ingredient tags — pill */
+    .ingredientTag { border-radius: 999px; }
+
+    /* ⑭ Search input — Inter */
+    .searchInput, .field, .tagTextInput {
+      font-family: 'Inter', 'Manrope', system-ui, sans-serif;
+    }
+    .searchDropdown { border-radius: 20px; overflow: hidden; }
+
+    /* ⑮ Onboarding shimmer bar — ember colors */
+    .onboardCard::before {
+      background: linear-gradient(90deg, #C8690E, #E8A020, #C8690E);
+      background-size: 200%;
+    }
+    [data-theme="dark"] .onboardCard::before {
+      background: linear-gradient(90deg, #E8A020, #F5C060, #E8A020);
+      background-size: 200%;
+    }
+
+    /* ⑯ Action chips (share/grocery row) — pill + ember hover */
+    .recipeActionRow .actionChip {
+      border-radius: 999px;
+    }
+
+    /* ⑰ Plan duration buttons — pill */
+    .planDurBtn {
+      border-radius: 999px !important;
+    }
+
+    /* ⑱ Filter pill labels (search 2.0 quick filters) */
+    .filterChip { border-radius: 999px !important; }
   </style>
 </head>
 <body>
@@ -2998,7 +3184,7 @@
     </div>
 
     <div class="communityBar" id="communityBar" aria-label="Community activity">
-      <span class="communityLabel">👥 Live</span>
+      <span class="communityLabel"><span class="communityLiveDot" aria-hidden="true"></span>👥 Live</span>
       <div class="communityFeedTrack">
         <div class="communityFeedInner" id="communityFeed"><!-- injected by JS --></div>
       </div>
