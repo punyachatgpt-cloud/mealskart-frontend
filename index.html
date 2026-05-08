@@ -2762,6 +2762,149 @@
       border-color: var(--border);
     }
     /* ══════════════════════════════════════════════
+       AI CHEF CHAT (H)
+       ══════════════════════════════════════════════ */
+    .chefFab {
+      position: fixed; bottom: 24px; right: 20px; z-index: 300;
+      display: flex; align-items: center; gap: 8px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 999px;
+      padding: 13px 20px 13px 16px;
+      font-family: 'Manrope', sans-serif; font-size: 0.9rem; font-weight: 800;
+      cursor: pointer; box-shadow: 0 8px 28px rgba(200,105,14,0.45);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .chefFab:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(200,105,14,0.55); }
+    .chefFab:active { transform: scale(0.96); }
+    .chefFab .chefFabIcon { font-size: 1.15rem; }
+    .chefFab .chefFabUnread {
+      position: absolute; top: -4px; right: -4px;
+      background: #ef4444; color: #fff; border-radius: 999px;
+      font-size: 0.65rem; font-weight: 900; padding: 2px 6px;
+      display: none;
+    }
+    .chefFab .chefFabUnread.visible { display: block; }
+
+    .chefChatOverlay {
+      position: fixed; inset: 0; z-index: 310;
+      background: rgba(20,10,0,0.55); backdrop-filter: blur(4px);
+      display: flex; align-items: flex-end; justify-content: center;
+      padding-bottom: 0;
+    }
+    .chefChatOverlay.hidden { display: none; }
+    .chefChatPanel {
+      background: var(--bg0); border-radius: 28px 28px 0 0;
+      width: min(560px, 100%); height: 82vh;
+      display: flex; flex-direction: column;
+      box-shadow: 0 -20px 60px rgba(80,30,5,0.25);
+      animation: reportSlideUp 0.35s cubic-bezier(0.34,1.08,0.64,1) both;
+    }
+    .chefChatHead {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px 14px; border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .chefChatHeadLeft { display: flex; align-items: center; gap: 10px; }
+    .chefAvatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: linear-gradient(135deg, #C8690E, #7C2D12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+    }
+    .chefChatTitle { font-size: 0.95rem; font-weight: 800; color: var(--ink); }
+    .chefChatSub { font-size: 0.72rem; color: var(--muted2); font-weight: 600; }
+    .chefChatMessages {
+      flex: 1; overflow-y: auto; padding: 16px 16px 8px;
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .chatBubble {
+      max-width: 85%; display: flex; flex-direction: column; gap: 4px;
+    }
+    .chatBubble.user { align-self: flex-end; align-items: flex-end; }
+    .chatBubble.ai   { align-self: flex-start; align-items: flex-start; }
+    .chatBubbleText {
+      padding: 10px 14px; border-radius: 18px;
+      font-size: 0.88rem; line-height: 1.5; font-weight: 500;
+    }
+    .chatBubble.user .chatBubbleText {
+      background: var(--accent); color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .chatBubble.ai .chatBubbleText {
+      background: var(--bg1); border: 1px solid var(--border); color: var(--ink);
+      border-bottom-left-radius: 4px;
+    }
+    .chatThinking {
+      display: flex; align-items: center; gap: 4px;
+      padding: 12px 16px; background: var(--bg1);
+      border: 1px solid var(--border); border-radius: 18px; border-bottom-left-radius: 4px;
+    }
+    .chatDot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--muted2);
+      animation: chatDotBounce 1.2s infinite;
+    }
+    .chatDot:nth-child(2) { animation-delay: 0.2s; }
+    .chatDot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes chatDotBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-6px); }
+    }
+    /* Recipe result cards inside chat */
+    .chatRecipeList { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; width: 100%; max-width: 340px; }
+    .chatRecipeCard {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: 14px; padding: 10px 12px; cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .chatRecipeCard:hover { border-color: var(--accent); box-shadow: 0 4px 16px var(--accentGlow); }
+    .chatRecipeThumb {
+      width: 48px; height: 48px; border-radius: 10px; flex-shrink: 0;
+      background-size: cover; background-position: center;
+      background-color: rgba(200,105,14,0.15);
+    }
+    .chatRecipeName { font-size: 0.85rem; font-weight: 800; color: var(--ink); }
+    .chatRecipeMeta { font-size: 0.72rem; color: var(--muted2); margin-top: 2px; }
+    /* Suggestion chips */
+    .chatSuggestions {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 8px 16px 6px; flex-shrink: 0;
+    }
+    .chatSugChip {
+      padding: 6px 13px; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--bg1);
+      font-size: 0.76rem; font-weight: 700; color: var(--ink);
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    }
+    .chatSugChip:hover { border-color: var(--accent); color: var(--accent); background: var(--accentGlow); }
+    /* Input row */
+    .chefChatInputRow {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 16px 20px; border-top: 1px solid var(--border); flex-shrink: 0;
+    }
+    .chefChatInput {
+      flex: 1; border: 1.5px solid var(--border); border-radius: 999px;
+      padding: 11px 16px; font-size: 0.88rem; font-family: 'Manrope', sans-serif;
+      background: var(--bg1); color: var(--ink); outline: none;
+      transition: border-color 0.15s;
+    }
+    .chefChatInput:focus { border-color: var(--accent); }
+    .chefChatInput::placeholder { color: var(--muted2); }
+    .chefChatSend {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--accent); border: none; color: #fff;
+      font-size: 1rem; cursor: pointer; flex-shrink: 0;
+      transition: transform 0.15s; display: flex; align-items: center; justify-content: center;
+    }
+    .chefChatSend:hover { transform: scale(1.08); }
+    .chefChatSend:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    [data-theme="dark"] .chefChatPanel { background: var(--bg1); }
+    [data-theme="dark"] .chatBubble.ai .chatBubbleText,
+    [data-theme="dark"] .chatRecipeCard,
+    [data-theme="dark"] .chatThinking,
+    [data-theme="dark"] .chatSugChip { background: rgba(255,255,255,0.04); }
+
+    /* ══════════════════════════════════════════════
        SHOPPING LIST
        ══════════════════════════════════════════════ */
     .shoppingSheet {
@@ -4270,6 +4413,36 @@
       <button class="shareCardBtn sh" id="shareCardShare" type="button">📤 Share</button>
     </div>
     <button class="shareCardClose" id="shareCardClose" type="button">✕ Close</button>
+  </div>
+
+  <!-- AI Chef Chat FAB -->
+  <button class="chefFab" id="chefFab" type="button" aria-label="Ask the AI chef">
+    <span class="chefFabIcon">👨‍🍳</span>
+    <span>Ask Chef</span>
+    <span class="chefFabUnread" id="chefFabUnread"></span>
+  </button>
+
+  <!-- AI Chef Chat overlay -->
+  <div class="chefChatOverlay hidden" id="chefChatOverlay" role="dialog" aria-modal="true" aria-label="AI Chef Chat">
+    <div class="chefChatPanel" id="chefChatPanel">
+      <div class="chefChatHead">
+        <div class="chefChatHeadLeft">
+          <div class="chefAvatar">👨‍🍳</div>
+          <div>
+            <div class="chefChatTitle">Chef Simmer</div>
+            <div class="chefChatSub">AI · Knows 500+ Indian recipes</div>
+          </div>
+        </div>
+        <button class="closeBtn" id="closeChefChat" type="button">Close</button>
+      </div>
+      <div class="chefChatMessages" id="chefChatMessages"></div>
+      <div class="chatSuggestions" id="chatSuggestions"></div>
+      <div class="chefChatInputRow">
+        <input class="chefChatInput" id="chefChatInput" type="text"
+          placeholder="e.g. Quick dinner with paneer…" autocomplete="off" />
+        <button class="chefChatSend" id="chefChatSend" type="button" aria-label="Send">➤</button>
+      </div>
+    </div>
   </div>
 
   <!-- Shopping List overlay -->
@@ -8714,6 +8887,208 @@
     }
     // ── end shopping list ─────────────────────────
 
+    // ══════════════════════════════════════════════
+    // H — AI CHEF CHAT
+    // ══════════════════════════════════════════════
+    const CHAT_HISTORY_KEY = "simmer_chat_v1";
+    const CHAT_SUGGESTIONS = [
+      "Quick dinner ideas 🕐",
+      "Healthy breakfast 🥗",
+      "Spicy non-veg tonight 🌶",
+      "15-min meals ⚡",
+      "What to make with paneer?",
+      "High protein lunch 💪",
+    ];
+
+    let chatHistory = [];   // { role: "user"|"ai", text, recipes? }
+    let chefChatBusy = false;
+
+    // ── NLP: extract intent from user message ──────
+    function parseChefMessage(msg) {
+      const m = msg.toLowerCase();
+      const params = { ...state };   // start from current UI state
+
+      // Time
+      if (/\b(quick|fast|speedy|asap|hurry|rush|15.?min|10.?min)\b/.test(m)) params.time_available = 15;
+      else if (/\b30.?min|\bhalf.?hour\b/.test(m)) params.time_available = 30;
+      else if (/\b(1.?hour|60.?min|slow.?cook|leisurely)\b/.test(m)) params.time_available = 60;
+
+      // Mood
+      if (/\b(healthy|light|diet|low.?cal|clean.?eat|nutritious|wholesome)\b/.test(m)) params.mood = "healthy";
+      else if (/\b(comfort|cozy|indulg|rich|creamy|hearty|soul)\b/.test(m)) params.mood = "comfort";
+      else if (/\b(quick|fast)\b/.test(m)) params.mood = "quick";
+
+      // Diet
+      if (/\b(vegan)\b/.test(m)) params.diet = "vegan";
+      else if (/\b(veg(etarian)?|no.?meat|meatless|plant)\b/.test(m)) params.diet = "veg";
+      else if (/\b(non.?veg|chicken|mutton|lamb|egg|fish|prawn|meat)\b/.test(m)) params.diet = "nonveg";
+
+      // Extract a short query — first noun phrase related to food
+      const dishWords = msg.match(/\b(paneer|dal|rice|roti|biryani|curry|sabzi|chicken|egg|fish|pasta|noodle|soup|salad|sandwich|paratha|dosa|idli|upma|poha|pulao|kebab|tikka|korma|butter|masala|chaat|samosa|wrap|stir.?fry|fried.?rice|rajma|chole|aloo|gobi|palak|bhindi|baingan|mutter)\b/gi);
+      const query = dishWords ? [...new Set(dishWords.map(w => w.toLowerCase()))].slice(0, 2).join(" ") : null;
+
+      return { params, query };
+    }
+
+    function chefGreeting() {
+      const hour = new Date().getHours();
+      if (hour < 11) return "Good morning! ☀️ What are we cooking today?";
+      if (hour < 15) return "Hey there! 🌿 Lunch ideas? Tell me what you're craving.";
+      if (hour < 18) return "Afternoon! ☕ Snack or planning dinner?";
+      return "Evening! 🌙 Let's figure out dinner. What are you in the mood for?";
+    }
+
+    function renderChatMessages() {
+      const container = document.getElementById("chefChatMessages");
+      if (!container) return;
+      container.innerHTML = "";
+
+      for (const msg of chatHistory) {
+        const wrap = document.createElement("div");
+        wrap.className = `chatBubble ${msg.role}`;
+
+        if (msg.role === "ai" && msg.thinking) {
+          wrap.innerHTML = `<div class="chatThinking"><div class="chatDot"></div><div class="chatDot"></div><div class="chatDot"></div></div>`;
+        } else if (msg.role === "ai" && msg.recipes?.length) {
+          const recipeCards = msg.recipes.map(r => `
+            <div class="chatRecipeCard" data-id="${r.id}">
+              <div class="chatRecipeThumb" style="background-image:url('${dishImageUrl(r.name)}')"></div>
+              <div>
+                <div class="chatRecipeName">${r.name}</div>
+                <div class="chatRecipeMeta">⏱ ${clampInt(r.time_minutes,0)} min · ${clampInt(r.calories||0,0)} kcal</div>
+              </div>
+            </div>
+          `).join("");
+          wrap.innerHTML = `
+            <div class="chatBubbleText">${msg.text}</div>
+            <div class="chatRecipeList">${recipeCards}</div>
+          `;
+          // Wire recipe card clicks
+          setTimeout(() => {
+            wrap.querySelectorAll(".chatRecipeCard").forEach(card => {
+              card.addEventListener("click", () => {
+                closeChefChat();
+                openRecipeModal(card.dataset.id);
+              });
+            });
+          }, 0);
+        } else {
+          wrap.innerHTML = `<div class="chatBubbleText">${msg.text}</div>`;
+        }
+        container.appendChild(wrap);
+      }
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function renderChatSuggestions(show) {
+      const box = document.getElementById("chatSuggestions");
+      if (!box) return;
+      if (!show) { box.innerHTML = ""; return; }
+      box.innerHTML = CHAT_SUGGESTIONS.map(s =>
+        `<button class="chatSugChip" type="button">${s}</button>`
+      ).join("");
+      box.querySelectorAll(".chatSugChip").forEach(chip => {
+        chip.addEventListener("click", () => sendChefMessage(chip.textContent.replace(/[🕐🥗🌶⚡💪]/g, "").trim()));
+      });
+    }
+
+    async function sendChefMessage(text) {
+      const input = document.getElementById("chefChatInput");
+      const sendBtn = document.getElementById("chefChatSend");
+      const msg = (text || input?.value || "").trim();
+      if (!msg || chefChatBusy) return;
+
+      if (input) input.value = "";
+      renderChatSuggestions(false);
+      chefChatBusy = true;
+      if (sendBtn) sendBtn.disabled = true;
+
+      // Add user bubble
+      chatHistory.push({ role: "user", text: msg });
+      // Add thinking bubble
+      const thinkId = Date.now();
+      chatHistory.push({ role: "ai", thinking: true, _id: thinkId });
+      renderChatMessages();
+
+      try {
+        const { params, query } = parseChefMessage(msg);
+        const ingredients = getIngredients();
+        const body = { ...params, mode: "normal", ingredients };
+        if (query) body.query = query;
+
+        const response = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        const data = await response.json();
+        const recipes = Array.isArray(data) ? data.slice(0, 3) : [];
+
+        // Remove thinking bubble, add real response
+        chatHistory = chatHistory.filter(m => !m.thinking);
+
+        if (recipes.length === 0) {
+          chatHistory.push({ role: "ai", text: "Hmm, I couldn't find anything matching that right now. Try changing the mood or time filter and asking again! 🙏" });
+        } else {
+          const lead = recipes.length === 1
+            ? `Here's something perfect for you:`
+            : `Here are ${recipes.length} great options I found:`;
+          chatHistory.push({ role: "ai", text: lead, recipes });
+        }
+      } catch {
+        chatHistory = chatHistory.filter(m => !m.thinking);
+        chatHistory.push({ role: "ai", text: "Oops, I ran into an issue. Check your connection and try again! 😅" });
+      } finally {
+        chefChatBusy = false;
+        if (sendBtn) sendBtn.disabled = false;
+        renderChatMessages();
+      }
+    }
+
+    function openChefChat() {
+      const overlay = document.getElementById("chefChatOverlay");
+      if (!overlay) return;
+
+      // Greet if first open
+      if (chatHistory.length === 0) {
+        chatHistory.push({ role: "ai", text: chefGreeting() });
+        renderChatSuggestions(true);
+      }
+      overlay.classList.remove("hidden");
+      renderChatMessages();
+      setTimeout(() => document.getElementById("chefChatInput")?.focus(), 300);
+    }
+
+    function closeChefChat() {
+      document.getElementById("chefChatOverlay")?.classList.add("hidden");
+    }
+
+    function initChefChat() {
+      document.getElementById("chefFab")?.addEventListener("click", openChefChat);
+      document.getElementById("closeChefChat")?.addEventListener("click", closeChefChat);
+
+      // Close on backdrop click
+      document.getElementById("chefChatOverlay")?.addEventListener("click", e => {
+        if (e.target === document.getElementById("chefChatOverlay")) closeChefChat();
+      });
+
+      // Send on button click
+      document.getElementById("chefChatSend")?.addEventListener("click", () => {
+        const val = document.getElementById("chefChatInput")?.value?.trim();
+        if (val) sendChefMessage(val);
+      });
+
+      // Send on Enter
+      document.getElementById("chefChatInput")?.addEventListener("keydown", e => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          const val = e.target.value.trim();
+          if (val) sendChefMessage(val);
+        }
+      });
+    }
+    // ── end chef chat ────────────────────────────
+
     initTheme();
     initCookMode();
     initNotifications();
@@ -8738,6 +9113,7 @@
     document.getElementById("goalBtn")?.addEventListener("click", openGoalSetup);
     document.getElementById("exploreBtn")?.addEventListener("click", openCuisineExplorer);
     initShoppingList();
+    initChefChat();
     updateExploreBadge();
 
     // "My week" button — always opens report regardless of 7-day gate
