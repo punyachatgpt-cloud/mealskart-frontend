@@ -2455,6 +2455,96 @@
       padding: 2px 8px; font-size: 0.72rem; font-weight: 800;
     }
 
+    /* ══════════════════════════════════════════════
+       VOICE INPUT
+       ══════════════════════════════════════════════ */
+    .micBtn {
+      width: 34px; height: 34px;
+      border: none; border-radius: 999px;
+      background: rgba(249,115,22,0.1);
+      color: var(--accent); font-size: 1rem;
+      cursor: pointer; display: grid; place-items: center;
+      flex: 0 0 auto; transition: all 0.18s;
+      position: relative;
+    }
+    .micBtn:hover { background: rgba(249,115,22,0.18); }
+    .micBtn.listening {
+      background: #fee2e2;
+      color: #e11d48;
+      animation: micPulse 1s ease-in-out infinite;
+    }
+    @keyframes micPulse {
+      0%,100% { box-shadow: 0 0 0 0 rgba(225,29,72,0.4); }
+      50%      { box-shadow: 0 0 0 8px rgba(225,29,72,0); }
+    }
+    .micHint {
+      font-size: 0.72rem; font-weight: 700;
+      color: var(--accent); margin-top: 4px;
+      min-height: 14px; text-align: right;
+      animation: obFadeIn 0.2s ease;
+    }
+
+    /* ══════════════════════════════════════════════
+       SMART GROCERY LIST
+       ══════════════════════════════════════════════ */
+    .groceryCats { display: grid; gap: 16px; }
+    .groceryCat {}
+    .groceryCatHead {
+      font-size: 0.78rem; font-weight: 800;
+      color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.05em; margin-bottom: 8px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .groceryItems { display: flex; flex-direction: column; gap: 4px; }
+    .groceryItem {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 10px;
+      background: var(--bg1); border: 1px solid var(--border);
+      cursor: pointer; transition: all 0.15s; user-select: none;
+    }
+    .groceryItem:hover { border-color: rgba(249,115,22,0.3); }
+    .groceryItem.checked {
+      background: rgba(22,163,74,0.06);
+      border-color: rgba(22,163,74,0.25);
+      text-decoration: line-through;
+      opacity: 0.65;
+    }
+    .groceryCheck {
+      width: 18px; height: 18px; flex: 0 0 auto;
+      border-radius: 5px; border: 2px solid var(--border);
+      display: grid; place-items: center;
+      transition: all 0.15s; font-size: 0.7rem;
+    }
+    .groceryItem.checked .groceryCheck {
+      background: #16a34a; border-color: #16a34a; color: #fff;
+    }
+    .groceryItemName { font-size: 0.88rem; font-weight: 600; color: var(--ink); flex: 1; }
+    .groceryUsedIn {
+      font-size: 0.72rem; font-weight: 700;
+      color: var(--muted2); background: var(--border);
+      border-radius: 999px; padding: 1px 7px;
+    }
+    .groceryActions {
+      display: flex; gap: 8px; margin-top: 14px;
+    }
+    .groceryActionBtn {
+      flex: 1; padding: 10px; border-radius: 10px;
+      font-family: inherit; font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; transition: all 0.15s; border: 1px solid var(--border);
+      background: var(--bg1); color: var(--ink);
+    }
+    .groceryActionBtn:hover { border-color: var(--accent); color: var(--accent); }
+    .groceryActionBtn.primary {
+      background: linear-gradient(135deg,#f97316,#c2410c);
+      color: #fff; border: none;
+      box-shadow: 0 4px 12px rgba(249,115,22,0.3);
+    }
+    .groceryProgress {
+      font-size: 0.78rem; font-weight: 700; color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .groceryProgress span { color: var(--accent); font-weight: 800; }
+
     /* ── Offline banner ──────────────────────────── */
     .offlineBanner {
       display: none;
@@ -2571,11 +2661,17 @@
           </div>
 
           <div class="section" id="ingredientsPanel">
-            <div class="label">What ingredients do you have?</div>
+            <div class="label" style="display:flex;align-items:center;justify-content:space-between">
+              What ingredients do you have?
+              <button class="micBtn" id="micBtn" type="button" title="Speak your ingredients" aria-label="Voice input">🎤</button>
+            </div>
             <div class="tagInputWrap" id="tagInputWrap" role="group" aria-label="Ingredient tags">
               <input id="tagTextInput" class="tagTextInput" placeholder="type + press Enter ↵" autocomplete="off" />
             </div>
-            <div class="tagCount" id="tagCount"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div class="tagCount" id="tagCount"></div>
+              <div class="micHint" id="micHint"></div>
+            </div>
           </div>
 
           <div class="actions">
@@ -3483,11 +3579,6 @@
         `;
       }).join("");
 
-      const groceryHtml = groceries
-        .slice(0, 22)
-        .map((item) => `<span class="ingredientChip">${escapeHtml(titleCase(item.name))}${clampInt(item.used_in, 0) > 1 ? ` x${clampInt(item.used_in, 0)}` : ""}</span>`)
-        .join("");
-
       el.results.innerHTML = `
         <section class="planWrap">
           <div class="planHeader">
@@ -3499,11 +3590,12 @@
           </div>
           <div class="planDays">${dayHtml}</div>
           <div class="groceryBox">
-            <h4>Smart grocery list</h4>
-            <div class="groceryList">${groceryHtml}</div>
+            <h4>🛒 Smart grocery list</h4>
+            <div id="groceryListContainer"></div>
           </div>
         </section>
       `;
+      renderSmartGrocery(groceries.slice(0, 40), document.getElementById("groceryListContainer"));
     }
 
     function renderResults(items, mode) {
@@ -4231,6 +4323,224 @@
         img.style.backgroundPositionY = `${50 + dy * 7}%`;
       });
     });
+
+    // ══════════════════════════════════════════════
+    // VOICE INPUT
+    // ══════════════════════════════════════════════
+    function initVoiceInput() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const micBtn  = document.getElementById("micBtn");
+      const micHint = document.getElementById("micHint");
+      if (!micBtn) return;
+
+      if (!SR) {
+        micBtn.title = "Voice input needs Chrome or Safari";
+        micBtn.style.opacity = "0.35";
+        micBtn.disabled = true;
+        return;
+      }
+
+      const recognition = new SR();
+      recognition.lang = "en-IN";
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      let isListening = false;
+
+      function setHint(txt, color) {
+        if (!micHint) return;
+        micHint.textContent = txt;
+        micHint.style.color = color || "var(--accent)";
+      }
+
+      function extractIngredients(raw) {
+        return raw
+          .toLowerCase()
+          // strip filler phrases
+          .replace(/\b(i have|i've got|i got|i need|using|with|some|a bit of|little|fresh|dried|chopped|sliced|diced|half|quarter|a few|couple of|one|two|three|four|five)\b/g, "")
+          .replace(/\band\b|\balso\b|\bplus\b|\bor\b/g, ",")
+          .replace(/[^a-z, ]/g, " ")
+          .split(",")
+          .map(s => s.trim())
+          .filter(s => s.length > 1);
+      }
+
+      micBtn.addEventListener("click", () => {
+        if (isListening) { recognition.stop(); return; }
+        try { recognition.start(); } catch {}
+      });
+
+      recognition.onstart = () => {
+        isListening = true;
+        micBtn.classList.add("listening");
+        micBtn.textContent = "🔴";
+        setHint("Listening… speak your ingredients");
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        micBtn.classList.remove("listening");
+        micBtn.textContent = "🎤";
+      };
+
+      recognition.onresult = e => {
+        const transcript = e.results[0][0].transcript;
+        const items = extractIngredients(transcript);
+        if (items.length) {
+          items.forEach(i => addTag(i));
+          setHint(`✓ Added: ${items.join(", ")}`, "#16a34a");
+          setTimeout(() => setHint(""), 3000);
+        } else {
+          setHint("Didn't catch that — try again");
+          setTimeout(() => setHint(""), 2500);
+        }
+      };
+
+      recognition.onerror = e => {
+        isListening = false;
+        micBtn.classList.remove("listening");
+        micBtn.textContent = "🎤";
+        if (e.error === "not-allowed") {
+          setHint("Microphone access denied", "#e11d48");
+        } else if (e.error !== "no-speech") {
+          setHint("Voice error — try again");
+        }
+        setTimeout(() => setHint(""), 3000);
+      };
+    }
+
+    // ══════════════════════════════════════════════
+    // SMART GROCERY LIST
+    // ══════════════════════════════════════════════
+    const GROCERY_CHECKS_KEY = "simmer_grocery_checks_v1";
+
+    const GROCERY_CAT_MAP = {
+      "🥬 Vegetables": ["onion","tomato","potato","carrot","spinach","garlic","ginger","capsicum","cabbage","cauliflower","peas","corn","beans","broccoli","mushroom","eggplant","cucumber","zucchini","celery","pepper","chilli","coriander leaf","mint","fenugreek leaf","curry leaves","beetroot","radish","pumpkin","bottle gourd","bitter gourd","drumstick","spring onion","green onion","scallion"],
+      "🍗 Protein":    ["chicken","mutton","lamb","fish","prawn","shrimp","egg","paneer","tofu","dal","lentil","chickpea","rajma","kidney bean","soya","moong","masoor","toor","urad","black bean","white bean"],
+      "🌾 Grains":     ["rice","wheat","flour","maida","semolina","sooji","oats","bread","pasta","noodle","roti","basmati","poha","idli","dosa batter","vermicelli","quinoa"],
+      "🧀 Dairy":      ["milk","curd","yogurt","butter","ghee","cream","cheese","mozzarella","paneer","condensed milk","khoya","buttermilk"],
+      "🌶️ Spices":     ["cumin","coriander powder","turmeric","garam masala","chilli powder","black pepper","cardamom","cinnamon","clove","bay leaf","mustard seed","fennel","ajwain","asafoetida","hing","kashmiri chilli","paprika","oregano","basil","thyme","star anise","nutmeg","saffron"],
+      "🫙 Pantry":     ["oil","salt","sugar","vinegar","soy sauce","ketchup","tomato sauce","tomato puree","coconut milk","water","stock","broth","tamarind","jaggery","honey","lemon","lime","dry fruits","cashew","almond","raisin","peanut"]
+    };
+
+    function categoriseGroceries(items) {
+      const cats = {};
+      const used  = new Set();
+
+      Object.entries(GROCERY_CAT_MAP).forEach(([cat, keywords]) => {
+        items.forEach(item => {
+          const name = (item.name || item).toLowerCase();
+          if (used.has(name)) return;
+          if (keywords.some(kw => name.includes(kw) || kw.includes(name.split(" ")[0]))) {
+            if (!cats[cat]) cats[cat] = [];
+            cats[cat].push(item);
+            used.add(name);
+          }
+        });
+      });
+
+      // Anything uncategorised → Pantry
+      items.forEach(item => {
+        const name = (item.name || item).toLowerCase();
+        if (!used.has(name)) {
+          if (!cats["🫙 Pantry"]) cats["🫙 Pantry"] = [];
+          cats["🫙 Pantry"].push(item);
+        }
+      });
+
+      return cats;
+    }
+
+    function getGroceryChecks() {
+      try { return new Set(JSON.parse(localStorage.getItem(GROCERY_CHECKS_KEY) || "[]")); }
+      catch { return new Set(); }
+    }
+    function saveGroceryChecks(set) {
+      try { localStorage.setItem(GROCERY_CHECKS_KEY, JSON.stringify([...set])); } catch {}
+    }
+    function clearGroceryChecks() {
+      try { localStorage.removeItem(GROCERY_CHECKS_KEY); } catch {}
+    }
+
+    function renderSmartGrocery(groceries, container) {
+      if (!groceries.length) { container.innerHTML = "<p style='color:var(--muted2);font-size:0.86rem'>No grocery items found.</p>"; return; }
+
+      const cats   = categoriseGroceries(groceries);
+      let checked  = getGroceryChecks();
+      const total  = groceries.length;
+
+      function checkedCount() { return groceries.filter(g => checked.has((g.name||g).toLowerCase())).length; }
+
+      function rebuildList() {
+        const done = checkedCount();
+        container.innerHTML = `
+          <p class="groceryProgress">
+            <span>${done}</span> of ${total} items ticked off
+            ${done > 0 ? `<button id="clearChecks" type="button" style="background:none;border:none;font-size:0.72rem;font-weight:700;color:#e11d48;cursor:pointer;margin-left:8px">Clear</button>` : ""}
+          </p>
+          <div class="groceryCats">
+            ${Object.entries(cats).map(([cat, items]) => `
+              <div class="groceryCat">
+                <div class="groceryCatHead">${cat} <span style="color:var(--muted2);font-weight:600;text-transform:none;font-size:0.72rem">${items.length} item${items.length!==1?"s":""}</span></div>
+                <div class="groceryItems">
+                  ${items.map(item => {
+                    const name = (item.name || item);
+                    const key  = name.toLowerCase();
+                    const isChecked = checked.has(key);
+                    const usedIn = clampInt(item.used_in, 0);
+                    return `
+                      <div class="groceryItem ${isChecked?"checked":""}" data-key="${escapeHtml(key)}">
+                        <div class="groceryCheck">${isChecked ? "✓" : ""}</div>
+                        <span class="groceryItemName">${escapeHtml(titleCase(name))}</span>
+                        ${usedIn > 1 ? `<span class="groceryUsedIn">×${usedIn}</span>` : ""}
+                      </div>`;
+                  }).join("")}
+                </div>
+              </div>
+            `).join("")}
+          </div>
+          <div class="groceryActions">
+            <button class="groceryActionBtn" id="groceryCopy" type="button">📋 Copy list</button>
+            <button class="groceryActionBtn primary" id="groceryShare" type="button">📤 Share list</button>
+          </div>
+        `;
+
+        container.querySelectorAll(".groceryItem").forEach(el => {
+          el.addEventListener("click", () => {
+            const key = el.dataset.key;
+            if (checked.has(key)) checked.delete(key);
+            else checked.add(key);
+            saveGroceryChecks(checked);
+            rebuildList();
+          });
+        });
+
+        container.querySelector("#clearChecks")?.addEventListener("click", e => {
+          e.stopPropagation();
+          checked.clear();
+          saveGroceryChecks(checked);
+          rebuildList();
+        });
+
+        const listText = groceries.map(g => `• ${titleCase(g.name||g)}${clampInt(g.used_in,0)>1?` (×${clampInt(g.used_in,0)})`:""}`).join("\n");
+        const shareText = `🛒 Simmer Grocery List\n\n${listText}\n\nsimmer.vercel.app`;
+
+        container.querySelector("#groceryCopy")?.addEventListener("click", () => {
+          navigator.clipboard.writeText(listText).then(() => {
+            container.querySelector("#groceryCopy").textContent = "✅ Copied!";
+            setTimeout(() => { if (container.querySelector("#groceryCopy")) container.querySelector("#groceryCopy").textContent = "📋 Copy list"; }, 2000);
+          }).catch(() => {});
+        });
+        container.querySelector("#groceryShare")?.addEventListener("click", () => {
+          if (navigator.share) navigator.share({ title: "Simmer grocery list", text: shareText }).catch(() => {});
+          else navigator.clipboard.writeText(shareText).then(() => {
+            container.querySelector("#groceryShare").textContent = "✅ Shared!";
+          }).catch(() => {});
+        });
+      }
+
+      rebuildList();
+    }
 
     // ══════════════════════════════════════════════
     // RECIPE COLLECTIONS
@@ -4979,6 +5289,7 @@
     }
 
     // ── Boot
+    initVoiceInput();
     bindInputs();
     loadPreferences();
     applyPreferencesToUI();
