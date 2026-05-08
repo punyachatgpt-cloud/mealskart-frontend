@@ -3134,6 +3134,196 @@
     .filterChip { border-radius: 999px !important; }
 
     /* ════════════════════════════════════════════════════
+       COOK MODE 2.0 — FULL-SCREEN CINEMATIC STYLES
+       ════════════════════════════════════════════════════ */
+    .cookModeOverlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: #0a0501;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px 20px;
+      animation: obFadeIn 0.4s ease both;
+      overflow: hidden;
+    }
+    .cookModeOverlay.hidden { display: none; }
+
+    /* Subtle ambient glow in background */
+    .cookModeOverlay::before {
+      content: "";
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(200,105,14,0.08) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .cookModeTop {
+      position: absolute; top: 0; left: 0; right: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 22px;
+      z-index: 2;
+    }
+    .cookModeDishName {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      font-weight: 700; color: rgba(255,255,255,0.6);
+      max-width: 55%; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap;
+    }
+    .cookModeCloseBtn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 999px;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.82rem; font-weight: 700;
+      padding: 6px 14px;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .cookModeCloseBtn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+
+    /* Main content area */
+    .cookModeMain {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 28px;
+      width: 100%; max-width: 540px;
+      position: relative; z-index: 2;
+    }
+
+    /* Step progress ring */
+    .cookModeRingWrap {
+      position: relative; flex-shrink: 0;
+    }
+    .cookModeRingSvg {
+      filter: drop-shadow(0 0 20px rgba(200,105,14,0.30));
+    }
+    .cookModeRingLabel {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 2px;
+    }
+    .cookModeStepNum {
+      font-family: 'Fraunces', serif;
+      font-size: 2.6rem; font-weight: 900;
+      color: #fff; line-height: 1;
+    }
+    .cookModeStepTotal {
+      font-size: 0.78rem; font-weight: 600;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.04em;
+    }
+
+    /* Step text */
+    .cookModeStepText {
+      font-size: clamp(1.05rem, 3.5vw, 1.3rem);
+      font-weight: 600; line-height: 1.6;
+      color: rgba(255,255,255,0.90);
+      text-align: center;
+      max-width: 46ch;
+      animation: cmStepIn 0.4s cubic-bezier(0.2,0.9,0.2,1) both;
+    }
+    @keyframes cmStepIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Timer section */
+    .cookModeTimerWrap {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 10px;
+    }
+    .cookModeTimerRingWrap { position: relative; }
+    .cookModeTimerDisplay {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Fraunces', serif;
+      font-size: 1.4rem; font-weight: 900;
+      color: #fff;
+    }
+    .cookModeTimerBtn {
+      background: rgba(200,105,14,0.20);
+      border: 1.5px solid rgba(200,105,14,0.45);
+      border-radius: 999px;
+      color: #E8A020;
+      font-family: inherit; font-size: 0.85rem; font-weight: 800;
+      padding: 8px 24px; cursor: pointer;
+      transition: all 0.18s;
+    }
+    .cookModeTimerBtn:hover {
+      background: rgba(200,105,14,0.30);
+      border-color: rgba(200,105,14,0.65);
+    }
+
+    /* Step nav buttons */
+    .cookModeNav {
+      display: flex; gap: 14px; align-items: center;
+      margin-top: 4px;
+    }
+    .cookModeNavBtn {
+      min-width: 120px; padding: 14px 22px;
+      border-radius: 999px; border: none;
+      font-family: inherit; font-size: 0.92rem; font-weight: 800;
+      cursor: pointer; transition: all var(--transition-spring);
+    }
+    .cookModeNavBtn.primary {
+      background: var(--ember-gradient);
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(200,105,14,0.40);
+    }
+    .cookModeNavBtn.secondary {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.75);
+    }
+    .cookModeNavBtn:hover { transform: scale(1.04); }
+    .cookModeNavBtn:active { transform: scale(0.96); }
+    .cookModeNavBtn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+    /* Voice indicator */
+    .cookModeVoice {
+      position: absolute; bottom: 24px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.74rem; font-weight: 700;
+      color: rgba(255,255,255,0.35);
+      transition: color 0.3s, opacity 0.3s;
+      z-index: 2;
+    }
+    .cookModeVoice.listening {
+      color: #22c55e;
+    }
+    .cookModeVoiceDot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      flex-shrink: 0;
+    }
+    .cookModeVoice.listening .cookModeVoiceDot {
+      background: #22c55e;
+      animation: livePulse 1.2s ease-in-out infinite;
+    }
+
+    /* Enter cook mode button in recipe modal */
+    .cookModeEntryBtn {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; width: 100%;
+      padding: 14px; border-radius: 14px;
+      border: 1.5px solid rgba(200,105,14,0.30);
+      background: linear-gradient(135deg, rgba(200,105,14,0.09), rgba(200,105,14,0.03));
+      color: var(--ink); font-family: inherit;
+      font-size: 0.92rem; font-weight: 800;
+      cursor: pointer; margin-bottom: 14px;
+      transition: all 0.22s;
+    }
+    .cookModeEntryBtn:hover {
+      border-color: var(--accent);
+      background: linear-gradient(135deg, rgba(200,105,14,0.16), rgba(200,105,14,0.06));
+      transform: translateY(-1px);
+    }
+    [data-theme="dark"] .cookModeEntryBtn { color: var(--ink); }
+
+    /* ════════════════════════════════════════════════════
        CUISINE EXPLORER — STYLES
        ════════════════════════════════════════════════════ */
     .cuisineOverlay {
@@ -3847,6 +4037,7 @@
         <button class="actionChip" id="shareCardBtn" type="button">🖼️ Card</button>
         <button class="actionChip" id="exportGroceryBtn" type="button">&#128722; Grocery list</button>
       </div>
+      <button class="cookModeEntryBtn" id="cookModeEntryBtn" type="button">🍳 Enter Cook Mode — full screen</button>
       <p class="stepLabel" id="stepCountLabel">Step 1</p>
       <div class="stepProgress" aria-hidden="true"><div class="stepProgressBar" id="stepProgressBar"></div></div>
       <p class="stepText" id="stepText">Loading...</p>
@@ -3906,6 +4097,39 @@
   <!-- Cuisine Explorer overlay -->
   <div class="cuisineOverlay hidden" id="cuisineOverlay" role="dialog" aria-modal="true" aria-label="Cuisine Explorer">
     <div class="cuisineSheet" id="cuisineSheet"><!-- injected by JS --></div>
+  </div>
+
+  <!-- Cook Mode 2.0 full-screen overlay -->
+  <div class="cookModeOverlay hidden" id="cookModeOverlay" role="dialog" aria-modal="true" aria-label="Cook Mode">
+    <div class="cookModeTop">
+      <div class="cookModeDishName" id="cookModeDishName"></div>
+      <button class="cookModeCloseBtn" id="cookModeCloseBtn" type="button">✕ Exit Cook Mode</button>
+    </div>
+
+    <div class="cookModeMain">
+      <div class="cookModeRingWrap" id="cookModeRingWrap">
+        <!-- SVG injected by JS -->
+      </div>
+
+      <p class="cookModeStepText" id="cookModeStepText">Loading...</p>
+
+      <div class="cookModeTimerWrap" id="cookModeTimerWrap" style="display:none">
+        <div class="cookModeTimerRingWrap" id="cookModeTimerRingWrap">
+          <!-- Timer SVG injected by JS -->
+        </div>
+        <button class="cookModeTimerBtn" id="cookModeTimerBtn" type="button">▶ Start Timer</button>
+      </div>
+
+      <div class="cookModeNav">
+        <button class="cookModeNavBtn secondary" id="cookModePrevBtn" type="button">← Previous</button>
+        <button class="cookModeNavBtn primary" id="cookModeNextBtn" type="button">Next Step →</button>
+      </div>
+    </div>
+
+    <div class="cookModeVoice" id="cookModeVoice">
+      <span class="cookModeVoiceDot"></span>
+      <span id="cookModeVoiceLabel">Say "next" or "previous"</span>
+    </div>
   </div>
 
   <!-- Weekly report overlay -->
@@ -5429,6 +5653,13 @@
         currentStepIndex = 0;
         updateModalStep();
         el.recipeModal.classList.add("open");
+        // Wire Cook Mode entry button each time modal opens
+        const cmBtn = document.getElementById("cookModeEntryBtn");
+        if (cmBtn) {
+          const newBtn = cmBtn.cloneNode(true); // remove old listeners
+          cmBtn.replaceWith(newBtn);
+          newBtn.addEventListener("click", openCookMode);
+        }
       } catch (error) {
         el.statusText.innerHTML = "&#9888; Could not load cooking steps. Try again.";
       }
@@ -7028,6 +7259,226 @@
     // ══════════════════════════════════════════════
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+
+    // ══════════════════════════════════════════════
+    // COOK MODE 2.0 (E)
+    // ══════════════════════════════════════════════
+    let cookModeTimerId = null;
+    let cookModeTimerRemaining = 0;
+    let cookModeTimerTotal = 0;
+    let cookModeVoiceRecog = null;
+
+    function buildStepRingSVG(current, total) {
+      const r = 68, cx = 80, cy = 80, size = 160;
+      const circ = 2 * Math.PI * r;
+      const pct = total > 0 ? current / total : 0;
+      const dash = pct * circ;
+      return `
+        <svg class="cookModeRingSvg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+          <circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+            stroke="rgba(255,255,255,0.07)" stroke-width="12"/>
+          <circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+            stroke="url(#cmGrad)" stroke-width="12"
+            stroke-linecap="round"
+            stroke-dasharray="${dash} ${circ}"
+            stroke-dashoffset="${circ / 4}"
+            transform="rotate(-90 ${cx} ${cy})"
+            style="transition:stroke-dasharray 0.6s cubic-bezier(0.34,1,0.64,1)"/>
+          <defs>
+            <linearGradient id="cmGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#E8A020"/>
+              <stop offset="100%" stop-color="#C8690E"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="cookModeRingLabel">
+          <span class="cookModeStepNum">${current}</span>
+          <span class="cookModeStepTotal">of ${total}</span>
+        </div>
+      `;
+    }
+
+    function buildTimerRingSVG(remaining, total) {
+      const r = 46, cx = 54, cy = 54, size = 108;
+      const circ = 2 * Math.PI * r;
+      const pct = total > 0 ? remaining / total : 0;
+      const dash = pct * circ;
+      const color = remaining <= 10 ? "#e11d48" : "#E8A020";
+      return `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"
+             style="filter:drop-shadow(0 0 10px rgba(232,160,32,0.30))">
+          <circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+            stroke="rgba(255,255,255,0.07)" stroke-width="9"/>
+          <circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+            stroke="${color}" stroke-width="9"
+            stroke-linecap="round"
+            stroke-dasharray="${dash} ${circ}"
+            stroke-dashoffset="${circ / 4}"
+            transform="rotate(-90 ${cx} ${cy})"
+            style="transition:stroke-dasharray 1s linear,stroke 0.3s"/>
+        </svg>
+        <div class="cookModeTimerDisplay">${formatTimer(remaining)}</div>
+      `;
+    }
+
+    function updateCookModeUI() {
+      const stepNo = currentStepIndex + 1;
+      const total  = modalSteps.length;
+
+      // Ring
+      const ringWrap = document.getElementById("cookModeRingWrap");
+      if (ringWrap) ringWrap.innerHTML = buildStepRingSVG(stepNo, total);
+
+      // Step text (re-animate on change)
+      const stepEl = document.getElementById("cookModeStepText");
+      if (stepEl) {
+        stepEl.style.animation = "none";
+        stepEl.offsetHeight; // reflow
+        stepEl.style.animation = "";
+        stepEl.textContent = modalSteps[currentStepIndex] || "No step found.";
+      }
+
+      // Timer section
+      const timerSec = stepTimerSeconds(modalSteps[currentStepIndex] || "");
+      const timerWrap = document.getElementById("cookModeTimerWrap");
+      if (timerWrap) {
+        if (timerSec > 0) {
+          timerWrap.style.display = "flex";
+          cookModeTimerTotal = timerSec;
+          cookModeTimerRemaining = timerSec;
+          clearCookModeTimer();
+          updateCookModeTimerRing();
+          const btn = document.getElementById("cookModeTimerBtn");
+          if (btn) btn.textContent = "▶ Start Timer";
+        } else {
+          timerWrap.style.display = "none";
+        }
+      }
+
+      // Buttons
+      const prevBtn = document.getElementById("cookModePrevBtn");
+      const nextBtn = document.getElementById("cookModeNextBtn");
+      if (prevBtn) prevBtn.disabled = currentStepIndex <= 0;
+      if (nextBtn) nextBtn.textContent = stepNo >= total ? "🎉 Done!" : "Next Step →";
+
+      // Haptic feedback
+      if (navigator.vibrate) navigator.vibrate(40);
+    }
+
+    function updateCookModeTimerRing() {
+      const wrap = document.getElementById("cookModeTimerRingWrap");
+      if (wrap) wrap.innerHTML = buildTimerRingSVG(cookModeTimerRemaining, cookModeTimerTotal);
+    }
+
+    function clearCookModeTimer() {
+      if (cookModeTimerId) { clearInterval(cookModeTimerId); cookModeTimerId = null; }
+    }
+
+    function startCookModeTimer() {
+      if (cookModeTimerId) { clearCookModeTimer(); updateCookModeTimerRing(); return; } // pause
+      if (cookModeTimerRemaining <= 0) {
+        cookModeTimerRemaining = cookModeTimerTotal;
+      }
+      cookModeTimerId = setInterval(() => {
+        cookModeTimerRemaining = Math.max(0, cookModeTimerRemaining - 1);
+        updateCookModeTimerRing();
+        const btn = document.getElementById("cookModeTimerBtn");
+        if (btn) btn.textContent = cookModeTimerRemaining > 0 ? "⏸ Pause" : "✅ Done!";
+        if (cookModeTimerRemaining === 0) {
+          clearCookModeTimer();
+          if (navigator.vibrate) navigator.vibrate([100, 80, 100]);
+        }
+      }, 1000);
+      const btn = document.getElementById("cookModeTimerBtn");
+      if (btn) btn.textContent = "⏸ Pause";
+    }
+
+    function initCookModeVoice() {
+      const SpeechRecog = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecog) return;
+      try {
+        const recog = new SpeechRecog();
+        recog.continuous = true;
+        recog.interimResults = false;
+        recog.lang = "en-US";
+        recog.onresult = (event) => {
+          const last = event.results[event.results.length - 1];
+          if (!last.isFinal) return;
+          const cmd = last[0].transcript.trim().toLowerCase();
+          const voiceEl = document.getElementById("cookModeVoice");
+          const lblEl = document.getElementById("cookModeVoiceLabel");
+          if (lblEl) lblEl.textContent = `"${last[0].transcript.trim()}"`;
+          setTimeout(() => { if (lblEl) lblEl.textContent = 'Say "next" or "previous"'; }, 2000);
+
+          if (cmd.includes("next") || cmd.includes("forward")) {
+            if (currentStepIndex < modalSteps.length - 1) { currentStepIndex++; updateCookModeUI(); }
+          } else if (cmd.includes("previous") || cmd.includes("back") || cmd.includes("prev")) {
+            if (currentStepIndex > 0) { currentStepIndex--; updateCookModeUI(); }
+          } else if (cmd.includes("timer") || cmd.includes("start")) {
+            startCookModeTimer();
+          } else if (cmd.includes("stop") || cmd.includes("pause")) {
+            clearCookModeTimer();
+          }
+        };
+        recog.onerror = () => {};
+        cookModeVoiceRecog = recog;
+      } catch (e) {}
+    }
+
+    function openCookMode() {
+      if (!modalSteps.length) return;
+      const overlay = document.getElementById("cookModeOverlay");
+      if (!overlay) return;
+
+      // Set dish name
+      const dishEl = document.getElementById("cookModeDishName");
+      if (dishEl) dishEl.textContent = activeRecipe?.name || "Recipe";
+
+      overlay.classList.remove("hidden");
+      updateCookModeUI();
+
+      // Start voice
+      initCookModeVoice();
+      if (cookModeVoiceRecog) {
+        try { cookModeVoiceRecog.start(); } catch (e) {}
+        const voiceEl = document.getElementById("cookModeVoice");
+        if (voiceEl) voiceEl.classList.add("listening");
+      }
+
+      // Wire buttons
+      document.getElementById("cookModeCloseBtn")?.addEventListener("click", closeCookMode, { once: true });
+      document.getElementById("cookModeNextBtn")?.addEventListener("click", () => {
+        clearCookModeTimer();
+        if (currentStepIndex < modalSteps.length - 1) {
+          currentStepIndex++;
+          updateCookModeUI();
+          updateModalStep(); // sync back to regular modal
+        } else {
+          closeCookMode();
+          closeRecipeModal();
+          setTimeout(() => { document.querySelector(".ratingOverlay")?.classList.add("open"); }, 400);
+        }
+      });
+      document.getElementById("cookModePrevBtn")?.addEventListener("click", () => {
+        clearCookModeTimer();
+        if (currentStepIndex > 0) {
+          currentStepIndex--;
+          updateCookModeUI();
+          updateModalStep();
+        }
+      });
+      document.getElementById("cookModeTimerBtn")?.addEventListener("click", startCookModeTimer);
+    }
+
+    function closeCookMode() {
+      clearCookModeTimer();
+      if (cookModeVoiceRecog) {
+        try { cookModeVoiceRecog.stop(); } catch (e) {}
+        cookModeVoiceRecog = null;
+      }
+      document.getElementById("cookModeOverlay")?.classList.add("hidden");
+      updateModalStep(); // sync step back to standard modal
     }
 
     // ══════════════════════════════════════════════
