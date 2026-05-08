@@ -2761,12 +2761,103 @@
       color: var(--ink);
       border-color: var(--border);
     }
+    /* ══════════════════════════════════════════════
+       SHOPPING LIST
+       ══════════════════════════════════════════════ */
+    .shoppingSheet {
+      background: var(--bg0); border-radius: 28px 28px 0 0;
+      padding: 28px 24px 48px; width: min(560px, 100%);
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 -20px 60px rgba(80,30,5,0.2);
+      animation: reportSlideUp 0.38s cubic-bezier(0.34,1.08,0.64,1) both;
+    }
+    .shoppingHeader {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+      margin-bottom: 16px;
+    }
+    .shoppingHeader h2 {
+      font-family: 'Fraunces', serif; font-size: 1.35rem; font-weight: 900;
+      color: var(--ink); margin: 0 0 2px;
+    }
+    .shoppingMeta { font-size: 0.78rem; color: var(--muted2); font-weight: 600; margin: 0; }
+    .shoppingActions {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+    }
+    .shoppingActionBtn {
+      padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--bg1); font-size: 0.78rem; font-weight: 700;
+      color: var(--ink); cursor: pointer; transition: all 0.15s;
+    }
+    .shoppingActionBtn:hover { border-color: var(--accent); color: var(--accent); }
+    .shoppingActionBtn.danger { color: #dc2626; border-color: rgba(220,38,38,0.3); }
+    .shoppingActionBtn.danger:hover { background: rgba(220,38,38,0.07); }
+    .shoppingAisle { margin-bottom: 22px; }
+    .shoppingAisleHead {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.8rem; font-weight: 800; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 8px; padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .shoppingAisleCount {
+      background: var(--border); border-radius: 999px;
+      padding: 1px 7px; font-size: 0.7rem; color: var(--muted2);
+    }
+    .shoppingItem {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 12px;
+      background: var(--bg1); border: 1px solid var(--border);
+      margin-bottom: 6px; transition: opacity 0.2s;
+    }
+    .shoppingItem.checked { opacity: 0.45; }
+    .shoppingItem.checked .shoppingItemName { text-decoration: line-through; color: var(--muted2); }
+    .shoppingCheckbox {
+      width: 20px; height: 20px; border-radius: 6px;
+      border: 2px solid var(--border); background: var(--bg0);
+      cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; color: #fff; font-size: 0.7rem;
+    }
+    .shoppingItem.checked .shoppingCheckbox {
+      background: var(--accent); border-color: var(--accent);
+    }
+    .shoppingItemBody { flex: 1; min-width: 0; }
+    .shoppingItemName { font-size: 0.88rem; font-weight: 700; color: var(--ink); }
+    .shoppingItemSource { font-size: 0.72rem; color: var(--muted2); margin-top: 1px; }
+    .shoppingItemRemove {
+      background: none; border: none; cursor: pointer;
+      font-size: 1rem; color: var(--muted2); padding: 2px 4px; flex-shrink: 0;
+      transition: color 0.15s; line-height: 1;
+    }
+    .shoppingItemRemove:hover { color: #dc2626; }
+    .shoppingEmpty {
+      text-align: center; padding: 40px 20px;
+      color: var(--muted2); font-size: 0.9rem; line-height: 1.6;
+    }
+    .shoppingEmpty .shoppingEmptyIcon { font-size: 2.5rem; margin-bottom: 12px; }
+    .shoppingBadge {
+      background: var(--accent); color: #fff; border-radius: 999px;
+      padding: 2px 8px; font-size: 0.72rem; font-weight: 800;
+      display: none;
+    }
+    .shoppingBadge.visible { display: inline-block; }
+    /* Add to list chip in recipe modal */
+    .addToListBtn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 8px 14px; border-radius: 999px;
+      border: 1.5px solid var(--accent); background: transparent;
+      color: var(--accent); font-size: 0.78rem; font-weight: 800;
+      cursor: pointer; transition: all 0.18s; white-space: nowrap;
+    }
+    .addToListBtn:hover { background: var(--accent); color: #fff; }
+    .addToListBtn.added { background: var(--accent); color: #fff; }
+
     [data-theme="dark"] .foodCard,
     [data-theme="dark"] .miniRecipeCard,
     [data-theme="dark"] .groceryItem,
     [data-theme="dark"] .colPicker,
     [data-theme="dark"] .reportSheet,
     [data-theme="dark"] .collectionsSheet,
+    [data-theme="dark"] .shoppingSheet,
     [data-theme="dark"] .goalSetupSheet,
     [data-theme="dark"] .onboardCard {
       background: var(--bg1);
@@ -4067,6 +4158,10 @@
                 <span style="font-size:0.72rem;color:var(--muted2)" id="goalBtnLabel">Set</span>
               </button>
             </div>
+            <button class="collectionsLink" id="shoppingListBtn" type="button" style="margin-top:0">
+              <span>🛒 Shopping List</span>
+              <span class="shoppingBadge" id="shoppingBadge">0</span>
+            </button>
             <button class="exploreLink" id="exploreBtn" type="button">
               <span>🌍 Cuisine Explorer</span>
               <span id="exploreBadge" style="font-size:0.7rem;color:var(--accent);font-weight:800"></span>
@@ -4133,6 +4228,7 @@
         <button class="actionChip" id="shareRecipeBtn" type="button">&#128279; Share</button>
         <button class="actionChip" id="shareCardBtn" type="button">🖼️ Card</button>
         <button class="actionChip" id="exportGroceryBtn" type="button">&#128722; Grocery list</button>
+        <button class="addToListBtn" id="addToListBtn" type="button">🛒 Add to List</button>
       </div>
       <button class="cookModeEntryBtn" id="cookModeEntryBtn" type="button">🍳 Enter Cook Mode — full screen</button>
       <p class="stepLabel" id="stepCountLabel">Step 1</p>
@@ -4174,6 +4270,11 @@
       <button class="shareCardBtn sh" id="shareCardShare" type="button">📤 Share</button>
     </div>
     <button class="shareCardClose" id="shareCardClose" type="button">✕ Close</button>
+  </div>
+
+  <!-- Shopping List overlay -->
+  <div class="reportOverlay hidden" id="shoppingOverlay" role="dialog" aria-modal="true" aria-label="Shopping List">
+    <div class="shoppingSheet" id="shoppingSheet"></div>
   </div>
 
   <!-- Collections overlay -->
@@ -8357,6 +8458,262 @@
     }
 
     // ── Boot
+    // ══════════════════════════════════════════════
+    // G — SMART SHOPPING LIST
+    // ══════════════════════════════════════════════
+    const SHOPPING_KEY = "simmer_shopping_v1";
+
+    const AISLES = {
+      produce: { label: "Produce", emoji: "🥬" },
+      dairy:   { label: "Dairy & Paneer", emoji: "🥛" },
+      protein: { label: "Protein", emoji: "🍗" },
+      spices:  { label: "Spices", emoji: "🌶" },
+      pantry:  { label: "Pantry", emoji: "🌾" },
+      canned:  { label: "Canned & Packaged", emoji: "🥫" },
+      other:   { label: "Other", emoji: "🧴" }
+    };
+
+    function detectAisle(name) {
+      const n = (name || "").toLowerCase();
+      if (/tomato|onion|garlic|ginger|green.?chilli|coriander.?leaf|cilantro|spinach|pea|potato|carrot|capsicum|bell.?pepper|lemon|lime|mint|curry.?leaf|spring.?onion|mushroom|broccoli|cauliflower|cabbage|eggplant|aubergine|zucchini|courgette|beetroot|radish|okra|bhindi|beans|pumpkin/.test(n)) return "produce";
+      if (/milk|cream|butter|ghee|paneer|yogurt|curd|cheese|dahi|khoya|mawa|condensed/.test(n)) return "dairy";
+      if (/chicken|mutton|lamb|beef|pork|egg|fish|prawn|shrimp|tofu|soya|soy|tuna/.test(n)) return "protein";
+      if (/cumin|turmeric|chilli.?powder|garam.?masala|coriander.?powder|pepper|cardamom|clove|cinnamon|bay.?leaf|mustard|fenugreek|methi|asafoetida|hing|paprika|saffron|star.?anise|nutmeg|mace|fennel|ajwain|kasuri|amchur|chat|chaat/.test(n)) return "spices";
+      if (/rice|flour|atta|besan|dal|lentil|sugar|salt|oil|bread|pasta|noodle|vermicelli|semolina|suji|maida|poha|quinoa|oat|cornflour|arrowroot|baking/.test(n)) return "pantry";
+      if (/coconut.?milk|tomato.?paste|tomato.?puree|chickpea|kidney.?bean|black.?bean|canned|tin|packed|ready/.test(n)) return "canned";
+      return "other";
+    }
+
+    function getShoppingList() {
+      try { return JSON.parse(localStorage.getItem(SHOPPING_KEY) || "[]"); }
+      catch { return []; }
+    }
+
+    function saveShoppingList(list) {
+      try { localStorage.setItem(SHOPPING_KEY, JSON.stringify(list)); }
+      catch {}
+      updateShoppingBadge();
+    }
+
+    function updateShoppingBadge() {
+      const list = getShoppingList();
+      const unchecked = list.filter(i => !i.checked).length;
+      const badge = document.getElementById("shoppingBadge");
+      if (!badge) return;
+      if (unchecked > 0) {
+        badge.textContent = String(unchecked);
+        badge.classList.add("visible");
+      } else {
+        badge.classList.remove("visible");
+      }
+    }
+
+    function addRecipeToShoppingList(recipe) {
+      if (!recipe) return 0;
+      const existing = getShoppingList();
+      const existingNames = new Set(existing.map(i => i.name.toLowerCase()));
+
+      const rawIngredients = Array.isArray(recipe.ingredients_with_quantities) && recipe.ingredients_with_quantities.length
+        ? recipe.ingredients_with_quantities
+        : (Array.isArray(recipe.ingredients) ? recipe.ingredients.map(n => ({ name: n, quantity: null, unit: null })) : []);
+
+      let added = 0;
+      const newItems = [];
+      for (const ing of rawIngredients) {
+        const name = titleCase(ing?.name || String(ing || "")).trim();
+        if (!name) continue;
+        if (existingNames.has(name.toLowerCase())) continue; // skip dupes
+        const qty = ing?.quantity ? `${ing.quantity}${ing.unit ? " " + ing.unit : ""}` : "";
+        newItems.push({
+          id: `sl_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          name,
+          qty,
+          aisle: detectAisle(name),
+          recipeName: recipe.name || "",
+          recipeId: String(recipe.id || ""),
+          checked: false,
+          addedAt: Date.now()
+        });
+        existingNames.add(name.toLowerCase());
+        added++;
+      }
+      saveShoppingList([...existing, ...newItems]);
+      return added;
+    }
+
+    function toggleShoppingItem(id) {
+      const list = getShoppingList();
+      const item = list.find(i => i.id === id);
+      if (item) item.checked = !item.checked;
+      saveShoppingList(list);
+    }
+
+    function removeShoppingItem(id) {
+      saveShoppingList(getShoppingList().filter(i => i.id !== id));
+    }
+
+    function clearCheckedItems() {
+      saveShoppingList(getShoppingList().filter(i => !i.checked));
+    }
+
+    function clearAllShoppingItems() {
+      saveShoppingList([]);
+    }
+
+    function shareShoppingList() {
+      const list = getShoppingList().filter(i => !i.checked);
+      if (!list.length) return;
+
+      // Group by recipe
+      const byRecipe = {};
+      for (const item of list) {
+        const key = item.recipeName || "Other";
+        (byRecipe[key] = byRecipe[key] || []).push(item.qty ? `${item.name} (${item.qty})` : item.name);
+      }
+      let text = "🛒 Shopping List\n\n";
+      for (const [recipe, items] of Object.entries(byRecipe)) {
+        text += `📍 ${recipe}:\n${items.map(i => `• ${i}`).join("\n")}\n\n`;
+      }
+      text += "via Simmer 🔥";
+
+      if (navigator.share) {
+        navigator.share({ title: "Shopping List — Simmer", text }).catch(() => {});
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+          const btn = document.getElementById("shareShoppingBtn");
+          if (btn) { btn.textContent = "✓ Copied!"; setTimeout(() => { btn.textContent = "📤 Share"; }, 2000); }
+        }).catch(() => {});
+      }
+    }
+
+    function renderShoppingSheet() {
+      const sheet = document.getElementById("shoppingSheet");
+      if (!sheet) return;
+      const list = getShoppingList();
+
+      if (list.length === 0) {
+        sheet.innerHTML = `
+          <div class="shoppingHeader">
+            <div><h2>🛒 Shopping List</h2><p class="shoppingMeta">Your list is empty</p></div>
+            <button class="closeBtn" id="closeShoppingBtn" type="button">Close</button>
+          </div>
+          <div class="shoppingEmpty">
+            <div class="shoppingEmptyIcon">🛒</div>
+            <p>Nothing here yet.</p>
+            <p>Open any recipe and tap <strong>Add to List</strong> to start building your shopping list.</p>
+          </div>
+        `;
+        sheet.querySelector("#closeShoppingBtn")?.addEventListener("click", closeShoppingSheet);
+        return;
+      }
+
+      const total = list.length;
+      const checked = list.filter(i => i.checked).length;
+      const unchecked = total - checked;
+
+      // Group by aisle
+      const grouped = {};
+      for (const item of list) {
+        (grouped[item.aisle] = grouped[item.aisle] || []).push(item);
+      }
+
+      const aisleOrder = ["produce", "dairy", "protein", "spices", "pantry", "canned", "other"];
+      let aisleHTML = "";
+      for (const aisleKey of aisleOrder) {
+        const items = grouped[aisleKey];
+        if (!items?.length) continue;
+        const { label, emoji } = AISLES[aisleKey];
+        const itemsHTML = items.map(item => `
+          <div class="shoppingItem${item.checked ? " checked" : ""}" data-id="${item.id}">
+            <div class="shoppingCheckbox shoppingToggle" data-id="${item.id}">${item.checked ? "✓" : ""}</div>
+            <div class="shoppingItemBody">
+              <div class="shoppingItemName">${item.name}${item.qty ? ` <span style="color:var(--muted2);font-weight:600;font-size:0.78rem">${item.qty}</span>` : ""}</div>
+              ${item.recipeName ? `<div class="shoppingItemSource">from ${item.recipeName}</div>` : ""}
+            </div>
+            <button class="shoppingItemRemove shoppingRemove" data-id="${item.id}" title="Remove">✕</button>
+          </div>
+        `).join("");
+        aisleHTML += `
+          <div class="shoppingAisle">
+            <div class="shoppingAisleHead">
+              ${emoji} ${label}
+              <span class="shoppingAisleCount">${items.length}</span>
+            </div>
+            ${itemsHTML}
+          </div>
+        `;
+      }
+
+      sheet.innerHTML = `
+        <div class="shoppingHeader">
+          <div>
+            <h2>🛒 Shopping List</h2>
+            <p class="shoppingMeta">${unchecked} remaining · ${checked} done</p>
+          </div>
+          <button class="closeBtn" id="closeShoppingBtn" type="button">Close</button>
+        </div>
+        <div class="shoppingActions">
+          <button class="shoppingActionBtn" id="shareShoppingBtn">📤 Share</button>
+          ${checked > 0 ? `<button class="shoppingActionBtn danger" id="clearCheckedBtn">✓ Clear done (${checked})</button>` : ""}
+          <button class="shoppingActionBtn danger" id="clearAllShoppingBtn">🗑 Clear all</button>
+        </div>
+        ${aisleHTML}
+      `;
+
+      // Wire buttons
+      sheet.querySelector("#closeShoppingBtn")?.addEventListener("click", closeShoppingSheet);
+      sheet.querySelector("#shareShoppingBtn")?.addEventListener("click", shareShoppingList);
+      sheet.querySelector("#clearCheckedBtn")?.addEventListener("click", () => { clearCheckedItems(); renderShoppingSheet(); });
+      sheet.querySelector("#clearAllShoppingBtn")?.addEventListener("click", () => { clearAllShoppingItems(); renderShoppingSheet(); });
+      sheet.querySelectorAll(".shoppingToggle").forEach(el => {
+        el.addEventListener("click", () => { toggleShoppingItem(el.dataset.id); renderShoppingSheet(); });
+      });
+      sheet.querySelectorAll(".shoppingRemove").forEach(el => {
+        el.addEventListener("click", () => { removeShoppingItem(el.dataset.id); renderShoppingSheet(); });
+      });
+    }
+
+    function openShoppingSheet() {
+      const overlay = document.getElementById("shoppingOverlay");
+      if (!overlay) return;
+      renderShoppingSheet();
+      overlay.classList.remove("hidden");
+      overlay.addEventListener("click", e => { if (e.target === overlay) closeShoppingSheet(); }, { once: true });
+    }
+
+    function closeShoppingSheet() {
+      document.getElementById("shoppingOverlay")?.classList.add("hidden");
+    }
+
+    function initShoppingList() {
+      document.getElementById("shoppingListBtn")?.addEventListener("click", openShoppingSheet);
+      updateShoppingBadge();
+
+      // "Add to List" inside recipe modal
+      document.getElementById("addToListBtn")?.addEventListener("click", () => {
+        if (!activeRecipe) return;
+        const btn = document.getElementById("addToListBtn");
+        const count = addRecipeToShoppingList(activeRecipe);
+        if (count > 0) {
+          btn.textContent = `✓ ${count} items added!`;
+          btn.classList.add("added");
+          setTimeout(() => {
+            btn.textContent = "🛒 Add to List";
+            btn.classList.remove("added");
+          }, 2500);
+        } else {
+          btn.textContent = "✓ Already in list";
+          btn.classList.add("added");
+          setTimeout(() => {
+            btn.textContent = "🛒 Add to List";
+            btn.classList.remove("added");
+          }, 2000);
+        }
+        updateShoppingBadge();
+      });
+    }
+    // ── end shopping list ─────────────────────────
+
     initTheme();
     initCookMode();
     initNotifications();
@@ -8380,6 +8737,7 @@
     document.getElementById("collectionsBtn")?.addEventListener("click", openCollectionsSheet);
     document.getElementById("goalBtn")?.addEventListener("click", openGoalSetup);
     document.getElementById("exploreBtn")?.addEventListener("click", openCuisineExplorer);
+    initShoppingList();
     updateExploreBadge();
 
     // "My week" button — always opens report regardless of 7-day gate
