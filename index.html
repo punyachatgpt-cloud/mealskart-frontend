@@ -7416,18 +7416,16 @@
 
       try {
         const ingredients = getIngredients();
+        const payload = { ...state, ...cfg.stateOverride, mode: "normal", ingredients };
+        console.log("[Remix] payload →", JSON.stringify(payload));
         const response = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...state,
-            ...cfg.stateOverride,
-            mode: "normal",
-            ingredients
-          })
+          body: JSON.stringify(payload)
         });
 
         const data = await response.json();
+        console.log("[Remix] response →", data);
         const results = Array.isArray(data) ? data : [];
         if (results.length === 0) throw new Error("empty");
 
