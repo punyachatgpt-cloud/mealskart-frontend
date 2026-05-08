@@ -3144,8 +3144,10 @@
       padding: 24px 20px;
       animation: obFadeIn 0.4s ease both;
       overflow: hidden;
+      /* Ensures nothing behind the overlay receives pointer events */
+      isolation: isolate;
     }
-    .cookModeOverlay.hidden { display: none; }
+    .cookModeOverlay.hidden { display: none; pointer-events: none; }
 
     /* Subtle ambient glow in background */
     .cookModeOverlay::before {
@@ -7431,6 +7433,9 @@
       const overlay = document.getElementById("cookModeOverlay");
       if (!overlay) return;
 
+      // ① Hide the recipe modal so it doesn't show behind Cook Mode
+      el.recipeModal.classList.remove("open");
+
       // Set dish name
       const dishEl = document.getElementById("cookModeDishName");
       if (dishEl) dishEl.textContent = activeRecipe?.name || "Recipe";
@@ -7438,37 +7443,17 @@
       overlay.classList.remove("hidden");
       updateCookModeUI();
 
-      // Start voice
+      // Start voice (fresh instance each time)
+      if (cookModeVoiceRecog) {
+        try { cookModeVoiceRecog.stop(); } catch (e) {}
+        cookModeVoiceRecog = null;
+      }
       initCookModeVoice();
       if (cookModeVoiceRecog) {
         try { cookModeVoiceRecog.start(); } catch (e) {}
         const voiceEl = document.getElementById("cookModeVoice");
         if (voiceEl) voiceEl.classList.add("listening");
       }
-
-      // Wire buttons
-      document.getElementById("cookModeCloseBtn")?.addEventListener("click", closeCookMode, { once: true });
-      document.getElementById("cookModeNextBtn")?.addEventListener("click", () => {
-        clearCookModeTimer();
-        if (currentStepIndex < modalSteps.length - 1) {
-          currentStepIndex++;
-          updateCookModeUI();
-          updateModalStep(); // sync back to regular modal
-        } else {
-          closeCookMode();
-          closeRecipeModal();
-          setTimeout(() => { document.querySelector(".ratingOverlay")?.classList.add("open"); }, 400);
-        }
-      });
-      document.getElementById("cookModePrevBtn")?.addEventListener("click", () => {
-        clearCookModeTimer();
-        if (currentStepIndex > 0) {
-          currentStepIndex--;
-          updateCookModeUI();
-          updateModalStep();
-        }
-      });
-      document.getElementById("cookModeTimerBtn")?.addEventListener("click", startCookModeTimer);
     }
 
     function closeCookMode() {
@@ -7477,8 +7462,46 @@
         try { cookModeVoiceRecog.stop(); } catch (e) {}
         cookModeVoiceRecog = null;
       }
-      document.getElementById("cookModeOverlay")?.classList.add("hidden");
-      updateModalStep(); // sync step back to standard modal
+      const overlay = document.getElementById("cookModeOverlay");
+      if (overlay) overlay.classList.add("hidden");
+      // ② Restore the recipe modal and sync step
+      el.recipeModal.classList.add("open");
+      updateModalStep();
+    }
+
+    // ③ Wire Cook Mode buttons ONCE at boot — no duplicate listeners ever
+    function initCookMode() {
+      document.getElementById("cookModeCloseBtn")?.addEventListener("click", closeCookMode);
+
+      document.getElementById("cookModeNextBtn")?.addEventListener("click", () => {
+        clearCookModeTimer();
+        if (currentStepIndex < modalSteps.length - 1) {
+          currentStepIndex++;
+          updateCookModeUI();
+          updateModalStep();
+        } else {
+          // Last step done — exit cook mode, close modal, show rating
+          closeCookMode();
+          setTimeout(() => {
+            closeRecipeModal();
+            setTimeout(() => {
+              const ratingEl = document.querySelector(".ratingOverlay");
+              if (ratingEl) ratingEl.classList.add("open");
+            }, 350);
+          }, 300);
+        }
+      });
+
+      document.getElementById("cookModePrevBtn")?.addEventListener("click", () => {
+        clearCookModeTimer();
+        if (currentStepIndex > 0) {
+          currentStepIndex--;
+          updateCookModeUI();
+          updateModalStep();
+        }
+      });
+
+      document.getElementById("cookModeTimerBtn")?.addEventListener("click", startCookModeTimer);
     }
 
     // ══════════════════════════════════════════════
@@ -7990,6 +8013,7 @@
 
     // ── Boot
     initTheme();
+    initCookMode();
     initNotifications();
     initCommunityFeed();
     initVoiceInput();
