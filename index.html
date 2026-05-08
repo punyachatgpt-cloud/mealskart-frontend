@@ -1948,6 +1948,213 @@
       0%   { transform: translateX(0); }
       100% { transform: translateX(-50%); }
     }
+
+    /* ══════════════════════════════════════════════
+       ONBOARDING OVERLAY
+       ══════════════════════════════════════════════ */
+    .onboardOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(26, 14, 0, 0.72);
+      backdrop-filter: blur(12px) saturate(150%);
+      -webkit-backdrop-filter: blur(12px) saturate(150%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: obFadeIn 0.4s ease both;
+    }
+    .onboardOverlay.hidden { display: none; }
+    @keyframes obFadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .onboardCard {
+      background: var(--bg0);
+      border-radius: 28px;
+      padding: 36px 32px 28px;
+      width: min(480px, 100%);
+      box-shadow: 0 40px 80px -16px rgba(80,30,5,0.35);
+      position: relative;
+      overflow: hidden;
+    }
+    .onboardCard::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #f97316, #ea580c, #f97316);
+      background-size: 200%;
+      animation: shimmerBar 2s linear infinite;
+    }
+    @keyframes shimmerBar {
+      0%   { background-position: 0%; }
+      100% { background-position: 200%; }
+    }
+
+    .obDots {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 28px;
+    }
+    .obDot {
+      height: 4px;
+      border-radius: 999px;
+      background: var(--border);
+      flex: 1;
+      transition: background 0.3s, flex 0.3s;
+    }
+    .obDot.active {
+      background: var(--accent);
+      flex: 2;
+    }
+    .obDot.done {
+      background: #16a34a;
+    }
+
+    .obEmoji {
+      font-size: 3rem;
+      line-height: 1;
+      margin-bottom: 12px;
+      display: block;
+      animation: obBounce 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes obBounce {
+      from { transform: scale(0.4); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .obTitle {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(1.4rem, 4vw, 1.8rem);
+      font-weight: 900;
+      color: var(--ink);
+      margin: 0 0 6px;
+      line-height: 1.15;
+    }
+    .obSubtitle {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin: 0 0 24px;
+      line-height: 1.5;
+    }
+
+    .obChoices {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .obChoice {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 16px 10px;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      background: var(--bg1);
+      cursor: pointer;
+      transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
+      font-family: inherit;
+    }
+    .obChoice:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(249,115,22,0.15);
+    }
+    .obChoice.selected {
+      border-color: var(--accent);
+      background: rgba(249,115,22,0.07);
+      box-shadow: 0 0 0 3px var(--accentGlow);
+    }
+    .obChoiceEmoji { font-size: 1.8rem; line-height: 1; }
+    .obChoiceLabel {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--ink);
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .obActions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .obSkip {
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 0.82rem;
+      color: var(--muted2);
+      cursor: pointer;
+      padding: 4px 0;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .obNext {
+      position: relative;
+      border: none;
+      border-radius: 12px;
+      padding: 13px 28px;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #fff;
+      background: linear-gradient(135deg, #f97316 0%, #c2410c 100%);
+      box-shadow: 0 4px 16px rgba(249,115,22,0.4);
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .obNext:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(249,115,22,0.45); }
+    .obNext:active { transform: translateY(0); }
+
+    .obSuccessEmoji {
+      font-size: 4rem;
+      display: block;
+      text-align: center;
+      animation: obBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+      margin-bottom: 12px;
+    }
+    .obSuccessTitle {
+      font-family: 'Fraunces', serif;
+      font-size: 1.7rem;
+      font-weight: 900;
+      color: var(--ink);
+      text-align: center;
+      margin: 0 0 8px;
+    }
+    .obSuccessText {
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: center;
+      line-height: 1.55;
+      margin: 0 0 24px;
+    }
+
+    /* ── Offline banner ──────────────────────────── */
+    .offlineBanner {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 190;
+      background: #1a0e00;
+      color: #fff;
+      text-align: center;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 8px 16px;
+      animation: slideDown 0.3s ease both;
+    }
+    .offlineBanner.show { display: block; }
+    @keyframes slideDown {
+      from { transform: translateY(-100%); }
+      to   { transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
@@ -2139,6 +2346,18 @@
         <button class="starBtn" type="button" aria-label="5 stars">&#9733;</button>
       </div>
       <button class="skipRating" id="skipRatingBtn" type="button">Skip for now</button>
+    </div>
+  </div>
+
+  <!-- Offline banner -->
+  <div class="offlineBanner" id="offlineBanner">
+    📶 You're offline — showing cached recipes
+  </div>
+
+  <!-- Onboarding overlay -->
+  <div class="onboardOverlay hidden" id="onboardOverlay" role="dialog" aria-modal="true" aria-label="Welcome to Simmer">
+    <div class="onboardCard" id="onboardCard">
+      <!-- Injected by JS -->
     </div>
   </div>
 
@@ -3630,6 +3849,209 @@
       });
     });
 
+    // ══════════════════════════════════════════════
+    // ONBOARDING
+    // ══════════════════════════════════════════════
+    const ONBOARDING_KEY = "simmer_onboarded_v1";
+
+    const ONBOARD_STEPS = [
+      {
+        emoji: "🥘",
+        title: "What do you eat?",
+        subtitle: "We'll personalise every suggestion for you.",
+        key: "diet",
+        choices: [
+          { emoji: "🥦", label: "Vegetarian", value: "veg" },
+          { emoji: "🍗", label: "Non-Veg",    value: "non-veg" },
+          { emoji: "🌱", label: "Vegan",       value: "veg" }
+        ]
+      },
+      {
+        emoji: "🌍",
+        title: "Favourite cuisine?",
+        subtitle: "Pick your go-to — you can always change it.",
+        key: "category",
+        choices: [
+          { emoji: "🍛", label: "North Indian",  value: "north-indian" },
+          { emoji: "🥘", label: "South Indian",  value: "south-indian" },
+          { emoji: "🍝", label: "Continental",   value: "continental" },
+          { emoji: "🌏", label: "Mix it up",     value: "all" }
+        ]
+      },
+      {
+        emoji: "👨‍🍳",
+        title: "Kitchen confidence?",
+        subtitle: "We'll match recipes to your comfort level.",
+        key: "skill",
+        choices: [
+          { emoji: "🌱", label: "Still learning", value: "quick",   time: 15 },
+          { emoji: "🍳", label: "Comfortable",    value: "healthy", time: 30 },
+          { emoji: "⭐", label: "I'm the chef",   value: "comfort", time: 45 }
+        ]
+      }
+    ];
+
+    let obStep = 0;
+    let obAnswers = {};
+
+    function renderOnboardStep() {
+      const card = document.getElementById("onboardCard");
+      const step = ONBOARD_STEPS[obStep];
+      const totalDots = ONBOARD_STEPS.length;
+
+      const dotsHTML = Array.from({ length: totalDots }, (_, i) =>
+        `<div class="obDot ${i < obStep ? "done" : i === obStep ? "active" : ""}"></div>`
+      ).join("");
+
+      card.innerHTML = `
+        <div class="obDots">${dotsHTML}</div>
+        <span class="obEmoji">${step.emoji}</span>
+        <h2 class="obTitle">${step.title}</h2>
+        <p class="obSubtitle">${step.subtitle}</p>
+        <div class="obChoices" id="obChoices">
+          ${step.choices.map(c => `
+            <button class="obChoice ${obAnswers[step.key] === c.value ? "selected" : ""}"
+              data-value="${c.value}" data-time="${c.time || ""}" type="button">
+              <span class="obChoiceEmoji">${c.emoji}</span>
+              <span class="obChoiceLabel">${c.label}</span>
+            </button>
+          `).join("")}
+        </div>
+        <div class="obActions">
+          <button class="obSkip" id="obSkipBtn" type="button">Skip for now</button>
+          <button class="obNext" id="obNextBtn" type="button">
+            ${obStep < ONBOARD_STEPS.length - 1 ? "Continue →" : "Let's cook! 🔥"}
+          </button>
+        </div>
+      `;
+
+      card.querySelectorAll(".obChoice").forEach(btn => {
+        btn.addEventListener("click", () => {
+          card.querySelectorAll(".obChoice").forEach(b => b.classList.remove("selected"));
+          btn.classList.add("selected");
+          obAnswers[step.key] = btn.dataset.value;
+          if (btn.dataset.time) obAnswers["time_available"] = Number(btn.dataset.time);
+        });
+      });
+
+      document.getElementById("obNextBtn").addEventListener("click", () => {
+        if (obStep < ONBOARD_STEPS.length - 1) {
+          obStep++;
+          animateObTransition();
+        } else {
+          finishOnboarding();
+        }
+      });
+
+      document.getElementById("obSkipBtn").addEventListener("click", closeOnboarding);
+    }
+
+    function renderOnboardSuccess() {
+      const card = document.getElementById("onboardCard");
+      const dietLabel = { veg: "vegetarian", "non-veg": "non-veg" }[obAnswers.diet] || "personalised";
+      card.innerHTML = `
+        <span class="obSuccessEmoji">🎉</span>
+        <h2 class="obSuccessTitle">You're all set!</h2>
+        <p class="obSuccessText">
+          Your Simmer is tuned to your taste.<br>
+          Showing <strong>${dietLabel}</strong> recipes you'll actually want to cook.
+        </p>
+        <button class="obNext" id="obDoneBtn" type="button" style="width:100%;padding:16px">
+          Start cooking 🔥
+        </button>
+      `;
+      document.getElementById("obDoneBtn").addEventListener("click", closeOnboarding);
+    }
+
+    function animateObTransition() {
+      const card = document.getElementById("onboardCard");
+      card.style.transform = "translateX(-24px)";
+      card.style.opacity = "0";
+      card.style.transition = "transform 0.18s ease, opacity 0.18s ease";
+      setTimeout(() => {
+        card.style.transition = "none";
+        card.style.transform = "translateX(24px)";
+        renderOnboardStep();
+        requestAnimationFrame(() => {
+          card.style.transition = "transform 0.22s cubic-bezier(0.34,1.1,0.64,1), opacity 0.22s ease";
+          card.style.transform = "translateX(0)";
+          card.style.opacity = "1";
+        });
+      }, 180);
+    }
+
+    function applyOnboardAnswers() {
+      if (obAnswers.diet)           { state.diet     = obAnswers.diet; }
+      if (obAnswers.category)       { state.category = obAnswers.category; }
+      if (obAnswers.skill)          { state.mood     = obAnswers.skill; }
+      if (obAnswers.time_available) { state.time_available = obAnswers.time_available; }
+      savePreferences();
+      applyPreferencesToUI();
+      updateMicrocopy();
+      updatePreferenceHint();
+    }
+
+    function finishOnboarding() {
+      applyOnboardAnswers();
+      const card = document.getElementById("onboardCard");
+      card.style.transition = "transform 0.2s ease, opacity 0.2s ease";
+      card.style.transform = "scale(0.94)";
+      card.style.opacity = "0";
+      setTimeout(() => {
+        card.style.transition = "none";
+        card.style.transform = "scale(1.04)";
+        renderOnboardSuccess();
+        requestAnimationFrame(() => {
+          card.style.transition = "transform 0.3s cubic-bezier(0.34,1.4,0.64,1), opacity 0.25s ease";
+          card.style.transform = "scale(1)";
+          card.style.opacity = "1";
+        });
+      }, 200);
+    }
+
+    function closeOnboarding() {
+      const overlay = document.getElementById("onboardOverlay");
+      overlay.style.transition = "opacity 0.25s ease";
+      overlay.style.opacity = "0";
+      setTimeout(() => {
+        overlay.classList.add("hidden");
+        overlay.style.opacity = "";
+        overlay.style.transition = "";
+      }, 250);
+      localStorage.setItem(ONBOARDING_KEY, "1");
+      if (Object.keys(obAnswers).length) applyOnboardAnswers();
+      getSuggestions("decide");
+    }
+
+    function maybeShowOnboarding() {
+      if (localStorage.getItem(ONBOARDING_KEY)) return;
+      const overlay = document.getElementById("onboardOverlay");
+      overlay.classList.remove("hidden");
+      renderOnboardStep();
+    }
+
+    // ══════════════════════════════════════════════
+    // OFFLINE DETECTION
+    // ══════════════════════════════════════════════
+    function updateOnlineStatus() {
+      const banner = document.getElementById("offlineBanner");
+      if (!navigator.onLine) {
+        banner.classList.add("show");
+      } else {
+        banner.classList.remove("show");
+      }
+    }
+    window.addEventListener("online",  updateOnlineStatus);
+    window.addEventListener("offline", updateOnlineStatus);
+    updateOnlineStatus();
+
+    // ══════════════════════════════════════════════
+    // SERVICE WORKER REGISTRATION
+    // ══════════════════════════════════════════════
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+
     // ── Boot
     bindInputs();
     loadPreferences();
@@ -3638,7 +4060,10 @@
     updatePreferenceHint();
     updateStreakBanner();
     renderCookAgain();
-    getSuggestions(getInitialMode());
+    maybeShowOnboarding();
+    if (localStorage.getItem(ONBOARDING_KEY)) {
+      getSuggestions(getInitialMode());
+    }
   </script>
 </body>
 </html>
