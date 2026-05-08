@@ -3,7 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MealsKart</title>
+  <title>Simmer — Cook by Craving</title>
+  <meta name="description" content="Simmer is your personal AI recipe chef. Pick a mood, time, and ingredients — get the perfect meal in seconds." />
+  <meta name="theme-color" content="#f97316" />
+  <meta property="og:title" content="Simmer — Cook by Craving" />
+  <meta property="og:description" content="Stop scrolling. Start cooking. Your personal AI recipe chef for every craving." />
+  <meta property="og:image" content="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=1200&h=630&fit=crop" />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=192&h=192&fit=crop" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Manrope:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -14,7 +23,7 @@
       --bg1: #ffffff;
       --ink: #1a0e00;
       --muted: #78614a;
-      --muted2: #b09a84;
+      --muted2: #7a6045;
       --surface: rgba(255, 252, 248, 0.88);
       --surfaceStrong: rgba(255, 252, 248, 0.97);
       --border: rgba(240, 220, 200, 0.85);
@@ -1592,10 +1601,95 @@
       -webkit-text-fill-color: transparent;
       animation: brandGradient 7s ease-in-out infinite;
     }
+    .brandFlame {
+      -webkit-text-fill-color: initial;
+      background: none;
+      display: inline-block;
+      animation: flamePulse 2.2s ease-in-out infinite;
+    }
+    @keyframes flamePulse {
+      0%, 100% { transform: scale(1) rotate(-3deg); }
+      50%       { transform: scale(1.18) rotate(3deg); }
+    }
     @keyframes brandGradient {
       0%   { background-position: 0% 50%; }
       50%  { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
+    }
+
+    /* ── Decide button — dominant primary ─────────── */
+    #decideBtn {
+      min-height: 62px;
+      font-size: 1.1rem;
+      letter-spacing: 0.01em;
+      box-shadow: 0 6px 24px rgba(249,115,22,0.45), 0 1px 3px rgba(0,0,0,0.14);
+    }
+
+    /* ── Tag-pill ingredient input ────────────────── */
+    .tagInputWrap {
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 8px 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 48px;
+      background: var(--bg1);
+      cursor: text;
+      transition: border-color 0.18s, box-shadow 0.18s;
+    }
+    .tagInputWrap:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accentGlow);
+    }
+    .ingredientTag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(249,115,22,0.1);
+      color: var(--accent2);
+      border: 1px solid rgba(249,115,22,0.25);
+      border-radius: 999px;
+      padding: 3px 8px 3px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      white-space: nowrap;
+      animation: tagPop 0.18s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .ingredientTag .tagX {
+      background: none;
+      border: none;
+      padding: 0 2px;
+      cursor: pointer;
+      color: var(--accent2);
+      font-size: 1rem;
+      line-height: 1;
+      opacity: 0.6;
+      transition: opacity 0.12s;
+    }
+    .ingredientTag .tagX:hover { opacity: 1; }
+    .tagTextInput {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--ink);
+      min-width: 100px;
+      flex: 1;
+      padding: 3px 0;
+    }
+    .tagTextInput::placeholder { color: var(--muted2); }
+    @keyframes tagPop {
+      from { transform: scale(0.6); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+    .tagCount {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-top: 4px;
+      min-height: 16px;
     }
 
     /* ── Warm animated background mesh ───────────── */
@@ -1777,6 +1871,39 @@
       .actions { display: none; }
     }
 
+    /* ── Empty state / Staff Pick ───────────────── */
+    .emptyState {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+      text-align: center;
+      gap: 10px;
+    }
+    .emptyIllustration {
+      font-size: 4rem;
+      animation: flamePulse 2.2s ease-in-out infinite;
+      line-height: 1;
+    }
+    .emptyState h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: var(--ink);
+      margin: 0;
+    }
+    .emptyState p {
+      color: var(--muted);
+      font-size: 0.94rem;
+      max-width: 28ch;
+      line-height: 1.5;
+      margin: 0;
+    }
+    /* hide empty state once real results arrive */
+    .results:not(:empty) .emptyState:not(:only-child) { display: none; }
+
     /* ── Trending ticker ─────────────────────────── */
     .trendingBar {
       display: flex;
@@ -1827,8 +1954,8 @@
   <div class="shell">
     <header class="topbar">
       <div class="brand">
-        <h1>What's cooking?</h1>
-        <p>Choose time, mood, diet and ingredients.</p>
+        <h1><span class="brandFlame">&#x1F525;</span> Simmer.</h1>
+        <p>Stop scrolling. Start cooking.</p>
       </div>
       <div class="microcopy" id="microcopy">Dinner ready in 15 mins &#9889;</div>
     </header>
@@ -1910,14 +2037,19 @@
           </div>
 
           <div class="section" id="ingredientsPanel">
-            <div class="label">What ingredients do you have? <span class="hint">comma separated</span></div>
-            <input id="ingredientsInput" class="field" placeholder="e.g. egg, onion, bread" autocomplete="off" />
+            <div class="label">What ingredients do you have?</div>
+            <div class="tagInputWrap" id="tagInputWrap" role="group" aria-label="Ingredient tags">
+              <input id="tagTextInput" class="tagTextInput" placeholder="type + press Enter ↵" autocomplete="off" />
+            </div>
+            <div class="tagCount" id="tagCount"></div>
           </div>
 
           <div class="actions">
-            <button class="btn" id="decideBtn" type="button">Decide for me</button>
-            <button class="btn secondary" id="suggestBtn" type="button">Show options</button>
-            <button class="btn secondary" id="planBtn" type="button">Plan 3 days</button>
+            <button class="btn" id="decideBtn" type="button">&#127860; Decide for me</button>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <button class="btn secondary" id="suggestBtn" type="button">Show options</button>
+              <button class="btn secondary" id="planBtn" type="button">Plan 3 days</button>
+            </div>
             <div class="trust">&#9889; Takes less than 5 seconds</div>
           </div>
         </div>
@@ -1942,7 +2074,14 @@
 
         <div class="streakBanner" id="streakBanner" aria-live="polite"></div>
         <div class="cookAgainWrap" id="cookAgainWrap"></div>
-        <section class="results" id="results"></section>
+        <section class="results" id="results">
+          <div class="emptyState" id="emptyState">
+            <div class="emptyIllustration">🍳</div>
+            <h3>Today's Staff Pick</h3>
+            <p id="staffPickText">Loading today's recommendation…</p>
+            <button class="btn" id="staffPickBtn" type="button" style="width:auto;padding:14px 28px;margin-top:8px">Cook this tonight</button>
+          </div>
+        </section>
       </main>
     </section>
   </div>
@@ -2005,9 +2144,9 @@
 
   <!-- Mobile sticky bottom CTA bar -->
   <div class="mobileBar" id="mobileBar" aria-hidden="true">
-    <button class="btn" id="decideBtnMobile" type="button">Decide for me</button>
-    <button class="btn secondary" id="suggestBtnMobile" type="button">Show options</button>
-    <button class="btn secondary" id="planBtnMobile" type="button">Plan 3 days</button>
+    <button class="btn" id="decideBtnMobile" type="button">&#127860; Decide</button>
+    <button class="btn secondary" id="suggestBtnMobile" type="button">Options</button>
+    <button class="btn secondary" id="planBtnMobile" type="button">Plan</button>
   </div>
 
   <script>
@@ -2024,7 +2163,8 @@
       time_available: 15,
       mood: "quick",
       diet: "veg",
-      category: "all"
+      category: "all",
+      ingredientTags: []
     };
 
     const el = {
@@ -2034,7 +2174,9 @@
       results: document.getElementById("results"),
       prefHint: document.getElementById("prefHint"),
       decideHint: document.getElementById("decideHint"),
-      ingredientsInput: document.getElementById("ingredientsInput"),
+      tagTextInput: document.getElementById("tagTextInput"),
+      tagInputWrap: document.getElementById("tagInputWrap"),
+      tagCount: document.getElementById("tagCount"),
       suggestBtn: document.getElementById("suggestBtn"),
       decideBtn: document.getElementById("decideBtn"),
       planBtn: document.getElementById("planBtn"),
@@ -2131,10 +2273,50 @@
     }
 
     function getIngredients() {
-      return (el.ingredientsInput?.value || "")
-        .split(",")
-        .map((i) => i.trim())
-        .filter(Boolean);
+      return [...state.ingredientTags];
+    }
+
+    function renderTags() {
+      // Remove existing tag spans (not the input)
+      el.tagInputWrap.querySelectorAll(".ingredientTag").forEach(t => t.remove());
+      state.ingredientTags.forEach((tag, i) => {
+        const span = document.createElement("span");
+        span.className = "ingredientTag";
+        span.innerHTML = `${escapeHtml(tag)}<button class="tagX" aria-label="Remove ${escapeHtml(tag)}" data-i="${i}">&times;</button>`;
+        el.tagInputWrap.insertBefore(span, el.tagTextInput);
+      });
+      const n = state.ingredientTags.length;
+      el.tagCount.textContent = n > 0 ? `${n} ingredient${n > 1 ? "s" : ""} added` : "";
+    }
+
+    function addTag(raw) {
+      raw.split(",").map(s => s.trim().toLowerCase()).filter(Boolean).forEach(val => {
+        if (val && !state.ingredientTags.includes(val)) state.ingredientTags.push(val);
+      });
+      renderTags();
+    }
+
+    function removeTag(i) {
+      state.ingredientTags.splice(i, 1);
+      renderTags();
+    }
+
+    function initTagInput() {
+      if (!el.tagTextInput) return;
+      el.tagInputWrap.addEventListener("click", () => el.tagTextInput.focus());
+      el.tagTextInput.addEventListener("keydown", e => {
+        if ((e.key === "Enter" || e.key === ",") && el.tagTextInput.value.trim()) {
+          e.preventDefault();
+          addTag(el.tagTextInput.value);
+          el.tagTextInput.value = "";
+        } else if (e.key === "Backspace" && !el.tagTextInput.value && state.ingredientTags.length) {
+          removeTag(state.ingredientTags.length - 1);
+        }
+      });
+      el.tagInputWrap.addEventListener("click", e => {
+        const btn = e.target.closest(".tagX");
+        if (btn) removeTag(Number(btn.dataset.i));
+      });
     }
 
     async function fetchWithRetry(url, options, retries = 2, timeout = 8000) {
@@ -2561,7 +2743,7 @@
 
     // ── Share recipe ──────────────────────────────────────────────────────
     function shareRecipe(recipe) {
-      const text = `Try "${recipe.name}" — ${clampInt(recipe.time_minutes, 0)} min, ${clampInt(recipe.calories, 0) || "~"} cal. Find it on MealsKart!`;
+      const text = `Try "${recipe.name}" — ${clampInt(recipe.time_minutes, 0)} min, ${clampInt(recipe.calories, 0) || "~"} cal. Cooked it on Simmer 🔥`;
       const url = "https://mealskart-frontend.vercel.app/";
       if (navigator.share) {
         navigator.share({ title: recipe.name, text, url }).catch(() => {});
@@ -3080,9 +3262,13 @@
       el.decideHint.style.display = isDecide ? "block" : "none";
     }
 
-    async function getSuggestions(mode = "normal") {
+    async function getSuggestions(mode = "normal", queryOverride = null) {
       if (isLoadingSuggestions) return;
       isLoadingSuggestions = true;
+
+      // Hide empty/staff-pick state
+      const emptyState = document.getElementById("emptyState");
+      if (emptyState) emptyState.style.display = "none";
 
       el.suggestBtn.disabled = true;
       el.decideBtn.disabled = true;
@@ -3094,7 +3280,7 @@
       renderLoadingCards(mode);
 
       try {
-        const ingredients = getIngredients();
+        const ingredients = queryOverride ? [queryOverride] : getIngredients();
         const cacheKey = JSON.stringify({ ...state, mode, ingredients });
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
@@ -3388,22 +3574,48 @@
       }
     })();
 
-    // ── Rotating placeholder in ingredients input ─────────────────────────
+    // ── Rotating placeholder in tag input ────────────────────────────────
+    initTagInput();
     const placeholderExamples = [
-      "e.g. egg, onion, bread",
-      "e.g. paneer, tomato, spinach",
-      "e.g. rice, dal, ghee",
-      "e.g. chicken, garlic, ginger",
-      "e.g. pasta, cheese, basil",
-      "e.g. oats, banana, honey"
+      "type + press Enter ↵",
+      "e.g. paneer, tomato…",
+      "e.g. rice, dal, ghee…",
+      "e.g. chicken, garlic…",
+      "e.g. pasta, cheese…",
+      "e.g. oats, banana…"
     ];
     let phIdx = 0;
     setInterval(() => {
-      if (el.ingredientsInput && document.activeElement !== el.ingredientsInput && !el.ingredientsInput.value) {
+      if (el.tagTextInput && document.activeElement !== el.tagTextInput && !el.tagTextInput.value) {
         phIdx = (phIdx + 1) % placeholderExamples.length;
-        el.ingredientsInput.placeholder = placeholderExamples[phIdx];
+        el.tagTextInput.placeholder = placeholderExamples[phIdx];
       }
     }, 3200);
+
+    // ── Staff Pick of the Day ─────────────────────────────────────────────
+    (function initStaffPick() {
+      const picks = [
+        { name: "Butter Chicken", desc: "Slow-cooked, smoky, luscious — the crowd favourite.", query: "butter chicken" },
+        { name: "Dal Makhani",    desc: "Creamy overnight dal that feels like a warm hug.",   query: "dal" },
+        { name: "Palak Paneer",  desc: "Iron-rich, vibrant greens with pillowy paneer.",      query: "paneer" },
+        { name: "Chicken Biryani", desc: "Fragrant, layered, and impossible to resist.",      query: "biryani" },
+        { name: "Masala Dosa",   desc: "Crispy rice crepe with a spiced potato filling.",     query: "dosa" },
+        { name: "Chole Bhature", desc: "Punchy chickpea curry with cloud-light fried bread.", query: "chole" },
+        { name: "Paneer Tikka",  desc: "Smoky charred cubes of marinated paneer perfection.", query: "paneer" }
+      ];
+      const pick = picks[new Date().getDay()];
+      const staffText = document.getElementById("staffPickText");
+      const staffBtn  = document.getElementById("staffPickBtn");
+      if (staffText) staffText.textContent = `${pick.name} — ${pick.desc}`;
+      if (staffBtn) {
+        staffBtn.addEventListener("click", () => {
+          if (el.tagTextInput) { el.tagTextInput.value = ""; }
+          state.ingredientTags = [];
+          renderTags();
+          getSuggestions("decide", pick.query);
+        });
+      }
+    })();
 
     // ── Hero card parallax on mouse move ─────────────────────────────────
     document.addEventListener("mousemove", (e) => {
