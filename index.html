@@ -2266,6 +2266,195 @@
       color: #fff;
     }
 
+    /* ══════════════════════════════════════════════
+       RECIPE COLLECTIONS
+       ══════════════════════════════════════════════ */
+    .saveBtn {
+      width: 34px; height: 34px;
+      border-radius: 999px;
+      border: 1px solid rgba(15,23,42,0.1);
+      background: rgba(255,255,255,0.86);
+      box-shadow: 0 4px 12px rgba(2,8,23,0.08);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 1rem;
+      line-height: 1;
+      transition: all 0.18s ease;
+      flex: 0 0 auto;
+      position: relative;
+    }
+    .saveBtn:hover { background: #fff; box-shadow: 0 6px 16px rgba(2,8,23,0.12); }
+    .saveBtn.saved { background: rgba(249,115,22,0.1); border-color: rgba(249,115,22,0.3); }
+
+    /* Collection picker popover */
+    .colPicker {
+      position: absolute;
+      top: 42px; right: 0;
+      z-index: 50;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 20px 48px rgba(80,30,5,0.18);
+      min-width: 200px;
+      padding: 8px;
+      animation: colPickerIn 0.18s cubic-bezier(0.34,1.3,0.64,1) both;
+    }
+    @keyframes colPickerIn {
+      from { transform: scale(0.88) translateY(-8px); opacity: 0; }
+      to   { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .colPickerHead {
+      font-size: 0.72rem; font-weight: 800; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 4px 8px 6px; border-bottom: 1px solid var(--border); margin-bottom: 4px;
+    }
+    .colPickerItem {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 10px; border-radius: 9px; cursor: pointer;
+      font-size: 0.86rem; font-weight: 600; color: var(--ink);
+      transition: background 0.12s;
+    }
+    .colPickerItem:hover { background: rgba(249,115,22,0.07); }
+    .colPickerItem .colCheck { margin-left: auto; color: #16a34a; font-size: 0.9rem; }
+    .colPickerNew {
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 10px; margin-top: 4px; border-top: 1px solid var(--border);
+    }
+    .colPickerNewInput {
+      flex: 1; border: none; outline: none; background: transparent;
+      font-family: inherit; font-size: 0.84rem; color: var(--ink);
+    }
+    .colPickerNewInput::placeholder { color: var(--muted2); }
+    .colPickerAddBtn {
+      background: var(--accent); color: #fff; border: none;
+      border-radius: 6px; padding: 4px 8px; font-size: 0.78rem;
+      font-weight: 800; cursor: pointer;
+    }
+
+    /* Collections sheet */
+    .collectionsSheet {
+      background: var(--bg0); border-radius: 28px 28px 0 0;
+      padding: 28px 24px 40px; width: min(560px, 100%);
+      max-height: 88vh; overflow-y: auto;
+      box-shadow: 0 -20px 60px rgba(80,30,5,0.2);
+      animation: reportSlideUp 0.38s cubic-bezier(0.34,1.08,0.64,1) both;
+    }
+    .collectionGroup { margin-bottom: 24px; }
+    .collectionGroupHead {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .collectionGroupName {
+      font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 900; color: var(--ink);
+    }
+    .collectionGroupCount {
+      font-size: 0.76rem; font-weight: 700; color: var(--muted2);
+      background: var(--border); border-radius: 999px; padding: 2px 8px;
+    }
+    .colDeleteBtn {
+      background: none; border: none; cursor: pointer;
+      font-size: 0.78rem; color: #e11d48; font-weight: 700; padding: 2px 6px;
+    }
+    .miniRecipeList { display: flex; flex-direction: column; gap: 8px; }
+    .miniRecipeCard {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px 12px;
+    }
+    .miniRecipeImg {
+      width: 44px; height: 44px; border-radius: 8px;
+      background-size: cover; background-position: center; flex: 0 0 auto;
+    }
+    .miniRecipeName { font-size: 0.88rem; font-weight: 700; color: var(--ink); }
+    .miniRecipeMeta { font-size: 0.74rem; color: var(--muted2); margin-top: 2px; }
+    .miniRecipeRemove {
+      margin-left: auto; background: none; border: none;
+      cursor: pointer; color: var(--muted2); font-size: 1rem; line-height: 1;
+    }
+    .emptyCollection {
+      color: var(--muted2); font-size: 0.86rem; padding: 12px 0; text-align: center;
+    }
+
+    /* ══════════════════════════════════════════════
+       NUTRITIONAL GOALS
+       ══════════════════════════════════════════════ */
+    .goalBar {
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: 16px; padding: 14px 16px;
+      margin-bottom: 12px; display: none;
+    }
+    .goalBar.show { display: block; }
+    .goalBarHead {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .goalBarLabel { font-size: 0.76rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .goalBarEdit {
+      background: none; border: none; cursor: pointer;
+      font-size: 0.72rem; font-weight: 700; color: var(--accent); padding: 0;
+    }
+    .goalBarNumbers { font-size: 0.92rem; font-weight: 800; color: var(--ink); margin-bottom: 8px; }
+    .goalBarNumbers span { color: var(--accent); }
+    .goalBarTrack {
+      height: 8px; border-radius: 999px;
+      background: rgba(249,115,22,0.12); overflow: hidden;
+    }
+    .goalBarFill {
+      height: 100%; border-radius: inherit;
+      background: linear-gradient(90deg, #f97316, #ea580c);
+      transition: width 0.6s cubic-bezier(0.34,1,0.64,1);
+    }
+    .goalBarFill.over { background: linear-gradient(90deg, #16a34a, #15803d); }
+    .goalMacros {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 6px; margin-top: 10px;
+    }
+    .goalMacroItem {
+      background: rgba(249,115,22,0.06); border-radius: 10px;
+      padding: 8px; text-align: center;
+    }
+    .goalMacroVal { font-size: 0.86rem; font-weight: 800; color: var(--ink); }
+    .goalMacroName { font-size: 0.66rem; font-weight: 700; color: var(--muted2); text-transform: uppercase; }
+
+    /* Goal setup sheet */
+    .goalSetupSheet {
+      background: var(--bg0); border-radius: 28px 28px 0 0;
+      padding: 32px 28px 48px; width: min(480px, 100%);
+      box-shadow: 0 -20px 60px rgba(80,30,5,0.2);
+      animation: reportSlideUp 0.38s cubic-bezier(0.34,1.08,0.64,1) both;
+    }
+    .goalSetupTitle { font-family:'Fraunces',serif; font-size:1.5rem; font-weight:900; color:var(--ink); margin:0 0 6px; }
+    .goalSetupSub   { color:var(--muted); font-size:0.88rem; margin:0 0 24px; }
+    .goalInput {
+      width: 100%; border: 1.5px solid var(--border); border-radius: 12px;
+      padding: 13px 14px; font-family: inherit; font-size: 1rem;
+      font-weight: 700; color: var(--ink); background: var(--bg1);
+      margin-bottom: 10px; transition: border-color 0.18s;
+    }
+    .goalInput:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px var(--accentGlow); }
+    .goalPresets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .goalPreset {
+      border: 1.5px solid var(--border); border-radius: 999px;
+      padding: 6px 14px; font-size: 0.8rem; font-weight: 700;
+      color: var(--muted); background: var(--bg1); cursor: pointer; transition: all 0.15s;
+    }
+    .goalPreset:hover, .goalPreset.active { border-color: var(--accent); color: var(--accent); background: rgba(249,115,22,0.07); }
+
+    /* Sidebar collections button */
+    .collectionsLink {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 12px; background: var(--bg1); cursor: pointer;
+      font-size: 0.84rem; font-weight: 700; color: var(--ink);
+      transition: all 0.15s; margin-bottom: 0;
+    }
+    .collectionsLink:hover { border-color: var(--accent); color: var(--accent); }
+    .collectionsLinkCount {
+      background: var(--accent); color: #fff; border-radius: 999px;
+      padding: 2px 8px; font-size: 0.72rem; font-weight: 800;
+    }
+
     /* ── Offline banner ──────────────────────────── */
     .offlineBanner {
       display: none;
@@ -2395,6 +2584,16 @@
               <button class="btn secondary" id="suggestBtn" type="button">Show options</button>
               <button class="btn secondary" id="planBtn" type="button">Plan 3 days</button>
             </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px">
+              <button class="collectionsLink" id="collectionsBtn" type="button">
+                <span>📚 Collections</span>
+                <span class="collectionsLinkCount" id="collectionsCount">0</span>
+              </button>
+              <button class="collectionsLink" id="goalBtn" type="button">
+                <span>🎯 Goal</span>
+                <span style="font-size:0.72rem;color:var(--muted2)" id="goalBtnLabel">Set</span>
+              </button>
+            </div>
             <div class="trust">&#9889; Takes less than 5 seconds</div>
           </div>
         </div>
@@ -2418,6 +2617,7 @@
         </div>
 
         <div class="streakBanner" id="streakBanner" aria-live="polite"></div>
+        <div class="goalBar" id="goalBar"></div>
         <div class="cookAgainWrap" id="cookAgainWrap"></div>
         <section class="results" id="results">
           <div class="emptyState" id="emptyState">
@@ -2485,6 +2685,16 @@
       </div>
       <button class="skipRating" id="skipRatingBtn" type="button">Skip for now</button>
     </div>
+  </div>
+
+  <!-- Collections overlay -->
+  <div class="reportOverlay hidden" id="collectionsOverlay" role="dialog" aria-modal="true" aria-label="My Collections">
+    <div class="collectionsSheet" id="collectionsSheet"><!-- injected by JS --></div>
+  </div>
+
+  <!-- Goal setup overlay -->
+  <div class="reportOverlay hidden" id="goalSetupOverlay" role="dialog" aria-modal="true" aria-label="Set nutrition goal">
+    <div class="goalSetupSheet" id="goalSetupSheet"><!-- injected by JS --></div>
   </div>
 
   <!-- Weekly report overlay -->
@@ -3389,9 +3599,12 @@
                   <span class="cookedCount"><span class="countNum" data-target="${stats.count}">0</span> cooked this week</span>
                 </div>
               </div>
-              <button class="heartBtn" type="button" aria-label="Toggle favorite">
-                <span class="heart">${isFav ? "&#10084;" : "&#9825;"}</span>
-              </button>
+              <div style="display:flex;gap:6px;align-items:center">
+                <button class="saveBtn ${getRecipeCollections(item.id).length ? "saved" : ""}" type="button" aria-label="Save to collection">🔖</button>
+                <button class="heartBtn" type="button" aria-label="Toggle favorite">
+                  <span class="heart">${isFav ? "&#10084;" : "&#9825;"}</span>
+                </button>
+              </div>
             </div>
 
             <div class="metaRow">
@@ -3425,11 +3638,21 @@
           heart.innerHTML = next.has(id) ? "&#10084;" : "&#9825;";
         });
 
+        // Save button → collection picker
+        const saveBtn = card.querySelector(".saveBtn");
+        if (saveBtn) {
+          saveBtn.addEventListener("click", e => {
+            e.stopPropagation();
+            showCollectionPicker(saveBtn, item);
+          });
+        }
+
         function open() {
           try {
             localStorage.setItem(LAST_COOKED_KEY, String(item.id));
             pushRecentCookedId(item.id);
             logCookEntry(item);
+            logMealToday(item);
           } catch (error) {}
           updatePreferenceHint();
           trackInteraction("cook", item.id);
@@ -4010,6 +4233,348 @@
     });
 
     // ══════════════════════════════════════════════
+    // RECIPE COLLECTIONS
+    // ══════════════════════════════════════════════
+    const COLLECTIONS_KEY = "simmer_collections_v1";
+
+    function getCollections() {
+      try { return JSON.parse(localStorage.getItem(COLLECTIONS_KEY) || "{}"); }
+      catch { return {}; }
+    }
+    function saveCollections(c) {
+      try { localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(c)); } catch {}
+    }
+    function totalSaved() {
+      const c = getCollections();
+      return Object.values(c).reduce((s, arr) => s + arr.length, 0);
+    }
+    function getRecipeCollections(id) {
+      const c = getCollections();
+      return Object.keys(c).filter(name => c[name].some(r => String(r.id) === String(id)));
+    }
+    function addToCollection(name, recipe) {
+      const c = getCollections();
+      if (!c[name]) c[name] = [];
+      if (!c[name].some(r => String(r.id) === String(recipe.id))) {
+        c[name].push({ id: recipe.id, name: recipe.name, time_minutes: recipe.time_minutes, calories: recipe.calories, category: recipe.category });
+      }
+      saveCollections(c);
+      updateCollectionsCount();
+    }
+    function removeFromCollection(collName, recipeId) {
+      const c = getCollections();
+      if (c[collName]) c[collName] = c[collName].filter(r => String(r.id) !== String(recipeId));
+      if (c[collName] && c[collName].length === 0) delete c[collName];
+      saveCollections(c);
+      updateCollectionsCount();
+    }
+    function deleteCollection(name) {
+      const c = getCollections();
+      delete c[name];
+      saveCollections(c);
+      updateCollectionsCount();
+    }
+    function updateCollectionsCount() {
+      const el = document.getElementById("collectionsCount");
+      if (el) el.textContent = totalSaved();
+    }
+
+    let activeColPicker = null;
+    function showCollectionPicker(btn, recipe) {
+      hideCollectionPicker();
+      const inCollections = getRecipeCollections(recipe.id);
+      const collections   = getCollections();
+
+      const picker = document.createElement("div");
+      picker.className = "colPicker";
+      picker.innerHTML = `
+        <div class="colPickerHead">📚 Save to collection</div>
+        <div class="colPickerItem" data-col="⭐ Favourites">
+          <span>⭐</span><span>Favourites</span>
+          ${inCollections.includes("⭐ Favourites") ? '<span class="colCheck">✓</span>' : ""}
+        </div>
+        ${Object.keys(collections).filter(n => n !== "⭐ Favourites").map(name => `
+          <div class="colPickerItem" data-col="${escapeHtml(name)}">
+            <span>📁</span><span>${escapeHtml(name)}</span>
+            ${inCollections.includes(name) ? '<span class="colCheck">✓</span>' : ""}
+          </div>
+        `).join("")}
+        <div class="colPickerNew">
+          <input class="colPickerNewInput" id="colNewInput" placeholder="New collection…" maxlength="32" />
+          <button class="colPickerAddBtn" id="colAddBtn" type="button">Add</button>
+        </div>
+      `;
+
+      picker.querySelectorAll(".colPickerItem").forEach(item => {
+        item.addEventListener("click", () => {
+          const col = item.dataset.col;
+          if (inCollections.includes(col)) {
+            removeFromCollection(col, recipe.id);
+            item.querySelector(".colCheck")?.remove();
+            btn.classList.remove("saved");
+          } else {
+            addToCollection(col, recipe);
+            if (!item.querySelector(".colCheck")) {
+              const chk = document.createElement("span");
+              chk.className = "colCheck"; chk.textContent = "✓";
+              item.appendChild(chk);
+            }
+            btn.classList.add("saved");
+          }
+        });
+      });
+
+      const addBtn = picker.querySelector("#colAddBtn");
+      const input  = picker.querySelector("#colNewInput");
+      addBtn.addEventListener("click", () => {
+        const name = input.value.trim();
+        if (!name) return;
+        addToCollection(name, recipe);
+        btn.classList.add("saved");
+        hideCollectionPicker();
+        openCollectionsSheet();
+      });
+      input.addEventListener("keydown", e => { if (e.key === "Enter") addBtn.click(); });
+
+      btn.style.position = "relative";
+      btn.appendChild(picker);
+      activeColPicker = picker;
+
+      setTimeout(() => {
+        document.addEventListener("click", outsideColPicker);
+      }, 0);
+    }
+
+    function outsideColPicker(e) {
+      if (activeColPicker && !activeColPicker.contains(e.target)) {
+        hideCollectionPicker();
+      }
+    }
+    function hideCollectionPicker() {
+      activeColPicker?.remove();
+      activeColPicker = null;
+      document.removeEventListener("click", outsideColPicker);
+    }
+
+    function openCollectionsSheet() {
+      const overlay = document.getElementById("collectionsOverlay");
+      const sheet   = document.getElementById("collectionsSheet");
+      const cols    = getCollections();
+      const names   = Object.keys(cols);
+
+      sheet.innerHTML = `
+        <div class="reportDrag"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div>
+            <h2 style="font-family:'Fraunces',serif;font-size:1.4rem;font-weight:900;color:var(--ink);margin:0">📚 My Collections</h2>
+            <p style="color:var(--muted);font-size:0.84rem;margin:4px 0 0">${totalSaved()} saved recipes</p>
+          </div>
+          <button class="obNext" id="closeCollections" type="button" style="padding:10px 18px;font-size:0.84rem">Done</button>
+        </div>
+        ${names.length === 0 ? `<div class="emptyCollection">No collections yet.<br>Tap 🔖 on any recipe card to save it.</div>` : ""}
+        ${names.map(name => `
+          <div class="collectionGroup">
+            <div class="collectionGroupHead">
+              <span class="collectionGroupName">${escapeHtml(name)}</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <span class="collectionGroupCount">${cols[name].length}</span>
+                <button class="colDeleteBtn" data-del="${escapeHtml(name)}" type="button">✕ Delete</button>
+              </div>
+            </div>
+            <div class="miniRecipeList">
+              ${cols[name].map(r => `
+                <div class="miniRecipeCard">
+                  <div class="miniRecipeImg" style="background-image:url('${dishImageUrl(r.name)}')"></div>
+                  <div>
+                    <div class="miniRecipeName">${escapeHtml(r.name)}</div>
+                    <div class="miniRecipeMeta">⏱ ${clampInt(r.time_minutes,0)} min · 🔥 ${clampInt(r.calories,0)||"~"} cal</div>
+                  </div>
+                  <button class="miniRecipeRemove" data-col="${escapeHtml(name)}" data-id="${r.id}" type="button" aria-label="Remove">✕</button>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        `).join("")}
+      `;
+
+      sheet.querySelectorAll(".miniRecipeRemove").forEach(btn => {
+        btn.addEventListener("click", () => {
+          removeFromCollection(btn.dataset.col, btn.dataset.id);
+          openCollectionsSheet();
+        });
+      });
+      sheet.querySelectorAll(".colDeleteBtn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          deleteCollection(btn.dataset.del);
+          openCollectionsSheet();
+        });
+      });
+      sheet.querySelector("#closeCollections")?.addEventListener("click", closeCollectionsSheet);
+
+      overlay.classList.remove("hidden");
+      overlay.addEventListener("click", e => { if (e.target === overlay) closeCollectionsSheet(); });
+    }
+
+    function closeCollectionsSheet() {
+      const overlay = document.getElementById("collectionsOverlay");
+      overlay.style.opacity = "0"; overlay.style.transition = "opacity 0.22s ease";
+      setTimeout(() => { overlay.classList.add("hidden"); overlay.style.opacity = ""; overlay.style.transition = ""; }, 220);
+    }
+
+    // ══════════════════════════════════════════════
+    // NUTRITIONAL GOALS
+    // ══════════════════════════════════════════════
+    const GOALS_KEY     = "simmer_goals_v1";
+    const DAILY_LOG_KEY = "simmer_daily_log_v1";
+
+    function getGoals() {
+      try { return JSON.parse(localStorage.getItem(GOALS_KEY) || "null"); }
+      catch { return null; }
+    }
+    function saveGoals(g) {
+      try { localStorage.setItem(GOALS_KEY, JSON.stringify(g)); } catch {}
+    }
+
+    function todayKey() { return new Date().toDateString(); }
+    function getDailyLog() {
+      try {
+        const raw = JSON.parse(localStorage.getItem(DAILY_LOG_KEY) || "{}");
+        return raw[todayKey()] || [];
+      } catch { return []; }
+    }
+    function logMealToday(item) {
+      try {
+        const all = JSON.parse(localStorage.getItem(DAILY_LOG_KEY) || "{}");
+        const key = todayKey();
+        if (!all[key]) all[key] = [];
+        if (!all[key].some(e => String(e.id) === String(item.id))) {
+          const nut = item.nutrition || {};
+          all[key].push({
+            id:       item.id,
+            name:     item.name,
+            calories: Number(item.calories) || 0,
+            protein:  Number(nut.protein_g) || 0,
+            carbs:    Number(nut.carbs_g)   || 0,
+            fat:      Number(nut.fat_g)     || 0
+          });
+        }
+        // Prune old days (keep 30)
+        const keys = Object.keys(all).sort((a,b) => new Date(b)-new Date(a));
+        keys.slice(30).forEach(k => delete all[k]);
+        localStorage.setItem(DAILY_LOG_KEY, JSON.stringify(all));
+        renderGoalBar();
+      } catch {}
+    }
+
+    function getTodayTotals() {
+      return getDailyLog().reduce((acc, e) => ({
+        calories: acc.calories + (e.calories||0),
+        protein:  acc.protein  + (e.protein||0),
+        carbs:    acc.carbs    + (e.carbs||0),
+        fat:      acc.fat      + (e.fat||0)
+      }), { calories:0, protein:0, carbs:0, fat:0 });
+    }
+
+    function renderGoalBar() {
+      const goals = getGoals();
+      const bar   = document.getElementById("goalBar");
+      const btnLbl = document.getElementById("goalBtnLabel");
+      if (!bar) return;
+      if (!goals) {
+        bar.classList.remove("show");
+        if (btnLbl) btnLbl.textContent = "Set";
+        return;
+      }
+      const totals = getTodayTotals();
+      const pct    = Math.min(Math.round((totals.calories / goals.calories) * 100), 150);
+      const over   = pct >= 100;
+      bar.classList.add("show");
+      bar.innerHTML = `
+        <div class="goalBarHead">
+          <span class="goalBarLabel">Today's Goal</span>
+          <button class="goalBarEdit" id="goalEditBtn" type="button">Edit</button>
+        </div>
+        <div class="goalBarNumbers"><span>${totals.calories.toLocaleString()}</span> / ${goals.calories.toLocaleString()} cal · ${pct}%</div>
+        <div class="goalBarTrack"><div class="goalBarFill ${over?"over":""}" style="width:${Math.min(pct,100)}%"></div></div>
+        ${(goals.protein || goals.carbs || goals.fat) ? `
+        <div class="goalMacros">
+          <div class="goalMacroItem"><div class="goalMacroVal">${totals.protein}g</div><div class="goalMacroName">Protein</div></div>
+          <div class="goalMacroItem"><div class="goalMacroVal">${totals.carbs}g</div><div class="goalMacroName">Carbs</div></div>
+          <div class="goalMacroItem"><div class="goalMacroVal">${totals.fat}g</div><div class="goalMacroName">Fat</div></div>
+        </div>` : ""}
+      `;
+      document.getElementById("goalEditBtn")?.addEventListener("click", openGoalSetup);
+      if (btnLbl) btnLbl.textContent = `${pct}%`;
+    }
+
+    function openGoalSetup() {
+      const overlay = document.getElementById("goalSetupOverlay");
+      const sheet   = document.getElementById("goalSetupSheet");
+      const existing = getGoals() || { calories: 1800, protein: 60, carbs: 225, fat: 60 };
+      const presets  = [
+        { label: "Weight loss",   cal: 1400, protein: 90,  carbs: 140, fat: 45 },
+        { label: "Maintenance",   cal: 1800, protein: 60,  carbs: 225, fat: 60 },
+        { label: "Muscle gain",   cal: 2400, protein: 150, carbs: 270, fat: 70 },
+        { label: "High protein",  cal: 2000, protein: 160, carbs: 180, fat: 60 }
+      ];
+      sheet.innerHTML = `
+        <div class="reportDrag"></div>
+        <h2 class="goalSetupTitle">🎯 Daily Goal</h2>
+        <p class="goalSetupSub">Set your daily calorie target and we'll track every meal you cook.</p>
+        <div class="goalPresets" id="goalPresets">
+          ${presets.map((p,i) => `<button class="goalPreset${existing.calories===p.cal?" active":""}" data-i="${i}" type="button">${p.label}</button>`).join("")}
+        </div>
+        <label style="display:block;font-size:0.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px">Daily Calories</label>
+        <input class="goalInput" id="goalCalInput" type="number" min="800" max="5000" value="${existing.calories}" placeholder="e.g. 1800" />
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px">
+          <div><label style="font-size:0.72rem;font-weight:800;color:var(--muted);display:block;margin-bottom:4px">PROTEIN (g)</label>
+            <input class="goalInput" id="goalProtein" type="number" min="0" max="400" value="${existing.protein}" style="margin:0" /></div>
+          <div><label style="font-size:0.72rem;font-weight:800;color:var(--muted);display:block;margin-bottom:4px">CARBS (g)</label>
+            <input class="goalInput" id="goalCarbs" type="number" min="0" max="600" value="${existing.carbs}" style="margin:0" /></div>
+          <div><label style="font-size:0.72rem;font-weight:800;color:var(--muted);display:block;margin-bottom:4px">FAT (g)</label>
+            <input class="goalInput" id="goalFat" type="number" min="0" max="300" value="${existing.fat}" style="margin:0" /></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <button class="btn secondary" id="goalCancelBtn" type="button">Cancel</button>
+          <button class="btn" id="goalSaveBtn" type="button">Save goal 🎯</button>
+        </div>
+      `;
+
+      // Preset auto-fill
+      sheet.querySelectorAll(".goalPreset").forEach((btn, i) => {
+        btn.addEventListener("click", () => {
+          sheet.querySelectorAll(".goalPreset").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          const p = presets[i];
+          sheet.querySelector("#goalCalInput").value = p.cal;
+          sheet.querySelector("#goalProtein").value = p.protein;
+          sheet.querySelector("#goalCarbs").value = p.carbs;
+          sheet.querySelector("#goalFat").value = p.fat;
+        });
+      });
+
+      sheet.querySelector("#goalSaveBtn").addEventListener("click", () => {
+        const cal     = Number(sheet.querySelector("#goalCalInput").value) || 1800;
+        const protein = Number(sheet.querySelector("#goalProtein").value) || 0;
+        const carbs   = Number(sheet.querySelector("#goalCarbs").value)   || 0;
+        const fat     = Number(sheet.querySelector("#goalFat").value)     || 0;
+        saveGoals({ calories: cal, protein, carbs, fat });
+        closeGoalSetup();
+        renderGoalBar();
+      });
+      sheet.querySelector("#goalCancelBtn").addEventListener("click", closeGoalSetup);
+
+      overlay.classList.remove("hidden");
+      overlay.addEventListener("click", e => { if (e.target === overlay) closeGoalSetup(); });
+    }
+
+    function closeGoalSetup() {
+      const overlay = document.getElementById("goalSetupOverlay");
+      overlay.style.opacity = "0"; overlay.style.transition = "opacity 0.22s ease";
+      setTimeout(() => { overlay.classList.add("hidden"); overlay.style.opacity = ""; overlay.style.transition = ""; }, 220);
+    }
+
+    // ══════════════════════════════════════════════
     // PERSONALISATION MEMORY
     // ══════════════════════════════════════════════
     const COOK_LOG_KEY    = "simmer_cook_log_v1";
@@ -4426,6 +4991,11 @@
       getSuggestions(getInitialMode());
     }
     maybeShowWeeklyReport();
+    renderGoalBar();
+    updateCollectionsCount();
+
+    document.getElementById("collectionsBtn")?.addEventListener("click", openCollectionsSheet);
+    document.getElementById("goalBtn")?.addEventListener("click", openGoalSetup);
 
     // "My week" button — always opens report regardless of 7-day gate
     const weeklyReportBtn = document.getElementById("weeklyReportBtn");
