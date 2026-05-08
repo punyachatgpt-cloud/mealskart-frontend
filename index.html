@@ -3132,6 +3132,156 @@
 
     /* ⑱ Filter pill labels (search 2.0 quick filters) */
     .filterChip { border-radius: 999px !important; }
+
+    /* ════════════════════════════════════════════════════
+       SMART COOKING REMINDERS — UI STYLES
+       ════════════════════════════════════════════════════ */
+    .bellBtn {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      width: 32px; height: 32px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: grid; place-items: center;
+      transition: all 0.18s;
+      position: relative;
+    }
+    .bellBtn:hover { border-color: var(--accent); }
+    .bellBtn .bellDot {
+      position: absolute;
+      top: 3px; right: 3px;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #22c55e;
+      border: 1.5px solid var(--bg0);
+      display: none;
+    }
+    .bellBtn.active .bellDot { display: block; }
+
+    .notifDrawer {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 300;
+      display: flex;
+      justify-content: flex-end;
+      pointer-events: none;
+    }
+    .notifPanel {
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 24px 24px;
+      padding: 20px 22px 22px;
+      width: min(360px, 92vw);
+      box-shadow: 0 20px 50px -10px rgba(0,0,0,0.22);
+      pointer-events: all;
+      transform: translateY(-110%);
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .notifPanel.open { transform: translateY(0); }
+    .notifPanelHead {
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 10px;
+      margin-bottom: 16px;
+    }
+    .notifPanelTitle {
+      font-family: 'Fraunces', serif;
+      font-size: 1.12rem; font-weight: 900;
+      color: var(--ink); margin: 0;
+    }
+    .notifCloseBtn {
+      background: none; border: none;
+      font-size: 1.2rem; cursor: pointer;
+      color: var(--muted2); line-height: 1;
+      padding: 4px; border-radius: 8px;
+      transition: color 0.15s;
+    }
+    .notifCloseBtn:hover { color: var(--ink); }
+    .notifRow {
+      display: flex; align-items: center;
+      justify-content: space-between; gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .notifRow:last-of-type { border-bottom: none; }
+    .notifRowLabel {
+      font-size: 0.88rem; font-weight: 700; color: var(--ink);
+    }
+    .notifRowSub {
+      font-size: 0.76rem; font-weight: 500;
+      color: var(--muted); margin-top: 2px;
+    }
+    /* Toggle switch */
+    .notifToggle {
+      position: relative; flex-shrink: 0;
+      width: 42px; height: 24px;
+      cursor: pointer;
+    }
+    .notifToggle input {
+      opacity: 0; width: 0; height: 0; position: absolute;
+    }
+    .notifToggleTrack {
+      position: absolute; inset: 0;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.15);
+      transition: background 0.22s;
+    }
+    .notifToggleTrack::after {
+      content: "";
+      position: absolute;
+      left: 3px; top: 3px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+      transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .notifToggle input:checked + .notifToggleTrack {
+      background: var(--accent);
+    }
+    .notifToggle input:checked + .notifToggleTrack::after {
+      transform: translateX(18px);
+    }
+    [data-theme="dark"] .notifToggleTrack {
+      background: rgba(200,160,80,0.20);
+    }
+    .notifTimeSelect {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--bg0);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 5px 10px;
+      cursor: pointer;
+      outline: none;
+    }
+    .notifTimeSelect:focus { border-color: var(--accent); }
+    .notifGrantRow {
+      margin-top: 14px;
+      text-align: center;
+    }
+    .notifGrantBtn {
+      background: var(--ember-gradient);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 9px 22px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: var(--ember-glow);
+      transition: all 0.22s;
+    }
+    .notifGrantBtn:hover { filter: brightness(1.08); }
+    .notifStatus {
+      font-size: 0.76rem; font-weight: 600;
+      color: var(--muted); margin-top: 8px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -3143,6 +3293,9 @@
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
         <div style="display:flex;align-items:center;gap:8px">
+          <button class="bellBtn" id="bellBtn" type="button" title="Cooking reminders" aria-label="Cooking reminders">
+            🔕<span class="bellDot"></span>
+          </button>
           <button class="themeBtn" id="themeBtn" type="button" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
           <div class="microcopy" id="microcopy">Dinner ready in 15 mins &#9889;</div>
         </div>
@@ -3154,6 +3307,75 @@
         </button>
       </div>
     </header>
+
+    <!-- ── Notification settings drawer ──────────────── -->
+    <div class="notifDrawer" id="notifDrawer" aria-hidden="true">
+      <div class="notifPanel" id="notifPanel" role="dialog" aria-label="Cooking reminder settings">
+        <div class="notifPanelHead">
+          <p class="notifPanelTitle">🔔 Cooking Reminders</p>
+          <button class="notifCloseBtn" id="notifCloseBtn" type="button" aria-label="Close">✕</button>
+        </div>
+
+        <div class="notifRow" id="notifMasterRow">
+          <div>
+            <div class="notifRowLabel">Enable reminders</div>
+            <div class="notifRowSub">Get nudged before you forget to cook</div>
+          </div>
+          <label class="notifToggle">
+            <input type="checkbox" id="notifMasterToggle">
+            <span class="notifToggleTrack"></span>
+          </label>
+        </div>
+
+        <div id="notifSubRows" style="transition:opacity 0.2s">
+          <div class="notifRow">
+            <div>
+              <div class="notifRowLabel">🍳 Dinner reminder</div>
+              <div class="notifRowSub">Alert if you haven't cooked yet</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <select class="notifTimeSelect" id="notifDinnerHour">
+                <option value="17">5 PM</option>
+                <option value="18" selected>6 PM</option>
+                <option value="19">7 PM</option>
+                <option value="20">8 PM</option>
+              </select>
+              <label class="notifToggle">
+                <input type="checkbox" id="notifDinnerToggle" checked>
+                <span class="notifToggleTrack"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="notifRow">
+            <div>
+              <div class="notifRowLabel">🔥 Streak nudge</div>
+              <div class="notifRowSub">Don't break your cooking streak</div>
+            </div>
+            <label class="notifToggle">
+              <input type="checkbox" id="notifStreakToggle" checked>
+              <span class="notifToggleTrack"></span>
+            </label>
+          </div>
+
+          <div class="notifRow">
+            <div>
+              <div class="notifRowLabel">📊 Weekly report</div>
+              <div class="notifRowSub">Monday morning summary</div>
+            </div>
+            <label class="notifToggle">
+              <input type="checkbox" id="notifWeeklyToggle" checked>
+              <span class="notifToggleTrack"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="notifGrantRow" id="notifGrantRow" style="display:none">
+          <button class="notifGrantBtn" id="notifGrantBtn" type="button">Allow notifications</button>
+        </div>
+        <div class="notifStatus" id="notifStatus"></div>
+      </div>
+    </div>
 
     <div class="trendingBar" aria-label="Trending dishes">
       <span class="trendingLabel">🔥 Trending</span>
@@ -6510,8 +6732,252 @@
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
 
+    // ══════════════════════════════════════════════
+    // SMART COOKING REMINDERS
+    // ══════════════════════════════════════════════
+    const NOTIF_KEY = "simmer_notif_v1";
+
+    function getNotifPrefs() {
+      try { return JSON.parse(localStorage.getItem(NOTIF_KEY) || "{}"); } catch { return {}; }
+    }
+    function saveNotifPrefs(patch) {
+      localStorage.setItem(NOTIF_KEY, JSON.stringify({ ...getNotifPrefs(), ...patch }));
+    }
+
+    async function requestNotifPermission() {
+      if (!("Notification" in window)) return "unsupported";
+      if (Notification.permission === "granted") return "granted";
+      if (Notification.permission === "denied") return "denied";
+      return await Notification.requestPermission();
+    }
+
+    function sendSimmerNotif(title, body) {
+      if (!("Notification" in window) || Notification.permission !== "granted") return;
+      const n = new Notification(title, {
+        body,
+        icon: "https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=192&h=192&fit=crop",
+        tag: "simmer-reminder",
+        renotify: true,
+        requireInteraction: false
+      });
+      n.onclick = () => { window.focus(); n.close(); };
+      setTimeout(() => n.close(), 10000);
+    }
+
+    function msUntilHour(hour, min = 0) {
+      const now = new Date();
+      const t = new Date(now);
+      t.setHours(hour, min, 0, 0);
+      if (t <= now) t.setDate(t.getDate() + 1);
+      return t - now;
+    }
+
+    // Timers stored so we can cancel on pref changes
+    let _notifTimers = [];
+    function clearNotifTimers() {
+      _notifTimers.forEach(id => clearTimeout(id));
+      _notifTimers = [];
+    }
+
+    function scheduleReminders() {
+      clearNotifTimers();
+      const prefs = getNotifPrefs();
+      if (!prefs.enabled || Notification.permission !== "granted") return;
+
+      // Dinner reminder
+      if (prefs.dinnerReminder !== false) {
+        const hour = parseInt(prefs.dinnerHour || 18, 10);
+        const delay = msUntilHour(hour);
+        if (delay < 12 * 3600 * 1000) { // only schedule if within 12 h
+          const tid = setTimeout(() => {
+            const log = getDailyLog();
+            if (log.length === 0) {
+              sendSimmerNotif("🍳 Time to cook dinner!", "What are you craving tonight? Open Simmer for instant inspiration.");
+            }
+          }, delay);
+          _notifTimers.push(tid);
+        }
+      }
+
+      // Streak nudge at 8pm
+      if (prefs.streakNudge !== false) {
+        const delay = msUntilHour(20);
+        if (delay < 12 * 3600 * 1000) {
+          const tid = setTimeout(() => {
+            const streak = getStreak();
+            const cooked = getDailyLog().length > 0;
+            if (streak >= 2 && !cooked) {
+              sendSimmerNotif(`🔥 ${streak}-day streak at risk!`, "Cook something tonight to keep your streak going.");
+            }
+          }, delay);
+          _notifTimers.push(tid);
+        }
+      }
+
+      // Weekly report — Monday 9am
+      if (prefs.weeklyReport !== false) {
+        const now = new Date();
+        const daysUntilMon = ((1 - now.getDay() + 7) % 7) || 7;
+        const nextMon = new Date(now);
+        nextMon.setDate(now.getDate() + daysUntilMon);
+        nextMon.setHours(9, 0, 0, 0);
+        const delay = nextMon - now;
+        if (delay < 7.5 * 24 * 3600 * 1000) {
+          const tid = setTimeout(() => {
+            const profile = getPersonalisationProfile();
+            if (profile) {
+              sendSimmerNotif("📊 Your weekly cooking report is ready!", "Check how your meals stacked up this week.");
+            }
+          }, delay);
+          _notifTimers.push(tid);
+        }
+      }
+    }
+
+    function updateBellUI() {
+      const prefs = getNotifPrefs();
+      const btn = document.getElementById("bellBtn");
+      if (!btn) return;
+      const on = prefs.enabled && Notification.permission === "granted";
+      btn.textContent = on ? "🔔" : "🔕";
+      btn.querySelector(".bellDot") && (btn.querySelector(".bellDot").style.display = on ? "block" : "none");
+      btn.classList.toggle("active", on);
+      // re-add dot since textContent wipes it
+      if (!btn.querySelector(".bellDot")) {
+        const dot = document.createElement("span");
+        dot.className = "bellDot";
+        dot.style.display = on ? "block" : "none";
+        btn.appendChild(dot);
+      }
+    }
+
+    function syncNotifPanelToPrefs() {
+      const prefs = getNotifPrefs();
+      const master  = document.getElementById("notifMasterToggle");
+      const dinner  = document.getElementById("notifDinnerToggle");
+      const streak  = document.getElementById("notifStreakToggle");
+      const weekly  = document.getElementById("notifWeeklyToggle");
+      const hourSel = document.getElementById("notifDinnerHour");
+      if (master) master.checked = !!prefs.enabled;
+      if (dinner) dinner.checked = prefs.dinnerReminder !== false;
+      if (streak) streak.checked = prefs.streakNudge !== false;
+      if (weekly) weekly.checked = prefs.weeklyReport !== false;
+      if (hourSel) hourSel.value = String(prefs.dinnerHour || 18);
+      const subRows = document.getElementById("notifSubRows");
+      if (subRows) subRows.style.opacity = prefs.enabled ? "1" : "0.4";
+    }
+
+    function updateNotifStatus() {
+      const statusEl = document.getElementById("notifStatus");
+      const grantRow = document.getElementById("notifGrantRow");
+      if (!statusEl) return;
+      if (!("Notification" in window)) {
+        statusEl.textContent = "Your browser doesn't support notifications.";
+        if (grantRow) grantRow.style.display = "none";
+        return;
+      }
+      if (Notification.permission === "granted") {
+        statusEl.textContent = "✅ Notifications are allowed.";
+        if (grantRow) grantRow.style.display = "none";
+      } else if (Notification.permission === "denied") {
+        statusEl.textContent = "❌ Notifications are blocked. Enable them in your browser settings.";
+        if (grantRow) grantRow.style.display = "none";
+      } else {
+        statusEl.textContent = "Tap below to allow notifications.";
+        if (grantRow) grantRow.style.display = "block";
+      }
+    }
+
+    function openNotifPanel() {
+      const drawer = document.getElementById("notifDrawer");
+      const panel  = document.getElementById("notifPanel");
+      if (!drawer || !panel) return;
+      drawer.style.pointerEvents = "all";
+      drawer.setAttribute("aria-hidden", "false");
+      panel.classList.add("open");
+      syncNotifPanelToPrefs();
+      updateNotifStatus();
+    }
+
+    function closeNotifPanel() {
+      const drawer = document.getElementById("notifDrawer");
+      const panel  = document.getElementById("notifPanel");
+      if (!drawer || !panel) return;
+      panel.classList.remove("open");
+      drawer.style.pointerEvents = "none";
+      drawer.setAttribute("aria-hidden", "true");
+    }
+
+    function initNotifications() {
+      // Bell button
+      document.getElementById("bellBtn")?.addEventListener("click", () => {
+        const panel = document.getElementById("notifPanel");
+        if (panel?.classList.contains("open")) closeNotifPanel();
+        else openNotifPanel();
+      });
+
+      // Close button
+      document.getElementById("notifCloseBtn")?.addEventListener("click", closeNotifPanel);
+
+      // Click outside drawer closes it
+      document.getElementById("notifDrawer")?.addEventListener("click", (e) => {
+        if (e.target === e.currentTarget) closeNotifPanel();
+      });
+
+      // Master toggle
+      document.getElementById("notifMasterToggle")?.addEventListener("change", async (e) => {
+        if (e.target.checked) {
+          const perm = await requestNotifPermission();
+          if (perm !== "granted") {
+            e.target.checked = false;
+            updateNotifStatus();
+            return;
+          }
+        }
+        saveNotifPrefs({ enabled: e.target.checked });
+        syncNotifPanelToPrefs();
+        updateNotifStatus();
+        updateBellUI();
+        scheduleReminders();
+      });
+
+      // Sub-toggles & time select
+      document.getElementById("notifDinnerToggle")?.addEventListener("change", (e) => {
+        saveNotifPrefs({ dinnerReminder: e.target.checked });
+        scheduleReminders();
+      });
+      document.getElementById("notifStreakToggle")?.addEventListener("change", (e) => {
+        saveNotifPrefs({ streakNudge: e.target.checked });
+        scheduleReminders();
+      });
+      document.getElementById("notifWeeklyToggle")?.addEventListener("change", (e) => {
+        saveNotifPrefs({ weeklyReport: e.target.checked });
+        scheduleReminders();
+      });
+      document.getElementById("notifDinnerHour")?.addEventListener("change", (e) => {
+        saveNotifPrefs({ dinnerHour: parseInt(e.target.value, 10) });
+        scheduleReminders();
+      });
+
+      // Grant permission button
+      document.getElementById("notifGrantBtn")?.addEventListener("click", async () => {
+        const perm = await requestNotifPermission();
+        updateNotifStatus();
+        if (perm === "granted") {
+          saveNotifPrefs({ enabled: true });
+          syncNotifPanelToPrefs();
+          updateBellUI();
+          scheduleReminders();
+        }
+      });
+
+      updateBellUI();
+      scheduleReminders();
+    }
+
     // ── Boot
     initTheme();
+    initNotifications();
     initCommunityFeed();
     initVoiceInput();
     bindInputs();
