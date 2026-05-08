@@ -7383,20 +7383,17 @@
       healthier: {
         label: "Healthier",
         emoji: "🥗",
-        stateOverride: { mood: "healthy" },
-        queryPrefix: "healthy low-calorie version of"
+        stateOverride: { mood: "healthy" }
       },
       spicier: {
         label: "Spicier",
         emoji: "🌶️",
-        stateOverride: {},
-        queryPrefix: "spicy hot version of"
+        stateOverride: { mood: "comfort" }
       },
       quicker: {
         label: "Quicker",
         emoji: "⚡",
-        stateOverride: { time_available: 15 },
-        queryPrefix: "quick 15-minute version of"
+        stateOverride: { time_available: 15 }
       }
     };
 
@@ -7419,19 +7416,16 @@
 
       try {
         const ingredients = getIngredients();
+        const payload = { ...state, ...cfg.stateOverride, mode: "normal", ingredients };
+        console.log("[Remix] payload →", JSON.stringify(payload));
         const response = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...state,
-            ...cfg.stateOverride,
-            mode: "suggest",
-            query: `${cfg.queryPrefix} ${originalItem.name}`,
-            ingredients
-          })
+          body: JSON.stringify(payload)
         });
 
         const data = await response.json();
+        console.log("[Remix] response →", data);
         const results = Array.isArray(data) ? data : [];
         if (results.length === 0) throw new Error("empty");
 
@@ -7528,6 +7522,7 @@
         card.addEventListener("animationend", () => card.classList.remove("justRemixed"), { once: true });
 
       } catch (e) {
+        console.error("[Remix] failed", remixType, e?.message, e);
         // Error chip in remix strip
         const remixStrip = card.querySelector(".remixStrip");
         if (remixStrip) {
