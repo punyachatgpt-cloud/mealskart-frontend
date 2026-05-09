@@ -1,0 +1,3 @@
+## 2026-05-09 - [Accessibility for Icon-Only Buttons and Dynamic Updates]
+**Learning:** Icon-only buttons with symbols like "-", "+", "↺", and "✕" were used in critical interactive components (servings, meal plan, shopping list) but lacked text alternatives for screen readers. Additionally, dynamic updates to values (like serving counts) were not announced, creating a gap in feedback for assistive technology users.
+**Action:** Consistently apply `aria-label` to all icon-only buttons to convey intent, and use `aria-live="polite"` on dynamic text nodes that reflect user-triggered state changes to ensure immediate accessibility feedback.
