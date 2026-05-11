@@ -7267,11 +7267,21 @@
         });
 
         const data = await response.json();
+        const resultItems = Array.isArray(data) ? data : [];
+
+        // If the backend found nothing for a name_query, clear banner & show "no results"
+        if (resultItems.length === 0 && nameQ) {
+          setUniSearchBanner("");   // don't keep "Showing results for: X" if nothing found
+          renderEmpty(`No recipes found for "${nameQ}". Try a different search.`);
+          try { localStorage.setItem(cacheKey, JSON.stringify({ data: [], time: Date.now() })); } catch(_) {}
+          return;
+        }
+
         try {
-          localStorage.setItem(cacheKey, JSON.stringify({ data, time: Date.now() }));
+          localStorage.setItem(cacheKey, JSON.stringify({ data: resultItems, time: Date.now() }));
         } catch (error) {}
 
-        renderResults(Array.isArray(data) ? data : [], mode);
+        renderResults(resultItems, mode);
         localStorage.setItem(LAST_MODE_KEY, mode);
         if (mode === "decide" && Array.isArray(data) && data.length > 0) trackInteraction("decide", data[0].id);
       } catch (error) {
