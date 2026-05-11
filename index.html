@@ -625,6 +625,58 @@
     }
     .forYouBanner strong { color: var(--accent); font-weight: 700; }
 
+    /* ── Phase 7: Streak Calendar + Habit Loop ─────────────── */
+    .streakBanner.calMode {
+      flex-direction: column; align-items: flex-start; gap: 6px;
+    }
+    .streakCalHeader {
+      display: flex; align-items: center; gap: 6px;
+      font-weight: 800; font-size: 0.84rem; color: var(--goldInk);
+      flex-wrap: wrap;
+    }
+    .shieldBadge {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 0.7rem; font-weight: 800; color: var(--accent);
+      background: var(--accentGlow); border-radius: 8px;
+      padding: 2px 7px; border: 1px solid var(--goldBorder);
+    }
+    .streakCalRow {
+      display: flex; gap: 4px; align-items: center;
+      flex-wrap: wrap;
+    }
+    .streakDot {
+      width: 21px; height: 21px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem; font-weight: 800; flex-shrink: 0;
+      line-height: 1; transition: transform 0.15s;
+    }
+    .streakDot.cooked {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+    }
+    .streakDot.empty {
+      background: rgba(200,105,14,0.10);
+      border: 1.5px dashed rgba(200,105,14,0.28);
+      color: var(--muted2);
+    }
+    .streakDot.today { box-shadow: 0 0 0 2.5px var(--accent); }
+    .streakDot.today.cooked {
+      box-shadow: 0 0 0 1.5px #fff, 0 0 0 3.5px var(--accent);
+    }
+
+    /* Cook nudge banner */
+    .cookNudgeBanner {
+      background: linear-gradient(135deg, rgba(200,105,14,0.18), rgba(200,105,14,0.07)) !important;
+      border-color: rgba(200,105,14,0.40) !important;
+    }
+    .cookNudgeBtn {
+      font-size: 0.74rem; font-weight: 800; color: #fff;
+      background: var(--accent); border: none; border-radius: 10px;
+      padding: 6px 12px; cursor: pointer; font-family: inherit;
+      white-space: nowrap; transition: opacity 0.15s; flex-shrink: 0;
+    }
+    .cookNudgeBtn:hover { opacity: 0.85; }
+
     /* ── Phase 6: Saved Recipe Book ────────────────────────── */
     .saveRecipeBtn {
       background: none; border: 1.5px solid var(--border);
@@ -10931,6 +10983,150 @@
     }
     // ── end phase 6 ───────────────────────────────
 
+    // ══════════════════════════════════════════════
+    // PHASE 7 — STREAK CALENDAR + HABIT LOOP
+    // ══════════════════════════════════════════════
+    const SHIELD_KEY = "simmer_streak_shield_v1";
+
+    function getCookedDates() {
+      try {
+        return new Set(getCookLog().map(e => new Date(e.ts).toDateString()));
+      } catch { return new Set(); }
+    }
+
+    function getStreakShieldActive() {
+      try {
+        const data = JSON.parse(localStorage.getItem(SHIELD_KEY) || "null");
+        if (!data?.active) return false;
+        // Auto-expire after 7 days of being unused
+        if (Date.now() - (data.earnedAt || 0) > 14 * 86400000) {
+          localStorage.removeItem(SHIELD_KEY);
+          return false;
+        }
+        return true;
+      } catch { return false; }
+    }
+
+    function tryEarnShield(streak) {
+      try {
+        if (streak < 5) return;
+        const existing = JSON.parse(localStorage.getItem(SHIELD_KEY) || "null");
+        // Award shield at 5-day streak, and every 7 days after
+        if (!existing?.active && (streak === 5 || streak % 7 === 0)) {
+          localStorage.setItem(SHIELD_KEY, JSON.stringify({ active: true, earnedAt: Date.now() }));
+          showToast(`🛡️ Streak Shield earned! It'll protect your ${streak}-day streak.`, "success", 3500);
+        }
+      } catch {}
+    }
+
+    function tryUseShield() {
+      try {
+        const data = JSON.parse(localStorage.getItem(SHIELD_KEY) || "null");
+        if (!data?.active) return false;
+        const savedStreak = parseInt(localStorage.getItem(STREAK_KEY) || "0", 10);
+        if (savedStreak < 5) return false;
+        // Restore streak date to today so getStreak() returns savedStreak
+        localStorage.setItem(STREAK_DATE_KEY, new Date().toDateString());
+        localStorage.setItem(SHIELD_KEY, JSON.stringify({ active: false, usedAt: Date.now() }));
+        setTimeout(() =>
+          showToast(`🛡️ Streak shield used! Your ${savedStreak}-day streak is safe.`, "success", 4000), 600);
+        return true;
+      } catch { return false; }
+    }
+
+    function renderStreakCalendar() {
+      const banner = el.streakBanner;
+      if (!banner) return;
+      const streak = getStreak();
+      if (streak < 2) {
+        banner.classList.remove("calMode");
+        return;
+      }
+      const cookedDates = getCookedDates();
+      const today = new Date();
+      const days = Array.from({ length: 14 }, (_, i) => {
+        const d     = new Date(today.getTime() - (13 - i) * 86400000);
+        const isToday = i === 13;
+        const cooked  = cookedDates.has(d.toDateString());
+        return { label: isToday ? "T" : String(d.getDate()), isToday, cooked };
+      });
+
+      const shieldHTML = getStreakShieldActive()
+        ? `<span class="shieldBadge">🛡 Shield ready</span>` : "";
+
+      banner.innerHTML = `
+        <div class="streakCalHeader">
+          🔥 ${streak}-day streak — keep it up!${shieldHTML}
+        </div>
+        <div class="streakCalRow">
+          ${days.map(d =>
+            `<div class="streakDot ${d.cooked ? "cooked" : "empty"}${d.isToday ? " today" : ""}"
+                  title="${d.isToday ? "Today" : ""}">${d.label}</div>`
+          ).join("")}
+        </div>
+      `;
+      banner.classList.add("show", "calMode");
+    }
+
+    function renderCookNudge() {
+      const wrap = document.getElementById("contextBannerWrap");
+      if (!wrap) return;
+      // Don't override a "For You" personalised banner
+      if (wrap.querySelector(".forYouBanner")) return;
+
+      const streak = getStreak();
+      if (streak < 2) return;                // only nudge streak holders
+      if (new Date().getHours() < 12) return; // only after noon
+      if (getDailyLog().length > 0) return;   // already cooked today
+
+      wrap.innerHTML = `
+        <div class="contextBanner cookNudgeBanner">
+          <span class="contextBannerIcon">🍳</span>
+          <div class="contextBannerText">
+            <div class="contextBannerTitle">Keep your ${streak}-day streak alive!</div>
+            <div class="contextBannerSub">You haven't cooked today yet — something quick?</div>
+          </div>
+          <button class="cookNudgeBtn" id="nudgePickBtn" type="button">Quick pick →</button>
+        </div>`;
+      document.getElementById("nudgePickBtn")?.addEventListener("click", () => {
+        state.time_available = 15;
+        setSelected("time", "15");
+        getSuggestions("decide");
+        wrap.innerHTML = "";
+      });
+    }
+
+    function initPhase7() {
+      // Check if streak needs shield protection on load
+      const savedStreak = parseInt(localStorage.getItem(STREAK_KEY) || "0", 10);
+      const lastDate    = localStorage.getItem(STREAK_DATE_KEY) || "";
+      const today       = new Date().toDateString();
+      const yesterday   = new Date(Date.now() - 86400000).toDateString();
+      if (savedStreak >= 5 && lastDate !== today && lastDate !== yesterday) {
+        // Streak would be dead — try shield
+        tryUseShield();
+      }
+
+      // Award shield if earned
+      tryEarnShield(getStreak());
+
+      // Render upgraded streak banner with calendar
+      renderStreakCalendar();
+
+      // Render cook nudge in context banner area
+      renderCookNudge();
+
+      // Patch bumpStreak so calendar re-renders after each cook
+      const _origBump = bumpStreak;
+      bumpStreak = function() {
+        _origBump();
+        const s = getStreak();
+        tryEarnShield(s);
+        renderStreakCalendar();
+      };
+    }
+    // ── end phase 7 ───────────────────────────────
+
     initTheme();
     initCookMode();
     initNotifications();
@@ -10965,6 +11161,7 @@
     initPhase4();
     initPhase5();
     initPhase6();
+    initPhase7();
     updateExploreBadge();
 
     // "My week" button — always opens report regardless of 7-day gate
