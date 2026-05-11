@@ -593,6 +593,7 @@
       box-shadow: var(--shadow);
       overflow: hidden;
       cursor: pointer;
+      position: relative;
       transform: translateY(0);
       transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       animation: cardEnter 0.6s cubic-bezier(.2,.9,.2,1) both;
@@ -601,6 +602,28 @@
       display: flex;
       flex-direction: column;
     }
+
+    /* ── Phase 3: card dismiss button ──────────────────────── */
+    .cardDismissBtn {
+      position: absolute; top: 10px; right: 10px;
+      width: 28px; height: 28px; border-radius: 50%;
+      border: none; background: rgba(15, 10, 5, 0.42); color: #fff;
+      font-size: 0.75rem; cursor: pointer;
+      display: none; align-items: center; justify-content: center;
+      z-index: 5; transition: background 0.15s, transform 0.15s;
+      padding: 0; line-height: 1; flex-shrink: 0;
+    }
+    .foodCard:hover .cardDismissBtn,
+    .foodCard:focus-within .cardDismissBtn { display: flex; }
+    @media (max-width: 640px) { .cardDismissBtn { display: flex !important; } }
+    .cardDismissBtn:hover { background: rgba(15, 10, 5, 0.72); transform: scale(1.1); }
+
+    /* ── Phase 3: For You banner variant ───────────────────── */
+    .forYouBanner {
+      background: linear-gradient(135deg, rgba(200,105,14,0.13), rgba(200,105,14,0.05));
+      border-color: rgba(200,105,14,0.28);
+    }
+    .forYouBanner strong { color: var(--accent); font-weight: 700; }
 
     .foodCard.heroCard {
       grid-row: span 2;
@@ -4675,6 +4698,15 @@
             </div>
           </div>
 
+          <div class="section" id="budgetPanel">
+            <div class="label">Budget <span class="hint">shapes suggestions</span></div>
+            <div class="seg" role="group" aria-label="Budget">
+              <button class="chip" data-group="budget" data-value="economical">💚 Economical</button>
+              <button class="chip selected" data-group="budget" data-value="any">✨ Any</button>
+              <button class="chip" data-group="budget" data-value="premium">💰 Premium</button>
+            </div>
+          </div>
+
           <div class="section" id="ingredientsPanel">
             <div class="label" style="display:flex;align-items:center;justify-content:space-between">
               What ingredients do you have?
@@ -5013,6 +5045,7 @@
       mood: "quick",
       diet: "veg",
       category: "all",
+      budget: "any",
       ingredientTags: []
     };
 
@@ -5214,6 +5247,7 @@
         if (typeof parsed.mood === "string") state.mood = parsed.mood;
         if (typeof parsed.diet === "string") state.diet = parsed.diet;
         if (typeof parsed.category === "string") state.category = parsed.category;
+        if (typeof parsed.budget === "string") state.budget = parsed.budget;
         return true;
       } catch (error) {
         return false;
@@ -5226,7 +5260,8 @@
           time_available: state.time_available,
           mood: state.mood,
           diet: state.diet,
-          category: state.category
+          category: state.category,
+          budget: state.budget
         }));
       } catch (error) {}
     }
@@ -5242,6 +5277,7 @@
       setSelected("mood", String(state.mood));
       setSelected("diet", String(state.diet));
       setSelected("category", String(state.category));
+      setSelected("budget", String(state.budget));
     }
 
     function updateMicrocopy() {
@@ -6703,10 +6739,11 @@
           const group = btn.dataset.group;
           const value = btn.dataset.value;
 
-          if (group === "time") state.time_available = clampInt(value, state.time_available);
-          if (group === "mood") state.mood = value;
-          if (group === "diet") state.diet = value;
+          if (group === "time")     state.time_available = clampInt(value, state.time_available);
+          if (group === "mood")     state.mood = value;
+          if (group === "diet")     state.diet = value;
           if (group === "category") state.category = value;
+          if (group === "budget")   state.budget = value;
 
           setSelected(group, value);
           savePreferences();
@@ -10070,6 +10107,94 @@
     }
     // ── end phase 2 ───────────────────────────────
 
+    // ══════════════════════════════════════════════
+    // PHASE 3 — PERSONALISATION ENGINE
+    // ══════════════════════════════════════════════
+    const DISMISSED_KEY = "simmer_dismissed_v1";
+
+    function getDismissed() {
+      try { return new Set(JSON.parse(localStorage.getItem(DISMISSED_KEY) || "[]")); }
+      catch { return new Set(); }
+    }
+
+    function dismissCard(id) {
+      try {
+        const set = getDismissed();
+        set.add(String(id));
+        localStorage.setItem(DISMISSED_KEY, JSON.stringify([...set]));
+        // Animate out all cards with this id (handles duplicates)
+        document.querySelectorAll(`.foodCard[data-id="${CSS.escape(String(id))}"]`).forEach(c => {
+          c.style.transition = "opacity 0.25s ease, transform 0.25s ease";
+          c.style.opacity = "0";
+          c.style.transform = "scale(0.93)";
+          setTimeout(() => { c.style.display = "none"; }, 280);
+        });
+        showToast("Suggestion hidden — refresh for new picks", "info", 2200);
+      } catch {}
+    }
+
+    function injectDismissButtons() {
+      const dismissed = getDismissed();
+      document.querySelectorAll(".foodCard").forEach(card => {
+        const id = card.dataset.id;
+        if (!id) return;
+        // Already dismissed → hide immediately
+        if (dismissed.has(String(id))) {
+          card.style.display = "none";
+          return;
+        }
+        // Already has button
+        if (card.querySelector(".cardDismissBtn")) return;
+        const btn = document.createElement("button");
+        btn.className = "cardDismissBtn";
+        btn.type = "button";
+        btn.title = "Hide this suggestion";
+        btn.setAttribute("aria-label", "Hide this suggestion");
+        btn.textContent = "✕";
+        btn.addEventListener("click", e => {
+          e.stopPropagation();
+          dismissCard(id);
+        });
+        card.appendChild(btn);
+      });
+    }
+
+    function renderForYouBanner() {
+      const profile = getPersonalisationProfile();
+      if (!profile || !profile.lovedDishes?.length) return; // keep time-context banner
+      const wrap = document.getElementById("contextBannerWrap");
+      if (!wrap) return;
+      const dish = profile.lovedDishes[0];
+      const cat  = profile.topCategory
+        ? profile.topCategory.replace(/-/g, " ")
+        : "your favourites";
+      const extras = profile.lovedDishes.length > 1
+        ? ` · also ${profile.lovedDishes.slice(1).join(", ")}`
+        : "";
+      wrap.innerHTML = `
+        <div class="contextBanner forYouBanner">
+          <span class="contextBannerIcon">⭐</span>
+          <div class="contextBannerText">
+            <div class="contextBannerTitle">Curated for you</div>
+            <div class="contextBannerSub">Because you loved <strong>${dish}</strong>${extras}</div>
+          </div>
+        </div>`;
+    }
+
+    function initPhase3() {
+      // Wire dismiss buttons to existing results MutationObserver target
+      const resultsEl = document.getElementById("results");
+      if (resultsEl) {
+        new MutationObserver(() => setTimeout(injectDismissButtons, 150))
+          .observe(resultsEl, { childList: true, subtree: false });
+      }
+      injectDismissButtons(); // run once for any already-rendered cards
+
+      // Upgrade context banner to "For You" if enough cook history
+      renderForYouBanner();
+    }
+    // ── end phase 3 ───────────────────────────────
+
     initTheme();
     initCookMode();
     initNotifications();
@@ -10100,6 +10225,7 @@
     initModalRemix();
     applyTimeContext();
     initPhase2();
+    initPhase3();
     updateExploreBadge();
 
     // "My week" button — always opens report regardless of 7-day gate
