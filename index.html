@@ -5814,64 +5814,167 @@
     }
 
     const DISH_IMAGE_MAP = {
+      // ── Rice & grains ──────────────────────────────────────────────────────
       biryani:    "photo-1563379091339-03b21ab4a4f8",
-      fried_rice: "photo-1603133872878-684f208fb84b",
+      fried:      "photo-1603133872878-684f208fb84b",  // fried rice, stir-fried
       rice:       "photo-1536304929831-ee1ca9d44906",
       pulao:      "photo-1563379091339-03b21ab4a4f8",
+      khichdi:    "photo-1546833998-877b37c2e5c6",
+      khichri:    "photo-1546833998-877b37c2e5c6",
+      congee:     "photo-1536304929831-ee1ca9d44906",
+
+      // ── Lentils & legumes ──────────────────────────────────────────────────
       dal:        "photo-1546833998-877b37c2e5c6",
       daal:       "photo-1546833998-877b37c2e5c6",
       lentil:     "photo-1546833998-877b37c2e5c6",
+      lentils:    "photo-1546833998-877b37c2e5c6",
       sambar:     "photo-1546833998-877b37c2e5c6",
+      chole:      "photo-1546833998-877b37c2e5c6",
+      rajma:      "photo-1546833998-877b37c2e5c6",
+      chana:      "photo-1546833998-877b37c2e5c6",
+      beans:      "photo-1546833998-877b37c2e5c6",
+      bean:       "photo-1546833998-877b37c2e5c6",
+      moong:      "photo-1546833998-877b37c2e5c6",
+      soya:       "photo-1546833998-877b37c2e5c6",
+      soy:        "photo-1546833998-877b37c2e5c6",
+
+      // ── Paneer & vegetarian protein ────────────────────────────────────────
       paneer:     "photo-1567188040759-fb8a883dc6d8",
       tofu:       "photo-1567188040759-fb8a883dc6d8",
+
+      // ── Curries & gravies ──────────────────────────────────────────────────
       curry:      "photo-1604908176997-125f25cc6f3d",
       masala:     "photo-1604908176997-125f25cc6f3d",
       butter:     "photo-1604908176997-125f25cc6f3d",
       makhani:    "photo-1604908176997-125f25cc6f3d",
       gravy:      "photo-1604908176997-125f25cc6f3d",
       korma:      "photo-1604908176997-125f25cc6f3d",
+      saag:       "photo-1604908176997-125f25cc6f3d",
+      kadhi:      "photo-1604908176997-125f25cc6f3d",
+      kofta:      "photo-1604908176997-125f25cc6f3d",
+      matar:      "photo-1604908176997-125f25cc6f3d",
+      keema:      "photo-1604908176997-125f25cc6f3d",
+      stew:       "photo-1604908176997-125f25cc6f3d",
+
+      // ── Vegetables & stir fries ────────────────────────────────────────────
       sabji:      "photo-1631515243349-e0cb75fb8d3a",
       sabzi:      "photo-1631515243349-e0cb75fb8d3a",
       bhaji:      "photo-1631515243349-e0cb75fb8d3a",
       bhurji:     "photo-1631515243349-e0cb75fb8d3a",
-      chole:      "photo-1631515243349-e0cb75fb8d3a",
-      rajma:      "photo-1546833998-877b37c2e5c6",
+      stir:       "photo-1631515243349-e0cb75fb8d3a",
+      aloo:       "photo-1631515243349-e0cb75fb8d3a",
+      potato:     "photo-1631515243349-e0cb75fb8d3a",
+      gobi:       "photo-1631515243349-e0cb75fb8d3a",
+      cauliflower:"photo-1631515243349-e0cb75fb8d3a",
+      palak:      "photo-1631515243349-e0cb75fb8d3a",
+      spinach:    "photo-1631515243349-e0cb75fb8d3a",
+      bhindi:     "photo-1631515243349-e0cb75fb8d3a",
+      okra:       "photo-1631515243349-e0cb75fb8d3a",
+      mushroom:   "photo-1631515243349-e0cb75fb8d3a",
+      mushrooms:  "photo-1631515243349-e0cb75fb8d3a",
+      vegetable:  "photo-1631515243349-e0cb75fb8d3a",
+      vegetables: "photo-1631515243349-e0cb75fb8d3a",
+      veg:        "photo-1631515243349-e0cb75fb8d3a",
+
+      // ── Breads & flatbreads ────────────────────────────────────────────────
       roti:       "photo-1565557623262-b51c2513a641",
       chapati:    "photo-1565557623262-b51c2513a641",
       naan:       "photo-1565557623262-b51c2513a641",
       paratha:    "photo-1565557623262-b51c2513a641",
       puri:       "photo-1565557623262-b51c2513a641",
+      bread:      "photo-1565557623262-b51c2513a641",
+      flatbread:  "photo-1565557623262-b51c2513a641",
+      tortilla:   "photo-1565557623262-b51c2513a641",
+      pita:       "photo-1565557623262-b51c2513a641",
+
+      // ── South-Indian breakfast ─────────────────────────────────────────────
       idli:       "photo-1540189549336-e6e99c3679fe",
       dosa:       "photo-1540189549336-e6e99c3679fe",
       uttapam:    "photo-1540189549336-e6e99c3679fe",
       upma:       "photo-1540189549336-e6e99c3679fe",
       poha:       "photo-1540189549336-e6e99c3679fe",
-      khichdi:    "photo-1546833998-877b37c2e5c6",
-      khichri:    "photo-1546833998-877b37c2e5c6",
+      besan:      "photo-1540189549336-e6e99c3679fe",
+      chilla:     "photo-1540189549336-e6e99c3679fe",
+      pancake:    "photo-1540189549336-e6e99c3679fe",
+      waffle:     "photo-1540189549336-e6e99c3679fe",
+
+      // ── Salads & bowls ─────────────────────────────────────────────────────
       salad:      "photo-1512621776951-a57141f2eefd",
       bowl:       "photo-1512621776951-a57141f2eefd",
+      sprouts:    "photo-1512621776951-a57141f2eefd",
+      fruit:      "photo-1540189549336-e6e99c3679fe",
+
+      // ── Sandwiches, rolls & wraps ──────────────────────────────────────────
       sandwich:   "photo-1484723091739-30a097e8f929",
       toast:      "photo-1484723091739-30a097e8f929",
       wrap:       "photo-1484723091739-30a097e8f929",
-      bread:      "photo-1549931319-a545dcf3bc73",
+      roll:       "photo-1484723091739-30a097e8f929",
+      kathi:      "photo-1484723091739-30a097e8f929",
+      burrito:    "photo-1484723091739-30a097e8f929",
+      taco:       "photo-1484723091739-30a097e8f929",
+      cutlet:     "photo-1484723091739-30a097e8f929",
+      burger:     "photo-1484723091739-30a097e8f929",
+
+      // ── Eggs ───────────────────────────────────────────────────────────────
       egg:        "photo-1525351484163-7529414344d8",
+      eggs:       "photo-1525351484163-7529414344d8",
       omelette:   "photo-1525351484163-7529414344d8",
+      omelet:     "photo-1525351484163-7529414344d8",
       anda:       "photo-1525351484163-7529414344d8",
-      boiled:     "photo-1525351484163-7529414344d8",
+      shakshuka:  "photo-1525351484163-7529414344d8",
+      frittata:   "photo-1525351484163-7529414344d8",
+      scrambled:  "photo-1525351484163-7529414344d8",
+
+      // ── Chicken & meat ─────────────────────────────────────────────────────
       chicken:    "photo-1600891964599-f61ba0e24092",
       mutton:     "photo-1600891964599-f61ba0e24092",
-      fish:       "photo-1600891964599-f61ba0e24092",
+      lamb:       "photo-1600891964599-f61ba0e24092",
+      beef:       "photo-1600891964599-f61ba0e24092",
+      pork:       "photo-1600891964599-f61ba0e24092",
       meat:       "photo-1600891964599-f61ba0e24092",
       kebab:      "photo-1600891964599-f61ba0e24092",
       tikka:      "photo-1600891964599-f61ba0e24092",
+      pepper:     "photo-1600891964599-f61ba0e24092",  // pepper chicken context
+      basil:      "photo-1600891964599-f61ba0e24092",  // basil chicken context
+      roast:      "photo-1600891964599-f61ba0e24092",
+      grilled:    "photo-1600891964599-f61ba0e24092",
+      baked:      "photo-1600891964599-f61ba0e24092",
+
+      // ── Seafood ────────────────────────────────────────────────────────────
+      fish:       "photo-1559847844-5315695dadae",
+      tuna:       "photo-1559847844-5315695dadae",
+      prawn:      "photo-1559847844-5315695dadae",
+      prawns:     "photo-1559847844-5315695dadae",
+      shrimp:     "photo-1559847844-5315695dadae",
+      salmon:     "photo-1559847844-5315695dadae",
+      seafood:    "photo-1559847844-5315695dadae",
+      cod:        "photo-1559847844-5315695dadae",
+      crab:       "photo-1559847844-5315695dadae",
+      lobster:    "photo-1559847844-5315695dadae",
+
+      // ── Pasta & noodles ────────────────────────────────────────────────────
       pasta:      "photo-1555949258-eb67b1ef0ceb",
+      spaghetti:  "photo-1555949258-eb67b1ef0ceb",
+      penne:      "photo-1555949258-eb67b1ef0ceb",
+      fettuccine: "photo-1555949258-eb67b1ef0ceb",
+      lasagna:    "photo-1555949258-eb67b1ef0ceb",
+      lasagne:    "photo-1555949258-eb67b1ef0ceb",
       noodle:     "photo-1481931098730-318b6f776db0",
       noodles:    "photo-1481931098730-318b6f776db0",
       ramen:      "photo-1481931098730-318b6f776db0",
       chow:       "photo-1481931098730-318b6f776db0",
+      hakka:      "photo-1481931098730-318b6f776db0",
+      udon:       "photo-1481931098730-318b6f776db0",
+      pho:        "photo-1481931098730-318b6f776db0",
+
+      // ── Soups ──────────────────────────────────────────────────────────────
       soup:       "photo-1547592166-23ac45744acd",
       broth:      "photo-1547592166-23ac45744acd",
       rasam:      "photo-1547592166-23ac45744acd",
+      chowder:    "photo-1547592166-23ac45744acd",
+      bisque:     "photo-1547592166-23ac45744acd",
+
+      // ── Drinks ─────────────────────────────────────────────────────────────
       smoothie:   "photo-1512621776951-a57141f2eefd",
       juice:      "photo-1512621776951-a57141f2eefd",
       lassi:      "photo-1512621776951-a57141f2eefd",
@@ -5879,18 +5982,34 @@
       tea:        "photo-1490645935967-10de6ba17061",
       chai:       "photo-1490645935967-10de6ba17061",
       coffee:     "photo-1490645935967-10de6ba17061",
+
+      // ── Breakfast & oats ───────────────────────────────────────────────────
       oats:       "photo-1517673132405-a56a62b18caf",
       oatmeal:    "photo-1517673132405-a56a62b18caf",
+      porridge:   "photo-1517673132405-a56a62b18caf",
+      cereal:     "photo-1517673132405-a56a62b18caf",
+      granola:    "photo-1517673132405-a56a62b18caf",
+
+      // ── Desserts & sweets ──────────────────────────────────────────────────
       halwa:      "photo-1565299624946-b28f40a0ae38",
       kheer:      "photo-1565299624946-b28f40a0ae38",
       payasam:    "photo-1565299624946-b28f40a0ae38",
       sweet:      "photo-1565299624946-b28f40a0ae38",
       ladoo:      "photo-1565299624946-b28f40a0ae38",
+      laddoo:     "photo-1565299624946-b28f40a0ae38",
       barfi:      "photo-1565299624946-b28f40a0ae38",
       pudding:    "photo-1565299624946-b28f40a0ae38",
-      pancake:    "photo-1484723091739-30a097e8f929",
-      waffle:     "photo-1484723091739-30a097e8f929",
-      fruit:      "photo-1540189549336-e6e99c3679fe",
+      cake:       "photo-1565299624946-b28f40a0ae38",
+      brownie:    "photo-1565299624946-b28f40a0ae38",
+      cookie:     "photo-1565299624946-b28f40a0ae38",
+      cookies:    "photo-1565299624946-b28f40a0ae38",
+      chocolate:  "photo-1565299624946-b28f40a0ae38",
+      dessert:    "photo-1565299624946-b28f40a0ae38",
+      tart:       "photo-1565299624946-b28f40a0ae38",
+      pie:        "photo-1565299624946-b28f40a0ae38",
+      cheesecake: "photo-1565299624946-b28f40a0ae38",
+      muffin:     "photo-1565299624946-b28f40a0ae38",
+      mousse:     "photo-1565299624946-b28f40a0ae38",
     };
 
     function dishImageUrl(name) {
