@@ -4085,6 +4085,150 @@
       color: var(--muted); margin-top: 8px;
       text-align: center;
     }
+
+    /* ══════════════════════════════════════════════
+       K — PREMIUM UI POLISH
+       Additive only — zero existing rules changed
+       ══════════════════════════════════════════════ */
+
+    /* 1 ── Staggered card entrance ──────────────── */
+    .results > .foodCard:nth-child(1) { animation-delay:   0ms; }
+    .results > .foodCard:nth-child(2) { animation-delay:  90ms; }
+    .results > .foodCard:nth-child(3) { animation-delay: 180ms; }
+
+    /* 2 ── Warm brand-tinted skeleton shimmer ────── */
+    .skeletonImage,
+    .skeletonLine {
+      background: linear-gradient(
+        100deg,
+        rgba(253,232,204,0.75) 0%,
+        rgba(255,248,238,0.97) 50%,
+        rgba(253,232,204,0.75) 100%
+      );
+      background-size: 220% 100%;
+    }
+
+    /* 3 ── Sticky topbar with scroll elevation ───── */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      transition: box-shadow 0.35s ease, background 0.35s ease, backdrop-filter 0.35s ease;
+      border-radius: 0;
+      margin-bottom: 16px;
+    }
+    .topbar.scrolled {
+      background: rgba(255,248,242,0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 2px 20px rgba(60,25,5,0.09), 0 1px 0 rgba(200,160,110,0.18);
+    }
+    [data-theme="dark"] .topbar.scrolled {
+      background: rgba(18,10,4,0.88);
+    }
+
+    /* 4 ── FAB attention pulse (3 shots, 1.5 s delay) */
+    @keyframes fabGlowPulse {
+      0%, 100% { box-shadow: 0 8px 28px rgba(200,105,14,0.45); }
+      50%       { box-shadow: 0 8px 28px rgba(200,105,14,0.45),
+                              0 0 0 12px rgba(200,105,14,0.12); }
+    }
+    .chefFab { animation: fabGlowPulse 2.4s ease-in-out 1.5s 3; }
+
+    /* 5 ── Toast notifications ───────────────────── */
+    .simmerToast {
+      position: fixed;
+      top: 18px; left: 50%;
+      transform: translateX(-50%) translateY(-72px);
+      z-index: 9999;
+      padding: 11px 20px;
+      border-radius: 999px;
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.84rem; font-weight: 700;
+      white-space: nowrap;
+      max-width: min(90vw, 380px);
+      overflow: hidden; text-overflow: ellipsis;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+      transition: transform 0.34s cubic-bezier(0.34,1.18,0.64,1),
+                  opacity  0.28s ease;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .simmerToast.visible {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    .simmerToast--info    { background: #1c1008; color: #fff; }
+    .simmerToast--success { background: #15803d; color: #fff; }
+    .simmerToast--error   { background: #b91c1c; color: #fff; }
+    .simmerToast--warn    { background: #b45309; color: #fff; }
+
+    /* 6 ── Warm image placeholder before load ────── */
+    .foodImg { background-color: rgba(200,105,14,0.07); }
+
+    /* 7 ── Card hover gloss (desktop only) ──────── */
+    @media (hover: hover) and (pointer: fine) {
+      .foodCard::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: linear-gradient(
+          135deg,
+          rgba(255,255,255,0.00) 0%,
+          rgba(255,255,255,0.07) 60%,
+          rgba(255,255,255,0.00) 100%
+        );
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        pointer-events: none;
+        z-index: 1;
+      }
+      .foodCard:hover::before { opacity: 1; }
+    }
+
+    /* 8 ── Chip micro-bounce on select ─────────── */
+    @keyframes chipPop {
+      0%   { transform: scale(1); }
+      35%  { transform: scale(1.12) translateY(-1px); }
+      65%  { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+    .chip.selected { animation: chipPop 0.32s cubic-bezier(0.34,1.4,0.64,1) both; }
+
+    /* 9 ── Smoother modal open ───────────────────── */
+    @keyframes modalSlideUp {
+      from { opacity: 0; transform: translateY(32px) scale(0.975); }
+      to   { opacity: 1; transform: translateY(0)    scale(1); }
+    }
+    .modalOverlay.open .modal {
+      animation: modalSlideUp 0.38s cubic-bezier(0.34,1.06,0.64,1) both;
+    }
+
+    /* 10 ─ Tactile CTA press on mobile ─────────── */
+    .btn:active {
+      transform: scale(0.968) !important;
+      filter: brightness(0.96);
+    }
+
+    /* 11 ─ Subtle result-count pill ─────────────── */
+    .resultCountPill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 999px;
+      background: rgba(200,105,14,0.10); border: 1px solid rgba(200,105,14,0.20);
+      font-size: 0.72rem; font-weight: 800; color: var(--accent);
+      margin-left: 8px; vertical-align: middle;
+      animation: obFadeIn 0.4s ease both;
+    }
+
+    /* 12 ─ Smooth heart / save button pop ───────── */
+    @keyframes heartPop {
+      0%   { transform: scale(1); }
+      40%  { transform: scale(1.35); }
+      70%  { transform: scale(0.88); }
+      100% { transform: scale(1); }
+    }
+    .heartBtn.saved { animation: heartPop 0.35s cubic-bezier(0.34,1.5,0.64,1) both; }
   </style>
 </head>
 <body>
@@ -9088,6 +9232,76 @@
       });
     }
     // ── end chef chat ────────────────────────────
+
+    // ══════════════════════════════════════════════
+    // K — PREMIUM UI POLISH (additive, no existing
+    //     logic changed)
+    // ══════════════════════════════════════════════
+
+    // ── Toast system ──────────────────────────────
+    function showToast(msg, type = "info", duration = 2800) {
+      const el = document.createElement("div");
+      el.className = `simmerToast simmerToast--${type}`;
+      el.textContent = msg;
+      document.body.appendChild(el);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => el.classList.add("visible"));
+      });
+      setTimeout(() => {
+        el.classList.remove("visible");
+        setTimeout(() => el.remove(), 380);
+      }, duration);
+    }
+
+    // Wire toast to statusText mutations (non-invasive)
+    (function initStatusToast() {
+      const statusEl = document.getElementById("statusText");
+      if (!statusEl) return;
+      let lastText = "";
+      new MutationObserver(() => {
+        const txt = (statusEl.textContent || "").trim().replace(/^[⚠✓ ]+/, "").trim();
+        if (!txt || txt === lastText) return;
+        lastText = txt;
+        const isError = /wrong|error|fail|offline/i.test(txt);
+        const isOk    = /copied|added|saved|done/i.test(txt);
+        showToast(txt, isError ? "error" : isOk ? "success" : "info");
+        // Auto-clear lastText so same message can repeat after a gap
+        setTimeout(() => { lastText = ""; }, 4000);
+      }).observe(statusEl, { childList: true, subtree: true, characterData: true });
+    })();
+
+    // ── Scroll elevation on topbar ────────────────
+    (function initScrollElevation() {
+      const topbar = document.querySelector(".topbar");
+      if (!topbar) return;
+      const onScroll = () => {
+        topbar.classList.toggle("scrolled", window.scrollY > 10);
+      };
+      window.addEventListener("scroll", onScroll, { passive: true });
+    })();
+
+    // ── Result count pill injected after render ───
+    // Hook into renderResults without changing it: use
+    // a MutationObserver on #results to append the pill.
+    (function initResultCountPill() {
+      const results = document.getElementById("results");
+      if (!results) return;
+      new MutationObserver(() => {
+        // Remove old pill
+        results.querySelectorAll(".resultCountPill").forEach(p => p.remove());
+        const cards = results.querySelectorAll(".foodCard");
+        if (cards.length === 0) return;
+        const pill = document.createElement("span");
+        pill.className = "resultCountPill";
+        pill.textContent = `${cards.length} match${cards.length !== 1 ? "es" : ""}`;
+        const subline = document.getElementById("subline");
+        if (subline) {
+          subline.querySelectorAll(".resultCountPill").forEach(p => p.remove());
+          subline.appendChild(pill);
+        }
+      }).observe(results, { childList: true });
+    })();
+    // ── end polish ────────────────────────────────
 
     initTheme();
     initCookMode();
