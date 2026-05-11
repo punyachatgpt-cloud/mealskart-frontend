@@ -43,11 +43,12 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // Google Fonts & Unsplash images → cache-first
+  // Google Fonts, Unsplash images, TheMealDB images → cache-first
   if (
     url.hostname === "fonts.googleapis.com" ||
     url.hostname === "fonts.gstatic.com" ||
-    url.hostname === "images.unsplash.com"
+    url.hostname === "images.unsplash.com" ||
+    url.hostname === "www.themealdb.com"
   ) {
     event.respondWith(cacheFirstExternal(request));
     return;
