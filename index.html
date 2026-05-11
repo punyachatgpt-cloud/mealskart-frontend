@@ -1880,7 +1880,7 @@
       }
     }
 
-    /* ── Search bar ─────────────────────────────── */
+    /* ── Universal Search bar ───────────────────── */
     .searchWrap {
       position: relative;
       margin-bottom: 20px;
@@ -1893,7 +1893,9 @@
       pointer-events: none;
       font-size: 1rem;
       color: var(--muted2);
+      transition: color 0.2s;
     }
+    .searchWrap:focus-within .searchIcon { color: var(--accent); }
     .searchInput {
       width: 100%;
       border-radius: 14px;
@@ -1912,7 +1914,42 @@
       border-color: var(--accent);
       box-shadow: 0 0 0 4px var(--accentGlow);
     }
-    .searchInput.hasValue { padding-right: 36px; }
+    .searchInput.hasValue {
+      padding-right: 36px;
+      border-color: var(--accent);
+    }
+
+    /* ── Universal Search mode banner ───────────── */
+    .uniSearchBanner {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: rgba(200,105,14,0.10);
+      border: 1px solid rgba(200,105,14,0.25);
+      border-radius: 10px;
+      padding: 8px 12px;
+      margin-bottom: 14px;
+      font-size: 0.84rem;
+      color: var(--ink);
+    }
+    .uniSearchBanner.show { display: flex; }
+    .uniSearchBanner strong { color: var(--accent); font-weight: 700; }
+    .uniSearchClearBtn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 0.82rem;
+      padding: 2px 6px;
+      border-radius: 6px;
+      transition: background 0.13s, color 0.13s;
+    }
+    .uniSearchClearBtn:hover { background: rgba(200,105,14,0.15); color: var(--accent); }
+    [data-theme="dark"] .uniSearchBanner {
+      background: rgba(200,105,14,0.14);
+      border-color: rgba(200,105,14,0.30);
+    }
 
     /* ── Search clear button ─────────────────────── */
     .searchClear {
@@ -5039,7 +5076,7 @@
       <aside class="glass left">
         <div class="searchWrap">
           <span class="searchIcon">&#128269;</span>
-          <input id="searchInput" class="searchInput" placeholder="Search dishes, ingredients…" autocomplete="off" aria-label="Search recipes" />
+          <input id="searchInput" class="searchInput" placeholder="Search any dish, cuisine, or ingredient…" autocomplete="off" aria-label="Universal recipe search" />
           <button class="searchClear" id="searchClearBtn" type="button" aria-label="Clear search">✕</button>
           <div class="searchDropdown" id="searchDropdown"></div>
         </div>
@@ -5168,6 +5205,11 @@
         <div class="goalBar" id="goalBar"></div>
         <div class="cookAgainWrap" id="cookAgainWrap"></div>
         <div id="contextBannerWrap"></div>
+        <!-- Universal Search mode indicator — shown when a live search is active -->
+        <div class="uniSearchBanner" id="uniSearchBanner">
+          <span>🔍 Showing results for: <strong id="uniSearchTerm"></strong></span>
+          <button class="uniSearchClearBtn" id="uniSearchClearBtn" type="button">✕ Clear search</button>
+        </div>
         <div class="quickStrip" id="quickStrip"></div>
         <section class="results" id="results">
           <div class="emptyState" id="emptyState">
@@ -6426,6 +6468,7 @@
     function commitSearch(q) {
       pushSearchHistory(q);
       clearTimeout(autoFetchDebounce);
+      setUniSearchBanner(q);   // show "Showing results for: …" banner
       getSuggestions("normal", q);
     }
 
@@ -7310,7 +7353,39 @@
         });
       });
 
-      // ── Search 2.0 wiring ────────────────────────────────────────────────
+      // ── Universal Search wiring ──────────────────────────────────────────
+      // Typing any query fires a real backend search (debounced 550ms).
+      // Works for: dish names, cuisines, ingredients, meal types.
+      // Examples: "pork", "Thai curry", "pasta", "vegan breakfast", "biryani"
+
+      let uniSearchActive = "";   // currently active search term
+
+      function setUniSearchBanner(term) {
+        const banner   = document.getElementById("uniSearchBanner");
+        const termEl   = document.getElementById("uniSearchTerm");
+        if (!banner || !termEl) return;
+        uniSearchActive = term || "";
+        if (term) {
+          termEl.textContent = term;
+          banner.classList.add("show");
+        } else {
+          banner.classList.remove("show");
+          termEl.textContent = "";
+        }
+      }
+
+      function clearUniSearch() {
+        el.searchInput.value = "";
+        el.searchInput.classList.remove("hasValue");
+        document.getElementById("searchClearBtn")?.classList.remove("visible");
+        setUniSearchBanner("");
+        removeDYM();
+        closeSearchDropdown();
+        getSuggestions("normal");   // restore normal recommendations
+      }
+
+      document.getElementById("uniSearchClearBtn")?.addEventListener("click", clearUniSearch);
+
       if (el.searchInput) {
         const clearBtn = document.getElementById("searchClearBtn");
 
@@ -7319,7 +7394,6 @@
         });
 
         el.searchInput.addEventListener("blur", () => {
-          // Small delay so clicks in dropdown register first
           setTimeout(closeSearchDropdown, 180);
         });
 
@@ -7328,12 +7402,19 @@
           clearBtn?.classList.toggle("visible", val.length > 0);
           el.searchInput.classList.toggle("hasValue", val.length > 0);
 
-          // Update dropdown suggestions live
+          // Always update dropdown (fast, local)
           clearTimeout(searchDebounce);
           searchDebounce = setTimeout(() => {
             buildSearchDropdown(val);
-            applySearch(val);
-          }, 160);
+
+            if (val.trim().length >= 2) {
+              // 🔥 Universal Search: fire a real backend query, not just card filter
+              commitSearch(val.trim());
+            } else if (!val.trim()) {
+              // Cleared → restore normal recommendations
+              clearUniSearch();
+            }
+          }, 550);   // 550ms debounce — comfortable for typing
         });
 
         el.searchInput.addEventListener("keydown", (e) => {
@@ -7344,7 +7425,7 @@
             if (q) {
               commitSearch(q);
             } else {
-              getSuggestions("normal");
+              clearUniSearch();
             }
             el.searchInput.blur();
           }
@@ -7355,12 +7436,7 @@
         });
 
         clearBtn?.addEventListener("click", () => {
-          el.searchInput.value = "";
-          el.searchInput.classList.remove("hasValue");
-          clearBtn.classList.remove("visible");
-          removeDYM();
-          applySearch("");
-          closeSearchDropdown();
+          clearUniSearch();
           el.searchInput.focus();
         });
 
