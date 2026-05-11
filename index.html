@@ -6730,8 +6730,13 @@
           <div class="miniMacro"><span>Fat</span>${clampInt(nutrition.fat_g, 0)}g</div>
         `;
 
+        // Prefer the real photo from MealDB; fall back to Unsplash keyword match
+        const cardImgUrl = (item.image_url && item.image_url.startsWith("http"))
+          ? item.image_url
+          : dishImageUrl(item.name);
+
         card.innerHTML = `
-          <div class="foodImg" style="background-image:url('${dishImageUrl(item.name)}');">
+          <div class="foodImg" style="background-image:url('${cardImgUrl}');">
             <div class="imageLabel">
               <p class="imageTitle">${escapeHtml(item.name)}</p>
               <span class="imageTime">&#9201; ${clampInt(item.time_minutes, 0)} min</span>
@@ -6853,10 +6858,16 @@
         const image = new Image();
         image.onload = () => imageEl.classList.add("imageLoaded");
         image.onerror = () => {
-          imageEl.style.backgroundImage = "linear-gradient(135deg, rgba(249, 115, 22, 0.36), rgba(124, 45, 18, 0.62))";
-          imageEl.classList.add("imageLoaded");
+          // If MealDB image fails, fall back to Unsplash keyword match
+          const fallback = dishImageUrl(item.name);
+          if (image.src !== fallback) {
+            image.src = fallback;
+          } else {
+            imageEl.style.backgroundImage = "linear-gradient(135deg, rgba(249, 115, 22, 0.36), rgba(124, 45, 18, 0.62))";
+            imageEl.classList.add("imageLoaded");
+          }
         };
-        image.src = dishImageUrl(item.name);
+        image.src = cardImgUrl;
         saveRecipeMeta(item.id, item.tags, item.name);
         trackInteraction("view", item.id);
       });
