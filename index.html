@@ -1754,6 +1754,105 @@
       font-family: inherit;
     }
 
+    /* ── Rating phase 2 — notes + tags ─────────── */
+    .ratingPhase2 {
+      animation: obFadeIn 0.25s ease both;
+      text-align: left; margin-top: 4px;
+    }
+    .ratingTagRow {
+      display: flex; flex-wrap: wrap; gap: 7px;
+      margin-bottom: 14px; justify-content: center;
+    }
+    .ratingTag {
+      padding: 6px 13px; border-radius: 999px;
+      border: 1.5px solid var(--border); background: var(--bg0);
+      font-size: 0.76rem; font-weight: 700; color: var(--muted);
+      cursor: pointer; transition: all 0.15s; font-family: inherit;
+    }
+    .ratingTag.sel {
+      border-color: var(--accent); background: rgba(200,105,14,0.10);
+      color: var(--accent);
+    }
+    .ratingNote {
+      width: 100%; border: 1.5px solid var(--border); border-radius: 14px;
+      padding: 10px 14px; font-family: 'Manrope', sans-serif; font-size: 0.86rem;
+      background: var(--bg0); color: var(--ink); resize: none;
+      outline: none; transition: border-color 0.15s; min-height: 68px;
+      margin-bottom: 14px;
+    }
+    .ratingNote:focus { border-color: var(--accent); }
+    .ratingNote::placeholder { color: var(--muted2); }
+    .ratingSaveBtn {
+      width: 100%; padding: 13px; border-radius: 14px;
+      background: var(--accent); color: #fff; border: none;
+      font-family: 'Manrope', sans-serif; font-size: 0.92rem; font-weight: 800;
+      cursor: pointer; transition: opacity 0.15s;
+    }
+    .ratingSaveBtn:hover { opacity: 0.88; }
+
+    /* ── Rated badge on cards ─────────────────── */
+    .ratedBadge {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 0.72rem; font-weight: 800; color: #f59e0b;
+      background: rgba(245,158,11,0.12); border-radius: 999px;
+      padding: 2px 8px; border: 1px solid rgba(245,158,11,0.28);
+    }
+
+    /* ── Cook Log sheet ───────────────────────── */
+    .cookLogSheet {
+      background: var(--bg0); border-radius: 28px 28px 0 0;
+      padding: 28px 24px 48px; width: min(560px, 100%);
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 -20px 60px rgba(80,30,5,0.2);
+      animation: reportSlideUp 0.38s cubic-bezier(0.34,1.08,0.64,1) both;
+    }
+    .cookLogHead {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .cookLogHead h2 {
+      font-family: 'Fraunces', serif; font-size: 1.3rem; font-weight: 900;
+      color: var(--ink); margin: 0 0 3px;
+    }
+    .cookLogMeta { font-size: 0.78rem; color: var(--muted2); font-weight: 600; }
+    .cookLogEntry {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: 14px;
+      background: var(--bg1); border: 1px solid var(--border);
+      margin-bottom: 8px; cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .cookLogEntry:hover { border-color: var(--accent); }
+    .cookLogThumb {
+      width: 48px; height: 48px; border-radius: 10px; flex-shrink: 0;
+      background-size: cover; background-position: center;
+      background-color: rgba(200,105,14,0.10);
+    }
+    .cookLogBody { flex: 1; min-width: 0; }
+    .cookLogName { font-size: 0.88rem; font-weight: 800; color: var(--ink); }
+    .cookLogStars { color: #f59e0b; font-size: 0.78rem; letter-spacing: 1px; }
+    .cookLogDate { font-size: 0.71rem; color: var(--muted2); font-weight: 600; margin-top: 1px; }
+    .cookLogNote {
+      font-size: 0.75rem; color: var(--muted); font-style: italic;
+      margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .cookLogTagList {
+      display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;
+    }
+    .cookLogTag {
+      font-size: 0.68rem; font-weight: 700; color: var(--accent);
+      background: rgba(200,105,14,0.09); border-radius: 999px;
+      padding: 1px 7px;
+    }
+    .cookLogEmpty {
+      text-align: center; padding: 40px 20px; color: var(--muted2); font-size: 0.9rem;
+    }
+    .cookLogEmpty div { font-size: 2.4rem; margin-bottom: 10px; }
+    [data-theme="dark"] .cookLogSheet,
+    [data-theme="dark"] .cookLogEntry { background: var(--bg1); }
+    [data-theme="dark"] .ratingNote,
+    [data-theme="dark"] .ratingTag { background: #1E1208; }
+
     /* ── Mobile sticky bottom bar ───────────────── */
     .mobileBar {
       display: none;
@@ -4449,6 +4548,10 @@
               <span>🛒 Shopping List</span>
               <span class="shoppingBadge" id="shoppingBadge">0</span>
             </button>
+            <button class="collectionsLink" id="cookLogBtn" type="button" style="margin-top:0">
+              <span>📖 Cook Log</span>
+              <span class="collectionsLinkCount" id="cookLogCount" style="display:none">0</span>
+            </button>
             <button class="exploreLink" id="exploreBtn" type="button">
               <span>🌍 Cuisine Explorer</span>
               <span id="exploreBadge" style="font-size:0.7rem;color:var(--accent);font-weight:800"></span>
@@ -4587,6 +4690,11 @@
         <button class="chefChatSend" id="chefChatSend" type="button" aria-label="Send">➤</button>
       </div>
     </div>
+  </div>
+
+  <!-- Cook Log overlay -->
+  <div class="reportOverlay hidden" id="cookLogOverlay" role="dialog" aria-modal="true" aria-label="Cook Log">
+    <div class="cookLogSheet" id="cookLogSheet"></div>
   </div>
 
   <!-- Shopping List overlay -->
@@ -5240,13 +5348,16 @@
     }
 
     // ── Rating overlay ────────────────────────────────────────────────────
-    function saveRating(recipeId, stars) {
+    const RATING_TAGS = ["Perfect 👌", "Make again 🔁", "Kid-approved 👧", "Too salty 🧂", "Needs tweaking 🔧", "Date night 🕯"];
+
+    function saveRating(recipeId, stars, note = "", tags = []) {
       try {
         const raw = localStorage.getItem("foodai_ratings");
         const existing = raw ? JSON.parse(raw) : {};
-        existing[String(recipeId)] = { stars, at: Date.now() };
+        existing[String(recipeId)] = { stars, note, tags, at: Date.now() };
         localStorage.setItem("foodai_ratings", JSON.stringify(existing));
-        updateCookLogRating(recipeId, stars);
+        updateCookLogRating(recipeId, stars, note, tags);
+        updateCookLogCount();
       } catch {}
     }
 
@@ -5254,15 +5365,48 @@
       if (!el.ratingOverlay) return;
       if (el.ratingDishName) el.ratingDishName.textContent = recipeName || "the dish";
       el.ratingOverlay.classList.add("open");
+
+      const sheet = el.ratingOverlay.querySelector(".ratingSheet");
+      // Reset to phase 1 — remove any leftover phase 2
+      sheet.querySelectorAll(".ratingPhase2").forEach(e => e.remove());
+      const skipBtn = el.ratingOverlay.querySelector(".skipRating");
+      if (skipBtn) skipBtn.style.display = "";
+
+      let chosenStars = 0;
       const stars = el.ratingOverlay.querySelectorAll(".starBtn");
       stars.forEach((btn, i) => {
         btn.classList.remove("lit");
         btn.onclick = () => {
+          if (chosenStars) return; // already chosen
+          chosenStars = i + 1;
           stars.forEach((b, j) => b.classList.toggle("lit", j <= i));
-          setTimeout(() => {
+          if (skipBtn) skipBtn.style.display = "none";
+          // Inject phase 2 — notes + tags
+          const ph2 = document.createElement("div");
+          ph2.className = "ratingPhase2";
+          ph2.innerHTML = `
+            <div class="ratingTagRow" id="ratingTagRow">
+              ${RATING_TAGS.map(t => `<button class="ratingTag" type="button">${t}</button>`).join("")}
+            </div>
+            <textarea class="ratingNote" id="ratingNoteInput"
+              placeholder="Add a note… (optional)" rows="2" maxlength="200"></textarea>
+            <button class="ratingSaveBtn" id="ratingSaveBtn" type="button">Save ✓</button>
+          `;
+          sheet.appendChild(ph2);
+
+          const selTags = new Set();
+          ph2.querySelectorAll(".ratingTag").forEach(tag => {
+            tag.addEventListener("click", () => {
+              tag.classList.toggle("sel");
+              tag.classList.contains("sel") ? selTags.add(tag.textContent) : selTags.delete(tag.textContent);
+            });
+          });
+          ph2.querySelector("#ratingSaveBtn").addEventListener("click", () => {
+            const note = ph2.querySelector("#ratingNoteInput")?.value?.trim() || "";
             el.ratingOverlay.classList.remove("open");
-            saveRating(recipeId, i + 1);
-          }, 500);
+            saveRating(recipeId, chosenStars, note, [...selTags]);
+            showToast(`⭐ Saved — ${chosenStars} star${chosenStars !== 1 ? "s" : ""}`, "success");
+          });
         };
       });
     }
@@ -7425,13 +7569,14 @@
       } catch {}
     }
 
-    function updateCookLogRating(recipeId, stars) {
+    function updateCookLogRating(recipeId, stars, note = "", tags = []) {
       try {
         const log = getCookLog();
-        // Update most recent entry for this recipe
         for (let i = log.length - 1; i >= 0; i--) {
           if (String(log[i].id) === String(recipeId)) {
             log[i].stars = stars;
+            log[i].note  = note;
+            log[i].tags  = tags;
             break;
           }
         }
@@ -9032,6 +9177,120 @@
     // ── end shopping list ─────────────────────────
 
     // ══════════════════════════════════════════════
+    // I — RATINGS & COOK LOG VIEWER
+    // ══════════════════════════════════════════════
+    function updateCookLogCount() {
+      const log = getCookLog();
+      const badge = document.getElementById("cookLogCount");
+      if (!badge) return;
+      if (log.length > 0) {
+        badge.textContent = String(log.length);
+        badge.style.display = "";
+      } else {
+        badge.style.display = "none";
+      }
+    }
+
+    function formatRelativeDate(ts) {
+      const diff = Date.now() - ts;
+      const mins = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days  = Math.floor(diff / 86400000);
+      if (mins < 2)   return "Just now";
+      if (mins < 60)  return `${mins}m ago`;
+      if (hours < 24) return `${hours}h ago`;
+      if (days === 1) return "Yesterday";
+      if (days < 7)   return `${days} days ago`;
+      return new Date(ts).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+    }
+
+    function renderCookLogSheet() {
+      const sheet = document.getElementById("cookLogSheet");
+      if (!sheet) return;
+      const log = [...getCookLog()].reverse(); // newest first
+
+      if (log.length === 0) {
+        sheet.innerHTML = `
+          <div class="cookLogHead">
+            <div><h2>📖 Cook Log</h2><p class="cookLogMeta">Nothing cooked yet</p></div>
+            <button class="closeBtn" id="closeCookLog" type="button">Close</button>
+          </div>
+          <div class="cookLogEmpty">
+            <div>🍳</div>
+            <p>Your cook log is empty.</p>
+            <p>Open any recipe and start cooking — every dish gets logged here.</p>
+          </div>
+        `;
+        sheet.querySelector("#closeCookLog")?.addEventListener("click", closeCookLog);
+        return;
+      }
+
+      const rated = log.filter(e => e.stars > 0).length;
+      sheet.innerHTML = `
+        <div class="cookLogHead">
+          <div>
+            <h2>📖 Cook Log</h2>
+            <p class="cookLogMeta">${log.length} dish${log.length !== 1 ? "es" : ""} cooked · ${rated} rated</p>
+          </div>
+          <button class="closeBtn" id="closeCookLog" type="button">Close</button>
+        </div>
+        <div id="cookLogEntries">
+          ${log.map(entry => {
+            const stars = entry.stars > 0
+              ? "★".repeat(entry.stars) + "☆".repeat(5 - entry.stars)
+              : "";
+            const tagsHTML = Array.isArray(entry.tags) && entry.tags.length
+              ? `<div class="cookLogTagList">${entry.tags.map(t => `<span class="cookLogTag">${t}</span>`).join("")}</div>`
+              : "";
+            const noteHTML = entry.note
+              ? `<div class="cookLogNote">"${entry.note}"</div>`
+              : "";
+            return `
+              <div class="cookLogEntry" data-id="${entry.id}">
+                <div class="cookLogThumb" style="background-image:url('${dishImageUrl(entry.name)}')"></div>
+                <div class="cookLogBody">
+                  <div class="cookLogName">${entry.name}</div>
+                  ${stars ? `<div class="cookLogStars">${stars}</div>` : ""}
+                  ${tagsHTML}
+                  ${noteHTML}
+                  <div class="cookLogDate">${formatRelativeDate(entry.ts)} · ${entry.time || "?"}min · ${entry.calories || "?"}kcal</div>
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `;
+
+      sheet.querySelector("#closeCookLog")?.addEventListener("click", closeCookLog);
+      sheet.querySelectorAll(".cookLogEntry").forEach(row => {
+        row.addEventListener("click", () => {
+          closeCookLog();
+          openRecipeModal(row.dataset.id);
+        });
+      });
+    }
+
+    function openCookLog() {
+      const overlay = document.getElementById("cookLogOverlay");
+      if (!overlay) return;
+      renderCookLogSheet();
+      overlay.classList.remove("hidden");
+      overlay.addEventListener("click", e => {
+        if (e.target === overlay) closeCookLog();
+      }, { once: true });
+    }
+
+    function closeCookLog() {
+      document.getElementById("cookLogOverlay")?.classList.add("hidden");
+    }
+
+    function initCookLog() {
+      document.getElementById("cookLogBtn")?.addEventListener("click", openCookLog);
+      updateCookLogCount();
+    }
+    // ── end cook log ──────────────────────────────
+
+    // ══════════════════════════════════════════════
     // H — AI CHEF CHAT
     // ══════════════════════════════════════════════
     const CHAT_HISTORY_KEY = "simmer_chat_v1";
@@ -9328,6 +9587,7 @@
     document.getElementById("exploreBtn")?.addEventListener("click", openCuisineExplorer);
     initShoppingList();
     initChefChat();
+    initCookLog();
     updateExploreBadge();
 
     // "My week" button — always opens report regardless of 7-day gate
