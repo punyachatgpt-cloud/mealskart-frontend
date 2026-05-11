@@ -1853,10 +1853,126 @@
     [data-theme="dark"] .ratingNote,
     [data-theme="dark"] .ratingTag { background: #1E1208; }
 
-    /* ── Mobile sticky bottom bar ───────────────── */
-    .mobileBar {
+    /* ══════════════════════════════════════════════
+       PHASE 1 — MOBILE TAB BAR
+       ══════════════════════════════════════════════ */
+    .mobileBar { display: none; }
+
+    /* Tab bar — shown only on mobile */
+    .tabBar {
       display: none;
     }
+    @media (max-width: 980px) {
+      /* Hide old mobileBar entirely */
+      .mobileBar { display: none !important; }
+      body { padding-bottom: 68px; }
+
+      /* Hide sidebar utility clutter — in tab bar "More" instead */
+      .collectionsLink,
+      .exploreLink,
+      #weeklyReportBtn { display: none !important; }
+
+      /* Hide desktop FAB on mobile (tab bar has Chat tab) */
+      .chefFab { display: none !important; }
+
+      .tabBar {
+        display: flex;
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        z-index: 290;
+        background: rgba(255,248,242,0.97);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-top: 1px solid var(--border);
+        padding: 0 4px env(safe-area-inset-bottom, 0);
+        gap: 0;
+      }
+      [data-theme="dark"] .tabBar {
+        background: rgba(18,9,4,0.97);
+        border-color: rgba(180,110,45,0.28);
+      }
+      .tabBtn {
+        flex: 1;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 3px;
+        padding: 8px 4px 10px;
+        background: none; border: none; cursor: pointer;
+        font-family: 'Manrope', sans-serif;
+        color: var(--muted2);
+        transition: color 0.18s;
+        position: relative;
+        -webkit-tap-highlight-color: transparent;
+        min-height: 56px;
+      }
+      .tabBtn.active { color: var(--accent); }
+      .tabIcon { font-size: 1.3rem; line-height: 1; }
+      .tabLabel {
+        font-size: 0.62rem; font-weight: 800;
+        letter-spacing: 0.02em; text-transform: uppercase;
+      }
+      .tabBadge {
+        position: absolute; top: 6px; right: calc(50% - 14px);
+        background: var(--accent); color: #fff;
+        border-radius: 999px; font-size: 0.58rem; font-weight: 900;
+        padding: 1px 5px; display: none;
+        border: 1.5px solid rgba(255,248,242,0.9);
+      }
+      .tabBadge.visible { display: block; }
+
+      /* "More" bottom sheet */
+      .moreSheetOverlay {
+        position: fixed; inset: 0; z-index: 295;
+        background: rgba(20,10,0,0.55); backdrop-filter: blur(4px);
+        display: flex; align-items: flex-end; justify-content: center;
+      }
+      .moreSheetOverlay.hidden { display: none; }
+      .moreSheet {
+        background: var(--bg0); border-radius: 24px 24px 0 0;
+        width: 100%; max-height: 70vh; overflow-y: auto;
+        padding: 20px 20px calc(24px + env(safe-area-inset-bottom, 0));
+        animation: reportSlideUp 0.32s cubic-bezier(0.34,1.08,0.64,1) both;
+      }
+      [data-theme="dark"] .moreSheet { background: var(--bg1); }
+      .moreSheetHead {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 18px;
+      }
+      .moreSheetHead h3 {
+        font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 900;
+        color: var(--ink); margin: 0;
+      }
+      .moreGrid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      }
+      .moreBtn {
+        display: flex; align-items: center; gap: 10px;
+        padding: 14px 14px; border-radius: 16px;
+        border: 1px solid var(--border); background: var(--bg1);
+        font-family: 'Manrope', sans-serif; font-size: 0.84rem; font-weight: 700;
+        color: var(--ink); cursor: pointer; transition: border-color 0.15s;
+        text-align: left;
+      }
+      .moreBtn:hover { border-color: var(--accent); color: var(--accent); }
+      .moreBtnIcon { font-size: 1.2rem; }
+      [data-theme="dark"] .moreBtn { background: rgba(255,255,255,0.04); }
+    }
+
+    /* Modal remix row */
+    .modalRemixRow {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      padding: 12px 0 4px; margin-bottom: 4px;
+      border-top: 1px solid var(--border);
+    }
+    .modalRemixBtn {
+      padding: 7px 14px; border-radius: 999px;
+      border: 1.5px solid var(--border); background: var(--bg0);
+      font-size: 0.78rem; font-weight: 800; color: var(--muted);
+      cursor: pointer; transition: all 0.15s; font-family: inherit;
+    }
+    .modalRemixBtn:hover { border-color: var(--accent); color: var(--accent); background: var(--accentGlow); }
+    .modalRemixBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .modalRemixBtn.loading { animation: pulse 1s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
     /* ═══════════════════════════════════════════════════
        WORLD-CLASS ANIMATION LAYER
        ═══════════════════════════════════════════════════ */
@@ -4620,6 +4736,11 @@
         <button class="actionChip" id="exportGroceryBtn" type="button">&#128722; Grocery list</button>
         <button class="addToListBtn" id="addToListBtn" type="button">🛒 Add to List</button>
       </div>
+      <div class="modalRemixRow" id="modalRemixRow">
+        <button class="modalRemixBtn" id="modalRemixHealthier" data-remix="healthier" type="button">🥗 Healthier</button>
+        <button class="modalRemixBtn" id="modalRemixSpicier"   data-remix="spicier"   type="button">🌶 Spicier</button>
+        <button class="modalRemixBtn" id="modalRemixQuicker"   data-remix="quicker"   type="button">⚡ Quicker</button>
+      </div>
       <button class="cookModeEntryBtn" id="cookModeEntryBtn" type="button">🍳 Enter Cook Mode — full screen</button>
       <p class="stepLabel" id="stepCountLabel">Step 1</p>
       <div class="stepProgress" aria-hidden="true"><div class="stepProgressBar" id="stepProgressBar"></div></div>
@@ -4774,11 +4895,54 @@
     </div>
   </div>
 
-  <!-- Mobile sticky bottom CTA bar -->
+  <!-- Mobile sticky bottom CTA bar (legacy — hidden on mobile, kept for desktop wiring) -->
   <div class="mobileBar" id="mobileBar" aria-hidden="true">
     <button class="btn" id="decideBtnMobile" type="button">&#127860; Decide</button>
     <button class="btn secondary" id="suggestBtnMobile" type="button">Options</button>
     <button class="btn secondary" id="planBtnMobile" type="button">🗓️ Plan</button>
+  </div>
+
+  <!-- Mobile tab bar -->
+  <nav class="tabBar" id="tabBar" aria-label="Main navigation">
+    <button class="tabBtn active" id="tabHome" type="button">
+      <span class="tabIcon">✨</span>
+      <span class="tabLabel">Suggest</span>
+    </button>
+    <button class="tabBtn" id="tabDecide" type="button">
+      <span class="tabIcon">🎲</span>
+      <span class="tabLabel">Decide</span>
+    </button>
+    <button class="tabBtn" id="tabChat" type="button">
+      <span class="tabIcon">👨‍🍳</span>
+      <span class="tabLabel">Chef</span>
+    </button>
+    <button class="tabBtn" id="tabList" type="button">
+      <span class="tabIcon">🛒</span>
+      <span class="tabLabel">List</span>
+      <span class="tabBadge" id="tabListBadge"></span>
+    </button>
+    <button class="tabBtn" id="tabMore" type="button">
+      <span class="tabIcon">☰</span>
+      <span class="tabLabel">More</span>
+    </button>
+  </nav>
+
+  <!-- More sheet (mobile) -->
+  <div class="moreSheetOverlay hidden" id="moreSheetOverlay">
+    <div class="moreSheet">
+      <div class="moreSheetHead">
+        <h3>☰ More</h3>
+        <button class="closeBtn" id="closeMoreSheet" type="button">Close</button>
+      </div>
+      <div class="moreGrid">
+        <button class="moreBtn" id="moreCookLogBtn" type="button"><span class="moreBtnIcon">📖</span>Cook Log</button>
+        <button class="moreBtn" id="moreCollectionsBtn" type="button"><span class="moreBtnIcon">📚</span>Collections</button>
+        <button class="moreBtn" id="moreGoalBtn" type="button"><span class="moreBtnIcon">🎯</span>Goal</button>
+        <button class="moreBtn" id="moreExploreBtn" type="button"><span class="moreBtnIcon">🌍</span>Explore</button>
+        <button class="moreBtn" id="morePlanBtn" type="button"><span class="moreBtnIcon">🗓</span>Meal Plan</button>
+        <button class="moreBtn" id="moreWeekBtn" type="button"><span class="moreBtnIcon">📊</span>My Week</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -5260,18 +5424,27 @@
 
     // ── Dynamic "why this dish" copy ──────────────────────────────────────
     function buildWhyText(item) {
-      if (item.why && String(item.why).trim()) return String(item.why).trim();
+      // Skip verbose API text — build appetising copy instead
       const parts = [];
       const match = clampInt(item.ingredient_match_percent, 0);
-      const time = clampInt(item.time_minutes, 0);
-      const tags = String(item.tags || "").toLowerCase();
-      if (match >= 80) parts.push(`Uses ${match}% of your ingredients`);
-      else if (match > 0) parts.push(`Matches ${match}% of what you have`);
-      if (time > 0 && time <= 15) parts.push(`Quick ${time}-min cook`);
-      else if (time > 0) parts.push(`Ready in ${time} min`);
-      if (state.mood && tags.includes(state.mood)) parts.push(`fits your ${state.mood} mood`);
-      if (state.diet === "veg" && (tags.includes("veg") || state.diet === "veg")) parts.push("fully vegetarian");
-      return parts.length ? parts.join(" · ") : "A great fit for your current preferences.";
+      const time  = clampInt(item.time_minutes, 0);
+
+      if (match >= 90)      parts.push(`🧺 ${match}% from your fridge`);
+      else if (match >= 60) parts.push(`🧺 ${match}% ingredient match`);
+
+      if      (time > 0 && time <= 15) parts.push(`⚡ ${time}-min cook`);
+      else if (time > 0 && time <= 30) parts.push(`🕐 Ready in ${time} min`);
+      else if (time > 0)               parts.push(`🍲 ${time} min`);
+
+      const mood = state.mood;
+      if      (mood === "healthy")  parts.push("🥗 Light & nutritious");
+      else if (mood === "comfort")  parts.push("🛋 Comfort food");
+      else if (mood === "quick")    parts.push("⚡ Weeknight-friendly");
+
+      if      (state.diet === "vegan") parts.push("🌿 Vegan");
+      else if (state.diet === "veg")   parts.push("🌱 Plant-based");
+
+      return parts.length ? parts.join(" · ") : "✨ Matched to your taste";
     }
 
     // ── Streak tracking ───────────────────────────────────────────────────
@@ -8955,6 +9128,7 @@
       try { localStorage.setItem(SHOPPING_KEY, JSON.stringify(list)); }
       catch {}
       updateShoppingBadge();
+      if (typeof syncTabListBadge === "function") syncTabListBadge();
     }
 
     function updateShoppingBadge() {
@@ -9562,6 +9736,130 @@
     })();
     // ── end polish ────────────────────────────────
 
+    // ══════════════════════════════════════════════
+    // PHASE 1 — MOBILE TAB BAR + MORE SHEET
+    // ══════════════════════════════════════════════
+
+    function openMoreSheet() {
+      document.getElementById("moreSheetOverlay")?.classList.remove("hidden");
+    }
+    function closeMoreSheet() {
+      document.getElementById("moreSheetOverlay")?.classList.add("hidden");
+    }
+
+    function setActiveTab(id) {
+      document.querySelectorAll(".tabBtn").forEach(b => b.classList.remove("active"));
+      document.getElementById(id)?.classList.add("active");
+    }
+
+    function syncTabListBadge() {
+      const list = getShoppingList ? getShoppingList() : [];
+      const unchecked = list.filter(i => !i.checked).length;
+      const badge = document.getElementById("tabListBadge");
+      if (!badge) return;
+      if (unchecked > 0) {
+        badge.textContent = String(unchecked);
+        badge.classList.add("visible");
+      } else {
+        badge.classList.remove("visible");
+      }
+    }
+
+    function initTabBar() {
+      // Suggest tab
+      document.getElementById("tabHome")?.addEventListener("click", () => {
+        setActiveTab("tabHome");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        getSuggestions("normal");
+      });
+
+      // Decide tab
+      document.getElementById("tabDecide")?.addEventListener("click", () => {
+        setActiveTab("tabDecide");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        getSuggestions("decide");
+      });
+
+      // Chef Chat tab
+      document.getElementById("tabChat")?.addEventListener("click", () => {
+        setActiveTab("tabChat");
+        openChefChat();
+      });
+
+      // Shopping List tab
+      document.getElementById("tabList")?.addEventListener("click", () => {
+        setActiveTab("tabList");
+        openShoppingSheet();
+      });
+
+      // More tab
+      document.getElementById("tabMore")?.addEventListener("click", () => {
+        openMoreSheet();
+      });
+
+      // More sheet close
+      document.getElementById("closeMoreSheet")?.addEventListener("click", closeMoreSheet);
+      document.getElementById("moreSheetOverlay")?.addEventListener("click", e => {
+        if (e.target === document.getElementById("moreSheetOverlay")) closeMoreSheet();
+      });
+
+      // More sheet buttons
+      document.getElementById("moreCookLogBtn")?.addEventListener("click",     () => { closeMoreSheet(); openCookLog(); });
+      document.getElementById("moreCollectionsBtn")?.addEventListener("click", () => { closeMoreSheet(); openCollectionsSheet(); });
+      document.getElementById("moreGoalBtn")?.addEventListener("click",        () => { closeMoreSheet(); openGoalSetup(); });
+      document.getElementById("moreExploreBtn")?.addEventListener("click",     () => { closeMoreSheet(); openCuisineExplorer(); });
+      document.getElementById("morePlanBtn")?.addEventListener("click",        () => { closeMoreSheet(); getSuggestions("plan"); });
+      document.getElementById("moreWeekBtn")?.addEventListener("click",        () => {
+        closeMoreSheet();
+        const profile = getPersonalisationProfile();
+        if (profile) openWeeklyReport();
+        else showToast("Cook 3+ meals first to unlock your weekly report!", "warn");
+      });
+
+      // Keep badge in sync with shopping list changes
+      syncTabListBadge();
+      // Re-sync whenever shopping list localStorage changes (same tab)
+      window.addEventListener("storage", syncTabListBadge);
+    }
+
+    // ── Remix inside recipe modal ──────────────────
+    function initModalRemix() {
+      document.getElementById("modalRemixRow")?.querySelectorAll(".modalRemixBtn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const remixType = btn.dataset.remix;
+          const cfg = REMIX_CONFIGS[remixType];
+          if (!cfg || !activeRecipe) return;
+
+          // Disable all remix buttons during fetch
+          const allBtns = document.querySelectorAll(".modalRemixBtn");
+          allBtns.forEach(b => { b.disabled = true; b.classList.add("loading"); });
+          btn.textContent = `${cfg.emoji} Finding…`;
+
+          try {
+            const ingredients = getIngredients();
+            const response = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ ...state, ...cfg.stateOverride, mode: "normal", ingredients })
+            });
+            const data = await response.json();
+            const results = Array.isArray(data) ? data : [];
+            if (!results.length) throw new Error("empty");
+
+            // Open the new recipe in the modal
+            await openRecipeModal(results[0].id);
+            showToast(`${cfg.emoji} Showing a ${cfg.label.toLowerCase()} version`, "success");
+          } catch {
+            showToast("Couldn't find a remix — try again", "error");
+          } finally {
+            allBtns.forEach(b => { b.disabled = false; b.classList.remove("loading"); });
+            btn.textContent = `${cfg.emoji} ${cfg.label}`;
+          }
+        });
+      });
+    }
+    // ── end phase 1 ───────────────────────────────
+
     initTheme();
     initCookMode();
     initNotifications();
@@ -9588,6 +9886,8 @@
     initShoppingList();
     initChefChat();
     initCookLog();
+    initTabBar();
+    initModalRemix();
     updateExploreBadge();
 
     // "My week" button — always opens report regardless of 7-day gate
