@@ -625,6 +625,49 @@
     }
     .forYouBanner strong { color: var(--accent); font-weight: 700; }
 
+    /* ── Phase 5: Pantry & smart ingredient input ──────────── */
+    .pantryRow {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 7px; flex-wrap: wrap;
+    }
+    .pantryLink {
+      font-size: 0.74rem; font-weight: 700; color: var(--muted2);
+      background: none; border: none; cursor: pointer; padding: 0;
+      font-family: inherit; text-decoration: underline dotted;
+      transition: color 0.15s;
+    }
+    .pantryLink:hover { color: var(--accent); }
+    .pantryDivider { color: var(--border); font-size: 0.8rem; user-select: none; }
+    .pantryCountHint { font-size: 0.7rem; color: var(--muted2); font-weight: 600; }
+    .recentChips {
+      display: flex; flex-wrap: wrap; gap: 5px;
+      margin-top: 7px; min-height: 0;
+    }
+    .recentChip {
+      font-size: 0.72rem; font-weight: 700; color: var(--muted);
+      background: var(--bg0); border: 1px solid var(--border);
+      border-radius: 20px; padding: 3px 10px; cursor: pointer;
+      transition: all 0.14s; font-family: inherit;
+    }
+    .recentChip:hover {
+      border-color: var(--accent); color: var(--accent);
+      background: var(--accentGlow);
+    }
+    .ingredientAutocomplete {
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: 14px; box-shadow: 0 8px 28px rgba(0,0,0,0.14);
+      z-index: 60; overflow: hidden;
+    }
+    .ingredientAutocomplete.hidden { display: none; }
+    .autocompleteItem {
+      padding: 9px 15px; font-size: 0.84rem; font-weight: 600;
+      color: var(--ink); cursor: pointer; transition: background 0.1s;
+    }
+    .autocompleteItem:hover { background: var(--accentGlow); color: var(--accent); }
+    [data-theme="dark"] .ingredientAutocomplete { background: var(--bg1); }
+    [data-theme="dark"] .recentChip { background: rgba(255,255,255,0.04); }
+
     /* ── Phase 4: Taste DNA overlay ────────────────────────── */
     .tasteDNAOverlay {
       position: fixed; inset: 0; z-index: 320;
@@ -10454,6 +10497,183 @@
     }
     // ── end phase 4 ───────────────────────────────
 
+    // ══════════════════════════════════════════════
+    // PHASE 5 — PANTRY MEMORY + SMART INGREDIENT INPUT
+    // ══════════════════════════════════════════════
+    const PANTRY_KEY      = "simmer_pantry_v1";
+    const RECENT_INGR_KEY = "simmer_recent_ingredients_v1";
+
+    const COMMON_INGREDIENTS = [
+      "onion", "tomato", "garlic", "ginger", "potato", "paneer", "rice",
+      "dal", "lentils", "chickpeas", "spinach", "carrot", "capsicum",
+      "coriander", "cumin seeds", "turmeric", "red chilli", "mustard seeds",
+      "curry leaves", "coconut", "coconut milk", "milk", "cream", "butter",
+      "oil", "ghee", "salt", "sugar", "flour", "bread", "egg", "chicken",
+      "mutton", "fish", "prawns", "tofu", "mushroom", "peas", "corn",
+      "cabbage", "cauliflower", "brinjal", "okra", "green beans", "lemon",
+      "yogurt", "basmati rice", "urad dal", "chana dal", "moong dal",
+      "rajma", "black pepper", "cardamom", "cloves", "cinnamon", "bay leaf"
+    ];
+
+    function getPantry() {
+      try { return JSON.parse(localStorage.getItem(PANTRY_KEY) || "[]"); }
+      catch { return []; }
+    }
+
+    function savePantry() {
+      const tags = [...state.ingredientTags];
+      if (!tags.length) { showToast("Add ingredients first!", "warn", 1800); return; }
+      localStorage.setItem(PANTRY_KEY, JSON.stringify(tags));
+      showToast(`✅ Pantry saved — ${tags.length} item${tags.length > 1 ? "s" : ""}`, "success", 2200);
+      updatePantryUI();
+    }
+
+    function loadPantry() {
+      const pantry = getPantry();
+      if (!pantry.length) {
+        showToast("No pantry saved yet — add ingredients and tap Save!", "info", 2400);
+        return;
+      }
+      const newOnes = pantry.filter(t => !state.ingredientTags.includes(t));
+      if (!newOnes.length) { showToast("All pantry items already added!", "info", 1800); return; }
+      newOnes.forEach(t => { state.ingredientTags.push(t); });
+      renderTags();
+      renderRecentChips();
+      showToast(`🥫 Pantry loaded — ${newOnes.length} item${newOnes.length > 1 ? "s" : ""}`, "success", 2000);
+    }
+
+    function autoLoadPantry() {
+      if (state.ingredientTags.length === 0) {
+        const pantry = getPantry();
+        if (pantry.length > 0) {
+          pantry.forEach(t => { if (!state.ingredientTags.includes(t)) state.ingredientTags.push(t); });
+          renderTags();
+        }
+      }
+    }
+
+    function trackRecentIngredient(tag) {
+      try {
+        const raw = JSON.parse(localStorage.getItem(RECENT_INGR_KEY) || "[]");
+        const updated = [tag, ...raw.filter(t => t !== tag)].slice(0, 14);
+        localStorage.setItem(RECENT_INGR_KEY, JSON.stringify(updated));
+      } catch {}
+    }
+
+    function getRecentIngredients() {
+      try { return JSON.parse(localStorage.getItem(RECENT_INGR_KEY) || "[]"); }
+      catch { return []; }
+    }
+
+    function updatePantryUI() {
+      const pantry = getPantry();
+      const saveBtn = document.getElementById("savePantryBtn");
+      const hint    = document.getElementById("pantryCountHint");
+      if (saveBtn) saveBtn.textContent = pantry.length ? `💾 Update pantry` : "💾 Save as pantry";
+      if (hint)    hint.textContent    = pantry.length ? `(${pantry.length} saved)` : "";
+    }
+
+    function renderRecentChips() {
+      const wrap = document.getElementById("recentChipsWrap");
+      if (!wrap) return;
+      const recents = getRecentIngredients()
+        .filter(t => !state.ingredientTags.includes(t))
+        .slice(0, 8);
+      if (!recents.length) { wrap.innerHTML = ""; return; }
+      wrap.innerHTML = recents
+        .map(t => `<button class="recentChip" type="button" data-val="${escapeHtml(t)}">${escapeHtml(t)}</button>`)
+        .join("");
+      wrap.querySelectorAll(".recentChip").forEach(chip => {
+        chip.addEventListener("click", () => {
+          addTag(chip.dataset.val);
+          trackRecentIngredient(chip.dataset.val);
+          renderRecentChips();
+        });
+      });
+    }
+
+    function initPhase5() {
+      // ── a. Inject Pantry row + Recent chips below tag input ───────────
+      const ingredientsPanel = document.getElementById("ingredientsPanel");
+      if (ingredientsPanel && !document.getElementById("pantryRow")) {
+        const tagCountRow = ingredientsPanel.querySelector(".tagCount")?.parentElement;
+        if (tagCountRow) {
+          // Pantry save/load row
+          const pantryRow = document.createElement("div");
+          pantryRow.id = "pantryRow";
+          pantryRow.className = "pantryRow";
+          pantryRow.innerHTML = `
+            <button class="pantryLink" id="savePantryBtn" type="button">💾 Save as pantry</button>
+            <span class="pantryDivider">·</span>
+            <button class="pantryLink" id="loadPantryBtn" type="button">📂 Load pantry</button>
+            <span class="pantryCountHint" id="pantryCountHint"></span>
+          `;
+          tagCountRow.parentNode.insertBefore(pantryRow, tagCountRow.nextSibling);
+
+          // Recent chips row (injected right after pantry row)
+          const recentWrap = document.createElement("div");
+          recentWrap.id = "recentChipsWrap";
+          recentWrap.className = "recentChips";
+          pantryRow.parentNode.insertBefore(recentWrap, pantryRow.nextSibling);
+
+          document.getElementById("savePantryBtn")?.addEventListener("click", savePantry);
+          document.getElementById("loadPantryBtn")?.addEventListener("click", loadPantry);
+          updatePantryUI();
+        }
+      }
+
+      // ── b. Auto-load pantry if tags empty (silently) ──────────────────
+      autoLoadPantry();
+      renderRecentChips();
+
+      // ── c. Patch addTag to track recents ──────────────────────────────
+      const _origAddTag = addTag;
+      addTag = function(raw) {
+        _origAddTag(raw);
+        raw.split(",").map(s => s.trim().toLowerCase()).filter(Boolean)
+           .forEach(trackRecentIngredient);
+        renderRecentChips();
+      };
+
+      // ── d. Ingredient autocomplete dropdown ───────────────────────────
+      const tagWrap = document.getElementById("tagInputWrap");
+      if (tagWrap && el.tagTextInput) {
+        tagWrap.style.position = "relative";
+
+        const ac = document.createElement("div");
+        ac.id = "ingredientAC";
+        ac.className = "ingredientAutocomplete hidden";
+        tagWrap.parentNode.insertBefore(ac, tagWrap.nextSibling);
+
+        function updateAC() {
+          const q = el.tagTextInput.value.trim().toLowerCase();
+          if (!q || q.length < 2) { ac.classList.add("hidden"); return; }
+          const matches = COMMON_INGREDIENTS
+            .filter(i => i.includes(q) && !state.ingredientTags.includes(i))
+            .slice(0, 5);
+          if (!matches.length) { ac.classList.add("hidden"); return; }
+          ac.innerHTML = matches
+            .map(m => `<div class="autocompleteItem" data-val="${escapeHtml(m)}">${escapeHtml(m)}</div>`)
+            .join("");
+          ac.classList.remove("hidden");
+          ac.querySelectorAll(".autocompleteItem").forEach(item => {
+            item.addEventListener("mousedown", e => {
+              e.preventDefault();
+              addTag(item.dataset.val);
+              el.tagTextInput.value = "";
+              el.tagTextInput.focus();
+              ac.classList.add("hidden");
+            });
+          });
+        }
+
+        el.tagTextInput.addEventListener("input", updateAC);
+        el.tagTextInput.addEventListener("blur",  () => setTimeout(() => ac.classList.add("hidden"), 160));
+        el.tagTextInput.addEventListener("focus", () => { renderRecentChips(); updateAC(); });
+      }
+    }
+    // ── end phase 5 ───────────────────────────────
+
     initTheme();
     initCookMode();
     initNotifications();
@@ -10486,6 +10706,7 @@
     initPhase2();
     initPhase3();
     initPhase4();
+    initPhase5();
     updateExploreBadge();
 
     // "My week" button — always opens report regardless of 7-day gate
