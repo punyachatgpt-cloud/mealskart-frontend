@@ -625,6 +625,101 @@
     }
     .forYouBanner strong { color: var(--accent); font-weight: 700; }
 
+    /* ── Phase 4: Taste DNA overlay ────────────────────────── */
+    .tasteDNAOverlay {
+      position: fixed; inset: 0; z-index: 320;
+      background: rgba(0,0,0,0.72); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px; animation: obFadeIn 0.3s ease both;
+    }
+    .tasteDNAOverlay.hidden { display: none; }
+    .tasteDNACard {
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: 28px; padding: 26px 22px 22px;
+      width: min(400px, 100%); max-height: 88vh; overflow-y: auto;
+      box-shadow: 0 32px 64px -12px rgba(0,0,0,0.45);
+      animation: reportSlideUp 0.38s cubic-bezier(0.34,1.08,0.64,1) both;
+    }
+    .tasteDNAHead {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .tasteDNATitle {
+      font-family: 'Fraunces', serif; font-size: 1.3rem; font-weight: 900;
+      color: var(--ink); margin: 0;
+    }
+    .tasteDNAGrid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      margin-bottom: 14px;
+    }
+    .tasteDNAStat {
+      background: linear-gradient(135deg, var(--goldBg), transparent);
+      border: 1px solid var(--goldBorder);
+      border-radius: 16px; padding: 13px 10px; text-align: center;
+    }
+    .tasteDNAStatVal {
+      font-family: 'Fraunces', serif; font-size: 1.55rem; font-weight: 900;
+      color: var(--accent); line-height: 1; margin-bottom: 4px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .tasteDNAStatLabel {
+      font-size: 0.69rem; font-weight: 700; color: var(--muted2);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .tasteDNASection {
+      border: 1px solid var(--border); border-radius: 16px;
+      padding: 13px 15px; margin-bottom: 12px;
+    }
+    .tasteDNASectionLabel {
+      font-size: 0.69rem; font-weight: 700; color: var(--muted2);
+      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 9px;
+    }
+    .tasteDNADishList { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tasteDNADishPill {
+      background: var(--accentGlow); border: 1px solid var(--border);
+      border-radius: 20px; padding: 4px 11px;
+      font-size: 0.78rem; font-weight: 700; color: var(--ink);
+    }
+    .tasteDNABar {
+      height: 8px; border-radius: 8px; background: var(--border);
+      overflow: hidden; margin-bottom: 7px;
+    }
+    .tasteDNABarFill {
+      height: 100%; border-radius: 8px;
+      background: linear-gradient(90deg, #22c55e, #16a34a);
+      transition: width 0.7s cubic-bezier(0.4,0,0.2,1);
+    }
+    .tasteDNABarLabels {
+      display: flex; justify-content: space-between;
+      font-size: 0.74rem; font-weight: 700; color: var(--muted2);
+    }
+    .tasteDNAShareBtn {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; border: none; border-radius: 14px;
+      font-family: inherit; font-size: 0.9rem; font-weight: 800;
+      cursor: pointer; transition: opacity 0.15s; margin-top: 4px;
+    }
+    .tasteDNAShareBtn:hover { opacity: 0.86; }
+    [data-theme="dark"] .tasteDNACard { background: var(--bg1); }
+
+    /* ── Phase 4: Milestone celebration toast ───────────────── */
+    .milestoneToast {
+      display: flex !important; flex-direction: column !important;
+      align-items: center !important; gap: 3px !important;
+      padding: 16px 26px !important;
+      border-radius: 22px !important;
+      white-space: normal !important;
+      text-align: center !important;
+      max-width: 300px !important;
+    }
+    .milestoneToastTitle {
+      font-size: 1.02rem; font-weight: 800; color: inherit; line-height: 1.2;
+    }
+    .milestoneToastSub {
+      font-size: 0.79rem; font-weight: 600; opacity: 0.88; line-height: 1.3;
+    }
+
     .foodCard.heroCard {
       grid-row: span 2;
       box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15);
@@ -5012,6 +5107,11 @@
     </button>
   </nav>
 
+  <!-- Phase 4: Taste DNA overlay -->
+  <div class="tasteDNAOverlay hidden" id="tasteDNAOverlay">
+    <div class="tasteDNACard" id="tasteDNACard"></div>
+  </div>
+
   <!-- More sheet (mobile) -->
   <div class="moreSheetOverlay hidden" id="moreSheetOverlay">
     <div class="moreSheet">
@@ -5026,6 +5126,7 @@
         <button class="moreBtn" id="moreExploreBtn" type="button"><span class="moreBtnIcon">🌍</span>Explore</button>
         <button class="moreBtn" id="morePlanBtn" type="button"><span class="moreBtnIcon">🗓</span>Meal Plan</button>
         <button class="moreBtn" id="moreWeekBtn" type="button"><span class="moreBtnIcon">📊</span>My Week</button>
+        <button class="moreBtn" id="moreTasteBtn" type="button"><span class="moreBtnIcon">🧬</span>Taste DNA</button>
       </div>
     </div>
   </div>
@@ -10195,6 +10296,164 @@
     }
     // ── end phase 3 ───────────────────────────────
 
+    // ══════════════════════════════════════════════
+    // PHASE 4 — TASTE DNA + MILESTONE CELEBRATIONS
+    // ══════════════════════════════════════════════
+    const CAT_EMOJI_MAP = {
+      "north indian": "🍛", "south indian": "🥘", "chinese": "🥡",
+      "continental": "🍝", "snacks": "🧆", "sweets": "🍮",
+      "drinks": "🥤", "salad": "🥗", "other": "🍽"
+    };
+
+    function openTasteDNA() {
+      const overlay = document.getElementById("tasteDNAOverlay");
+      const card    = document.getElementById("tasteDNACard");
+      if (!overlay || !card) return;
+
+      const profile = getPersonalisationProfile();
+      if (!profile) {
+        showToast("Cook a few meals to unlock your Taste DNA!", "info", 2500);
+        return;
+      }
+
+      const streak   = getStreak();
+      const log      = getCookLog();
+      const totalMin = log.reduce((s, e) => s + (Number(e.time) || 30), 0);
+      const avgMin   = log.length ? Math.round(totalMin / log.length) : 0;
+      const vegCount = log.filter(e => !e.diet || e.diet === "veg").length;
+      const vegPct   = log.length ? Math.round((vegCount / log.length) * 100) : 0;
+      const topCat   = profile.topCategory ? profile.topCategory.replace(/-/g, " ") : "mixed";
+      const catEmoji = CAT_EMOJI_MAP[topCat] || "🍽";
+
+      card.innerHTML = `
+        <div class="tasteDNAHead">
+          <h2 class="tasteDNATitle">🧬 Your Taste DNA</h2>
+          <button class="closeBtn" id="closeTasteDNA" type="button">Close</button>
+        </div>
+        <div class="tasteDNAGrid">
+          <div class="tasteDNAStat">
+            <div class="tasteDNAStatVal">${profile.totalCooks}</div>
+            <div class="tasteDNAStatLabel">Meals cooked</div>
+          </div>
+          <div class="tasteDNAStat">
+            <div class="tasteDNAStatVal">${streak}🔥</div>
+            <div class="tasteDNAStatLabel">Day streak</div>
+          </div>
+          <div class="tasteDNAStat">
+            <div class="tasteDNAStatVal" title="${topCat}">${catEmoji} ${topCat}</div>
+            <div class="tasteDNAStatLabel">Top cuisine</div>
+          </div>
+          <div class="tasteDNAStat">
+            <div class="tasteDNAStatVal">${avgMin}m</div>
+            <div class="tasteDNAStatLabel">Avg cook time</div>
+          </div>
+        </div>
+        ${profile.lovedDishes.length ? `
+        <div class="tasteDNASection">
+          <div class="tasteDNASectionLabel">⭐ Loved dishes</div>
+          <div class="tasteDNADishList">
+            ${profile.lovedDishes.map(d => `<span class="tasteDNADishPill">${d}</span>`).join("")}
+          </div>
+        </div>` : ""}
+        <div class="tasteDNASection">
+          <div class="tasteDNASectionLabel">🌿 Diet split</div>
+          <div class="tasteDNABar">
+            <div class="tasteDNABarFill" style="width:${vegPct}%"></div>
+          </div>
+          <div class="tasteDNABarLabels">
+            <span>🌿 Veg ${vegPct}%</span>
+            <span>🍗 Non-veg ${100 - vegPct}%</span>
+          </div>
+        </div>
+        <button class="tasteDNAShareBtn" id="tasteDNAShareBtn" type="button">📤 Share your Taste DNA</button>
+      `;
+
+      overlay.classList.remove("hidden");
+
+      document.getElementById("closeTasteDNA")?.addEventListener("click", () => {
+        overlay.classList.add("hidden");
+      });
+      overlay.addEventListener("click", e => {
+        if (e.target === overlay) overlay.classList.add("hidden");
+      }, { once: true });
+
+      document.getElementById("tasteDNAShareBtn")?.addEventListener("click", () => {
+        const lines = [
+          `🧬 My Taste DNA on Simmer`,
+          `🍽 ${profile.totalCooks} meals cooked`,
+          `${catEmoji} Top cuisine: ${topCat}`,
+          `🔥 ${streak}-day streak`,
+          profile.lovedDishes.length ? `⭐ Loved: ${profile.lovedDishes.join(", ")}` : "",
+          ``,
+          `Cook smarter → https://mealskart-frontend.vercel.app/`
+        ].filter(Boolean).join("\n");
+        if (navigator.share) {
+          navigator.share({ title: "My Taste DNA — Simmer", text: lines }).catch(() => {});
+        } else if (navigator.clipboard) {
+          navigator.clipboard.writeText(lines)
+            .then(() => showToast("✓ Taste DNA copied!", "success"))
+            .catch(() => {});
+        }
+      });
+    }
+
+    // ── Milestone celebration ─────────────────────────────────────────────
+    const MILESTONES     = [5, 10, 25, 50, 100, 200];
+    const MILESTONE_KEY  = "simmer_last_milestone_v1";
+    const MILESTONE_MSGS = {
+      5:   ["🌟 5 meals cooked!",     "You've found your cooking rhythm!"],
+      10:  ["🎉 10 meals cooked!",    "You're officially a Simmer regular 🔥"],
+      25:  ["🏆 25 meals cooked!",    "Quarter-century chef — you're on fire!"],
+      50:  ["🥇 50 meals cooked!",    "Half a century of home cooking. Legendary."],
+      100: ["👨‍🍳 100 meals cooked!",  "Triple digits. You're a Simmer Chef."],
+      200: ["🌟 200 meals cooked!",   "You've mastered the art of home cooking."]
+    };
+
+    function checkMilestone(count) {
+      try {
+        const last = Number(localStorage.getItem(MILESTONE_KEY) || 0);
+        for (const m of MILESTONES) {
+          if (count >= m && last < m) {
+            localStorage.setItem(MILESTONE_KEY, String(m));
+            const [title, sub] = MILESTONE_MSGS[m] || [`🎉 ${m} meals!`, "Keep cooking!"];
+            setTimeout(() => {
+              const el = document.createElement("div");
+              el.className = "simmerToast simmerToast--success milestoneToast";
+              el.innerHTML = `<div class="milestoneToastTitle">${title}</div><div class="milestoneToastSub">${sub}</div>`;
+              document.body.appendChild(el);
+              requestAnimationFrame(() => { requestAnimationFrame(() => el.classList.add("visible")); });
+              setTimeout(() => {
+                el.classList.remove("visible");
+                setTimeout(() => el.remove(), 380);
+              }, 4500);
+            }, 700);
+            break;
+          }
+        }
+      } catch {}
+    }
+
+    // Patch logCookEntry to fire milestone check after each cook
+    (function() {
+      const _orig = logCookEntry;
+      logCookEntry = function(...args) {
+        _orig(...args);
+        try { checkMilestone(getCookLog().length); } catch {}
+      };
+    })();
+
+    function initPhase4() {
+      // Wire Taste DNA button in More sheet
+      document.getElementById("moreTasteBtn")?.addEventListener("click", () => {
+        closeMoreSheet();
+        openTasteDNA();
+      });
+
+      // Also expose via a direct click on sidebar if ever added
+      document.getElementById("tasteDNABtn")?.addEventListener("click", openTasteDNA);
+    }
+    // ── end phase 4 ───────────────────────────────
+
     initTheme();
     initCookMode();
     initNotifications();
@@ -10226,6 +10485,7 @@
     applyTimeContext();
     initPhase2();
     initPhase3();
+    initPhase4();
     updateExploreBadge();
 
     // "My week" button — always opens report regardless of 7-day gate
