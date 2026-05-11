@@ -625,6 +625,132 @@
     }
     .forYouBanner strong { color: var(--accent); font-weight: 700; }
 
+    /* ── Phase 8: NLP smart search hint ────────────────────── */
+    .nlpHintRow {
+      padding: 8px 14px 4px;
+    }
+    .nlpHintChip {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--accentGlow); border: 1px solid var(--goldBorder);
+      border-radius: 20px; padding: 5px 12px; cursor: pointer;
+      font-size: 0.78rem; font-weight: 700; color: var(--accent);
+      font-family: inherit; transition: background 0.15s;
+    }
+    .nlpHintChip:hover { background: rgba(200,105,14,0.22); }
+
+    /* ── Phase 9: Accent theme picker ───────────────────────── */
+    .themePickerRow {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 16px 10px; border-top: 1px solid var(--border);
+    }
+    .themePickerLabel {
+      font-size: 0.72rem; font-weight: 700; color: var(--muted2);
+      text-transform: uppercase; letter-spacing: 0.05em; flex-shrink: 0;
+    }
+    .themeSwatches { display: flex; gap: 7px; }
+    .themeSwatch {
+      width: 24px; height: 24px; border-radius: 50%; cursor: pointer;
+      border: 2.5px solid transparent; transition: transform 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .themeSwatch:hover { transform: scale(1.18); }
+    .themeSwatch.active { border-color: var(--ink); }
+
+    /* ── Phase 10: Quick-fire overlay ───────────────────────── */
+    .quickfireOverlay {
+      position: fixed; inset: 0; z-index: 330;
+      background: rgba(10,5,0,0.88); backdrop-filter: blur(8px);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 20px; gap: 16px;
+      animation: obFadeIn 0.28s ease both;
+    }
+    .quickfireOverlay.hidden { display: none; }
+    .quickfireCard {
+      width: min(380px, 100%); border-radius: 28px; overflow: hidden;
+      background: var(--bg1); border: 1px solid var(--border);
+      box-shadow: 0 32px 64px rgba(0,0,0,0.5);
+      animation: cardEnter 0.4s cubic-bezier(0.2,0.9,0.2,1) both;
+    }
+    .quickfireImg {
+      width: 100%; height: 200px; object-fit: cover; display: block;
+    }
+    .quickfireInfo { padding: 16px 18px 12px; }
+    .quickfireName {
+      font-family: 'Fraunces', serif; font-size: 1.35rem; font-weight: 900;
+      color: var(--ink); margin: 0 0 6px;
+    }
+    .quickfireMeta { font-size: 0.8rem; font-weight: 600; color: var(--muted2); }
+    .quickfireActions {
+      display: flex; gap: 10px; padding: 0 18px 18px;
+    }
+    .quickfireBtn {
+      flex: 1; padding: 13px; border-radius: 16px; border: none;
+      font-family: inherit; font-size: 0.92rem; font-weight: 800;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .quickfireBtn.save {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+    }
+    .quickfireBtn.save:hover { opacity: 0.88; }
+    .quickfireBtn.next {
+      background: rgba(200,105,14,0.10); color: var(--ink);
+      border: 1.5px solid var(--border);
+    }
+    .quickfireBtn.next:hover { border-color: var(--accent); color: var(--accent); }
+    .quickfireCounter {
+      font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.65);
+      text-align: center;
+    }
+    .quickfireShortlistBtn {
+      font-size: 0.82rem; font-weight: 800; color: var(--accent);
+      background: var(--accentGlow); border: 1px solid var(--goldBorder);
+      border-radius: 20px; padding: 8px 18px; cursor: pointer;
+      font-family: inherit; transition: opacity 0.15s;
+    }
+    .quickfireShortlistBtn:hover { opacity: 0.82; }
+    .quickfireClose {
+      position: absolute; top: 16px; right: 16px;
+      background: rgba(255,255,255,0.12); border: none; border-radius: 50%;
+      width: 32px; height: 32px; color: #fff; font-size: 0.9rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Quick Pick button in results header */
+    .quickPickLaunchBtn {
+      font-size: 0.76rem; font-weight: 800; color: var(--accent);
+      background: var(--accentGlow); border: 1px solid var(--goldBorder);
+      border-radius: 20px; padding: 5px 12px; cursor: pointer;
+      font-family: inherit; transition: all 0.15s; white-space: nowrap;
+    }
+    .quickPickLaunchBtn:hover { background: rgba(200,105,14,0.22); }
+
+    /* ── Phase 12: PWA install banner ───────────────────────── */
+    .pwaBanner {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 14px; margin-bottom: 14px;
+      background: linear-gradient(135deg, rgba(79,70,229,0.10), rgba(79,70,229,0.04));
+      border: 1px solid rgba(79,70,229,0.22);
+      animation: obFadeIn 0.4s ease both;
+    }
+    .pwaBannerIcon { font-size: 1.4rem; flex-shrink: 0; }
+    .pwaBannerText { flex: 1; min-width: 0; }
+    .pwaBannerTitle { font-size: 0.85rem; font-weight: 800; color: var(--ink); }
+    .pwaBannerSub   { font-size: 0.72rem; font-weight: 600; color: var(--muted2); }
+    .pwaBannerActions { display: flex; gap: 6px; flex-shrink: 0; }
+    .pwaBannerInstall {
+      font-size: 0.74rem; font-weight: 800; color: #fff;
+      background: #4f46e5; border: none; border-radius: 10px;
+      padding: 5px 11px; cursor: pointer; font-family: inherit;
+      transition: opacity 0.15s; white-space: nowrap;
+    }
+    .pwaBannerInstall:hover { opacity: 0.86; }
+    .pwaBannerDismiss {
+      font-size: 0.74rem; font-weight: 700; color: var(--muted2);
+      background: none; border: none; cursor: pointer; padding: 5px;
+    }
+
     /* ── Phase 7: Streak Calendar + Habit Loop ─────────────── */
     .streakBanner.calMode {
       flex-direction: column; align-items: flex-start; gap: 6px;
@@ -5274,6 +5400,14 @@
     </button>
   </nav>
 
+  <!-- Phase 10: Quick-fire overlay -->
+  <div class="quickfireOverlay hidden" id="quickfireOverlay">
+    <button class="quickfireClose" id="quickfireClose" type="button" aria-label="Close">✕</button>
+    <div class="quickfireCard" id="quickfireCard"></div>
+    <div class="quickfireCounter" id="quickfireCounter"></div>
+    <button class="quickfireShortlistBtn hidden" id="quickfireShortlistBtn" type="button"></button>
+  </div>
+
   <!-- Phase 6: Saved Recipe Book sheet -->
   <div class="savedSheetOverlay hidden" id="savedSheetOverlay">
     <div class="savedSheet" id="savedSheet">
@@ -5306,6 +5440,10 @@
         <button class="moreBtn" id="moreWeekBtn" type="button"><span class="moreBtnIcon">📊</span>My Week</button>
         <button class="moreBtn" id="moreTasteBtn" type="button"><span class="moreBtnIcon">🧬</span>Taste DNA</button>
         <button class="moreBtn" id="moreSavedBtn" type="button"><span class="moreBtnIcon">📌</span>Saved <span id="savedCountBadge" style="font-size:0.7rem;opacity:0.7"></span></button>
+      </div>
+      <div class="themePickerRow">
+        <span class="themePickerLabel">Accent</span>
+        <div class="themeSwatches" id="themeSwatches"></div>
       </div>
     </div>
   </div>
@@ -11127,6 +11265,321 @@
     }
     // ── end phase 7 ───────────────────────────────
 
+    // ══════════════════════════════════════════════
+    // PHASE 8 — SMART SEARCH NLP
+    // ══════════════════════════════════════════════
+    const NLP_RULES = [
+      // time
+      { re: /\bunder\s*(\d+)\s*min/i,   fn: m => ({ time_available: Math.min(parseInt(m[1]), 60) }) },
+      { re: /\bin\s*(\d+)\s*min/i,      fn: m => ({ time_available: Math.min(parseInt(m[1]), 60) }) },
+      { re: /\b(\d+)\s*min(ute)?s?\b/i, fn: m => ({ time_available: Math.min(parseInt(m[1]), 60) }) },
+      { re: /\bquick\b|\bfast\b|\brapid\b/i, fn: () => ({ time_available: 15, mood: "quick" }) },
+      // mood
+      { re: /\bhealthy\b|\blight\b|\blow.?cal\b|\bnutritious\b/i, fn: () => ({ mood: "healthy" }) },
+      { re: /\bcomfort\b|\bindulgent\b|\bheavy\b/i,               fn: () => ({ mood: "comfort" }) },
+      { re: /\bspicy\b/i,                                          fn: () => ({ mood: "comfort" }) },
+      // diet
+      { re: /\bvegan\b|\bplant.?based\b/i, fn: () => ({ diet: "veg" }) },
+      { re: /\bvegetarian\b|\bveg\b/i,     fn: () => ({ diet: "veg" }) },
+      { re: /\bchicken\b|\bmutton\b|\bfish\b|\bmeat\b|\bnon.?veg\b/i, fn: () => ({ diet: "non-veg" }) },
+      // category
+      { re: /\bnorth.?indian\b/i,    fn: () => ({ category: "north-indian" }) },
+      { re: /\bsouth.?indian\b/i,    fn: () => ({ category: "south-indian" }) },
+      { re: /\bchinese\b/i,          fn: () => ({ category: "chinese" }) },
+      { re: /\bcontinental\b/i,      fn: () => ({ category: "continental" }) },
+      { re: /\bsnack\b/i,            fn: () => ({ category: "snacks" }) },
+      { re: /\bsweet\b|\bdessert\b/i,fn: () => ({ category: "sweets" }) },
+      { re: /\bsalad\b/i,            fn: () => ({ category: "salad" }) },
+      { re: /\bdrink\b|\bjuice\b|\bsmoothie\b/i, fn: () => ({ category: "drinks" }) },
+    ];
+
+    function parseSearchNLP(q) {
+      if (!q || q.length < 4) return null;
+      const intent = {};
+      NLP_RULES.forEach(rule => {
+        const m = q.match(rule.re);
+        if (m) Object.assign(intent, rule.fn(m));
+      });
+      return Object.keys(intent).length ? intent : null;
+    }
+
+    function nlpIntentLabel(intent) {
+      const parts = [];
+      if (intent.mood)           parts.push(intent.mood);
+      if (intent.time_available) parts.push(`≤${intent.time_available} min`);
+      if (intent.diet)           parts.push(intent.diet);
+      if (intent.category)       parts.push(intent.category.replace("-", " "));
+      return parts.join(" · ");
+    }
+
+    function initPhase8() {
+      // Patch buildSearchDropdown to inject NLP hint row
+      const _origBSD = buildSearchDropdown;
+      buildSearchDropdown = function(q) {
+        _origBSD(q);
+        const dropdown = document.getElementById("searchDropdown");
+        if (!dropdown || !dropdown.classList.contains("visible")) return;
+        const intent = q ? parseSearchNLP(q) : null;
+        if (!intent) return;
+        // Remove old hint row if present
+        dropdown.querySelector(".nlpHintRow")?.remove();
+        const label = nlpIntentLabel(intent);
+        const hint = document.createElement("div");
+        hint.className = "nlpHintRow";
+        hint.innerHTML = `<button class="nlpHintChip" type="button">🎯 Apply: ${escapeHtml(label)}</button>`;
+        hint.querySelector(".nlpHintChip").addEventListener("mousedown", e => {
+          e.preventDefault();
+          Object.assign(state, intent);
+          if (intent.time_available) setSelected("time", String(intent.time_available));
+          if (intent.mood)           setSelected("mood", intent.mood);
+          if (intent.diet)           setSelected("diet", intent.diet);
+          if (intent.category)       setSelected("category", intent.category);
+          savePreferences();
+          el.searchInput.value = "";
+          el.searchInput?.classList.remove("hasValue");
+          document.getElementById("searchClearBtn")?.classList.remove("visible");
+          const dd = document.getElementById("searchDropdown");
+          dd?.classList.remove("visible");
+          getSuggestions("normal");
+          showToast(`🎯 Filters applied: ${label}`, "success", 2200);
+        });
+        dropdown.prepend(hint);
+      };
+    }
+    // ── end phase 8 ───────────────────────────────
+
+    // ══════════════════════════════════════════════
+    // PHASE 9 — ACCENT THEME PICKER
+    // ══════════════════════════════════════════════
+    const ACCENT_KEY = "simmer_accent_v1";
+    const ACCENT_THEMES = [
+      { id: "saffron", label: "Saffron", color: "#C8690E", color2: "#9E4E08", glow: "rgba(200,105,14,0.22)", goldInk: "#7C2D12" },
+      { id: "emerald", label: "Emerald", color: "#16a34a", color2: "#15803d", glow: "rgba(22,163,74,0.20)",  goldInk: "#14532d" },
+      { id: "crimson", label: "Crimson", color: "#dc2626", color2: "#b91c1c", glow: "rgba(220,38,38,0.20)",  goldInk: "#7f1d1d" },
+      { id: "indigo",  label: "Indigo",  color: "#4f46e5", color2: "#4338ca", glow: "rgba(79,70,229,0.20)",  goldInk: "#312e81" },
+    ];
+
+    function applyAccent(themeId) {
+      const t = ACCENT_THEMES.find(t => t.id === themeId) || ACCENT_THEMES[0];
+      const root = document.documentElement;
+      root.style.setProperty("--accent",     t.color);
+      root.style.setProperty("--accent2",    t.color2);
+      root.style.setProperty("--accentGlow", t.glow);
+      root.style.setProperty("--goldInk",    t.goldInk);
+      try { localStorage.setItem(ACCENT_KEY, themeId); } catch {}
+      // Update swatch active state
+      document.querySelectorAll(".themeSwatch").forEach(s =>
+        s.classList.toggle("active", s.dataset.accent === themeId));
+    }
+
+    function initPhase9() {
+      const swatchWrap = document.getElementById("themeSwatches");
+      if (!swatchWrap) return;
+      const saved = localStorage.getItem(ACCENT_KEY) || "saffron";
+      swatchWrap.innerHTML = ACCENT_THEMES.map(t => `
+        <div class="themeSwatch${t.id === saved ? " active" : ""}"
+             data-accent="${t.id}" title="${t.label}"
+             style="background:${t.color}"></div>
+      `).join("");
+      swatchWrap.querySelectorAll(".themeSwatch").forEach(s => {
+        s.addEventListener("click", () => {
+          applyAccent(s.dataset.accent);
+          const t = ACCENT_THEMES.find(x => x.id === s.dataset.accent);
+          showToast(`🎨 ${t?.label} theme applied`, "success", 1800);
+        });
+      });
+      // Apply saved accent on load
+      if (saved !== "saffron") applyAccent(saved);
+    }
+    // ── end phase 9 ───────────────────────────────
+
+    // ══════════════════════════════════════════════
+    // PHASE 10 — QUICK-FIRE DISCOVERY
+    // ══════════════════════════════════════════════
+    let qfDeck   = [];
+    let qfIndex  = 0;
+    let qfSaved  = [];
+
+    function openQuickfire() {
+      // Build deck from currently visible cards
+      const cards = [...document.querySelectorAll(".foodCard")].filter(c => c.style.display !== "none");
+      if (cards.length < 2) {
+        showToast("Get some suggestions first, then Quick Pick!", "info", 2200);
+        return;
+      }
+      qfDeck  = cards.map(c => c._item).filter(Boolean);
+      qfIndex = 0;
+      qfSaved = [];
+      document.getElementById("quickfireOverlay")?.classList.remove("hidden");
+      renderQuickfireCard();
+    }
+
+    function closeQuickfire() {
+      document.getElementById("quickfireOverlay")?.classList.add("hidden");
+      qfDeck = []; qfIndex = 0;
+    }
+
+    function renderQuickfireCard() {
+      const card    = document.getElementById("quickfireCard");
+      const counter = document.getElementById("quickfireCounter");
+      const slBtn   = document.getElementById("quickfireShortlistBtn");
+      if (!card) return;
+
+      if (qfIndex >= qfDeck.length) {
+        card.innerHTML = `
+          <div style="padding:40px 24px;text-align:center">
+            <div style="font-size:2.5rem;margin-bottom:12px">🎉</div>
+            <div style="font-family:'Fraunces',serif;font-size:1.2rem;font-weight:900;color:var(--ink);margin-bottom:6px">That's the whole deck!</div>
+            <div style="font-size:0.84rem;color:var(--muted2);font-weight:600">
+              ${qfSaved.length ? `You saved ${qfSaved.length} recipe${qfSaved.length > 1 ? "s" : ""}.` : "No saves this round."}
+            </div>
+          </div>`;
+        counter.textContent = "";
+        return;
+      }
+
+      const item = qfDeck[qfIndex];
+      const time = clampInt(item.time_minutes, 0);
+      const cals = clampInt(item.calories, 0);
+      card.innerHTML = `
+        <img class="quickfireImg" src="${escapeHtml(dishImageUrl(item.name))}" alt="${escapeHtml(item.name)}" loading="lazy" />
+        <div class="quickfireInfo">
+          <div class="quickfireName">${escapeHtml(item.name)}</div>
+          <div class="quickfireMeta">${[time ? `⏱ ${time} min` : null, cals ? `🔥 ${cals} cal` : null].filter(Boolean).join("  ·  ")}</div>
+        </div>
+        <div class="quickfireActions">
+          <button class="quickfireBtn save" id="qfSaveBtn" type="button">❤️ Save it</button>
+          <button class="quickfireBtn next" id="qfNextBtn" type="button">⏭️ Next</button>
+        </div>
+      `;
+      counter.textContent = `${qfIndex + 1} of ${qfDeck.length}`;
+
+      if (qfSaved.length >= 1) {
+        slBtn.textContent  = `📋 View shortlist (${qfSaved.length})`;
+        slBtn.classList.remove("hidden");
+      } else {
+        slBtn.classList.add("hidden");
+      }
+
+      document.getElementById("qfSaveBtn")?.addEventListener("click", () => {
+        saveRecipeFull(item);
+        qfSaved.push(item);
+        showToast(`📌 ${item.name} saved!`, "success", 1600);
+        qfIndex++;
+        renderQuickfireCard();
+      });
+      document.getElementById("qfNextBtn")?.addEventListener("click", () => {
+        qfIndex++;
+        renderQuickfireCard();
+      });
+    }
+
+    function initPhase10() {
+      document.getElementById("quickfireClose")?.addEventListener("click", closeQuickfire);
+      document.getElementById("quickfireOverlay")?.addEventListener("click", e => {
+        if (e.target === document.getElementById("quickfireOverlay")) closeQuickfire();
+      });
+      document.getElementById("quickfireShortlistBtn")?.addEventListener("click", () => {
+        closeQuickfire();
+        openSavedSheet();
+      });
+
+      // Inject "🃏 Quick Pick" button into results status row via MutationObserver
+      const resultsEl = document.getElementById("results");
+      if (resultsEl) {
+        new MutationObserver(() => {
+          if (!document.getElementById("quickPickLaunchBtn") && qfDeck.length === 0) {
+            const cards = resultsEl.querySelectorAll(".foodCard");
+            if (cards.length >= 2) {
+              const statusRow = document.getElementById("statusText")?.parentElement;
+              if (statusRow && !statusRow.querySelector(".quickPickLaunchBtn")) {
+                const btn = document.createElement("button");
+                btn.id = "quickPickLaunchBtn";
+                btn.className = "quickPickLaunchBtn";
+                btn.type = "button";
+                btn.textContent = "🃏 Quick Pick";
+                btn.addEventListener("click", openQuickfire);
+                statusRow.appendChild(btn);
+              }
+            }
+          }
+        }).observe(resultsEl, { childList: true });
+      }
+    }
+    // ── end phase 10 ───────────────────────────────
+
+    // ══════════════════════════════════════════════
+    // PHASE 12 — PWA INSTALL PROMPT
+    // ══════════════════════════════════════════════
+    const PWA_SESSION_KEY = "simmer_pwa_sessions_v1";
+    const PWA_DISMISS_KEY = "simmer_pwa_dismissed_v1";
+    let deferredInstallPrompt = null;
+
+    window.addEventListener("beforeinstallprompt", e => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      maybeShowPWABanner();
+    });
+
+    function getPWASessions() {
+      try { return parseInt(localStorage.getItem(PWA_SESSION_KEY) || "0", 10); }
+      catch { return 0; }
+    }
+
+    function maybeShowPWABanner() {
+      // Don't show if dismissed within 7 days
+      try {
+        const dismissed = parseInt(localStorage.getItem(PWA_DISMISS_KEY) || "0", 10);
+        if (Date.now() - dismissed < 7 * 86400000) return;
+      } catch {}
+
+      const sessions = getPWASessions();
+      if (sessions < 3) return; // show after 3rd session
+      if (!deferredInstallPrompt) return;
+
+      // Don't override For You or cook nudge banners if already showing something important
+      const wrap = document.getElementById("contextBannerWrap");
+      if (!wrap || wrap.innerHTML.trim()) return;
+
+      wrap.innerHTML = `
+        <div class="pwaBanner" id="pwaBanner">
+          <span class="pwaBannerIcon">📲</span>
+          <div class="pwaBannerText">
+            <div class="pwaBannerTitle">Add Simmer to your home screen</div>
+            <div class="pwaBannerSub">Cook faster — no browser, no hassle</div>
+          </div>
+          <div class="pwaBannerActions">
+            <button class="pwaBannerInstall" id="pwaInstallBtn" type="button">Install</button>
+            <button class="pwaBannerDismiss" id="pwaDismissBtn" type="button" aria-label="Dismiss">✕</button>
+          </div>
+        </div>`;
+
+      document.getElementById("pwaInstallBtn")?.addEventListener("click", async () => {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        wrap.innerHTML = "";
+        if (outcome === "accepted") showToast("🎉 Simmer installed!", "success", 3000);
+      });
+
+      document.getElementById("pwaDismissBtn")?.addEventListener("click", () => {
+        try { localStorage.setItem(PWA_DISMISS_KEY, String(Date.now())); } catch {}
+        wrap.innerHTML = "";
+      });
+    }
+
+    function initPhase12() {
+      // Bump session counter
+      try {
+        const s = getPWASessions() + 1;
+        localStorage.setItem(PWA_SESSION_KEY, String(s));
+      } catch {}
+      // Try showing banner if prompt is already cached from a previous event
+      setTimeout(maybeShowPWABanner, 1500);
+    }
+    // ── end phase 12 ───────────────────────────────
+
     initTheme();
     initCookMode();
     initNotifications();
@@ -11162,6 +11615,10 @@
     initPhase5();
     initPhase6();
     initPhase7();
+    initPhase8();
+    initPhase9();
+    initPhase10();
+    initPhase12();
     updateExploreBadge();
 
     // "My week" button — always opens report regardless of 7-day gate
