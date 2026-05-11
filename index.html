@@ -7186,7 +7186,10 @@
 
       try {
         const searchQ    = queryOverride || (el.searchInput?.value?.trim() || "");
-        const ingredients = searchQ ? [searchQ, ...getIngredients()] : getIngredients();
+        // Pantry ingredients stay separate from the text search query so that
+        // "pork" in the search box doesn't get treated as a pantry item and fail
+        // the strict ingredient % match.  name_query uses substring matching.
+        const ingredients = getIngredients();
         const cacheKey = JSON.stringify({ ...state, mode, ingredients, searchQ });
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
@@ -7212,7 +7215,9 @@
             ...state,
             mode,
             ingredients,
-            ...(searchQ ? { query: searchQ } : {})
+            // name_query: substring-matches recipe name + ingredients on the backend
+            // so "pork" finds "Pork Belly", "Barbecue Pork Buns", etc.
+            ...(searchQ ? { name_query: searchQ } : {})
           })
         });
 
