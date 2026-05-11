@@ -625,6 +625,77 @@
     }
     .forYouBanner strong { color: var(--accent); font-weight: 700; }
 
+    /* ── Phase 6: Saved Recipe Book ────────────────────────── */
+    .saveRecipeBtn {
+      background: none; border: 1.5px solid var(--border);
+      border-radius: 20px; padding: 6px 13px;
+      font-family: inherit; font-size: 0.78rem; font-weight: 700;
+      color: var(--muted); cursor: pointer; transition: all 0.18s;
+      white-space: nowrap;
+    }
+    .saveRecipeBtn:hover { border-color: var(--accent); color: var(--accent); }
+    .saveRecipeBtn.saved {
+      background: var(--accentGlow); border-color: var(--accent);
+      color: var(--accent);
+    }
+    .savedSheetOverlay {
+      position: fixed; inset: 0; z-index: 295;
+      background: rgba(20,10,0,0.55); backdrop-filter: blur(4px);
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .savedSheetOverlay.hidden { display: none; }
+    .savedSheet {
+      background: var(--bg0); border-radius: 24px 24px 0 0;
+      width: 100%; max-height: 82vh; overflow-y: auto;
+      padding: 20px 18px 32px;
+      animation: reportSlideUp 0.32s cubic-bezier(0.34,1.08,0.64,1) both;
+    }
+    [data-theme="dark"] .savedSheet { background: var(--bg1); }
+    .savedSheetHead {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .savedSheetHead h3 {
+      font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 900;
+      color: var(--ink); margin: 0;
+    }
+    .savedSheetEmpty {
+      text-align: center; padding: 40px 20px; color: var(--muted2);
+    }
+    .savedSheetEmpty div { font-size: 2.4rem; margin-bottom: 10px; }
+    .savedSheetEmpty p  { font-size: 0.88rem; font-weight: 600; margin: 0; }
+    .savedRecipeGrid {
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .savedRecipeCard {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: 18px; padding: 10px; cursor: pointer;
+      transition: box-shadow 0.18s, border-color 0.18s;
+    }
+    .savedRecipeCard:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+    [data-theme="dark"] .savedRecipeCard { background: rgba(255,255,255,0.04); }
+    .savedRecipeThumb {
+      width: 64px; height: 64px; border-radius: 12px;
+      object-fit: cover; flex-shrink: 0; background: var(--border);
+    }
+    .savedRecipeInfo { flex: 1; min-width: 0; }
+    .savedRecipeName {
+      font-size: 0.9rem; font-weight: 800; color: var(--ink);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    .savedRecipeMeta {
+      font-size: 0.74rem; font-weight: 600; color: var(--muted2);
+    }
+    .savedRecipeRemove {
+      background: none; border: none; color: var(--muted2);
+      cursor: pointer; font-size: 1rem; padding: 6px;
+      border-radius: 8px; transition: color 0.15s, background 0.15s;
+      flex-shrink: 0;
+    }
+    .savedRecipeRemove:hover { color: #b91c1c; background: rgba(185,28,28,0.08); }
+
     /* ── Phase 5: Pantry & smart ingredient input ──────────── */
     .pantryRow {
       display: flex; align-items: center; gap: 8px;
@@ -4959,6 +5030,7 @@
         <button class="actionChip" id="exportGroceryBtn" type="button">&#128722; Grocery list</button>
         <button class="addToListBtn" id="addToListBtn" type="button">🛒 Add to List</button>
       </div>
+      <button class="saveRecipeBtn" id="saveRecipeBtn" type="button">📌 Save recipe</button>
       <div class="modalRemixRow" id="modalRemixRow">
         <button class="modalRemixBtn" id="modalRemixHealthier" data-remix="healthier" type="button">🥗 Healthier</button>
         <button class="modalRemixBtn" id="modalRemixSpicier"   data-remix="spicier"   type="button">🌶 Spicier</button>
@@ -5150,6 +5222,17 @@
     </button>
   </nav>
 
+  <!-- Phase 6: Saved Recipe Book sheet -->
+  <div class="savedSheetOverlay hidden" id="savedSheetOverlay">
+    <div class="savedSheet" id="savedSheet">
+      <div class="savedSheetHead">
+        <h3>📌 Saved Recipes</h3>
+        <button class="closeBtn" id="closeSavedSheet" type="button">Close</button>
+      </div>
+      <div id="savedRecipeList"></div>
+    </div>
+  </div>
+
   <!-- Phase 4: Taste DNA overlay -->
   <div class="tasteDNAOverlay hidden" id="tasteDNAOverlay">
     <div class="tasteDNACard" id="tasteDNACard"></div>
@@ -5170,6 +5253,7 @@
         <button class="moreBtn" id="morePlanBtn" type="button"><span class="moreBtnIcon">🗓</span>Meal Plan</button>
         <button class="moreBtn" id="moreWeekBtn" type="button"><span class="moreBtnIcon">📊</span>My Week</button>
         <button class="moreBtn" id="moreTasteBtn" type="button"><span class="moreBtnIcon">🧬</span>Taste DNA</button>
+        <button class="moreBtn" id="moreSavedBtn" type="button"><span class="moreBtnIcon">📌</span>Saved <span id="savedCountBadge" style="font-size:0.7rem;opacity:0.7"></span></button>
       </div>
     </div>
   </div>
@@ -10674,6 +10758,179 @@
     }
     // ── end phase 5 ───────────────────────────────
 
+    // ══════════════════════════════════════════════
+    // PHASE 6 — OFFLINE SAVED RECIPE BOOK
+    // ══════════════════════════════════════════════
+    const SAVED_RECIPES_KEY = "simmer_saved_recipes_v1";
+
+    function getSavedRecipes() {
+      try { return JSON.parse(localStorage.getItem(SAVED_RECIPES_KEY) || "[]"); }
+      catch { return []; }
+    }
+
+    function isSavedRecipe(id) {
+      return getSavedRecipes().some(r => String(r.id) === String(id));
+    }
+
+    function saveRecipeFull(recipe) {
+      if (!recipe?.id) return;
+      try {
+        const list = getSavedRecipes().filter(r => String(r.id) !== String(recipe.id));
+        const slim = {
+          id: recipe.id, name: recipe.name, time_minutes: recipe.time_minutes,
+          calories: recipe.calories, difficulty: recipe.difficulty,
+          category: recipe.category, diet: recipe.diet,
+          ingredients: recipe.ingredients,
+          ingredients_with_quantities: recipe.ingredients_with_quantities,
+          steps: recipe.steps, nutrition: recipe.nutrition,
+          substitutions: recipe.substitutions,
+          savedAt: Date.now()
+        };
+        list.unshift(slim); // newest first
+        if (list.length > 50) list.length = 50; // cap at 50
+        localStorage.setItem(SAVED_RECIPES_KEY, JSON.stringify(list));
+        updateSavedCount();
+      } catch {}
+    }
+
+    function unsaveRecipe(id) {
+      try {
+        const list = getSavedRecipes().filter(r => String(r.id) !== String(id));
+        localStorage.setItem(SAVED_RECIPES_KEY, JSON.stringify(list));
+        updateSavedCount();
+      } catch {}
+    }
+
+    function updateSavedCount() {
+      const n = getSavedRecipes().length;
+      const badge = document.getElementById("savedCountBadge");
+      if (badge) badge.textContent = n > 0 ? `(${n})` : "";
+    }
+
+    function updateSaveRecipeBtn() {
+      const btn = document.getElementById("saveRecipeBtn");
+      if (!btn || !activeRecipe) return;
+      const saved = isSavedRecipe(activeRecipe.id);
+      btn.textContent = saved ? "✅ Saved" : "📌 Save recipe";
+      btn.classList.toggle("saved", saved);
+    }
+
+    function openSavedRecipeFromBook(recipe) {
+      // Load full saved recipe into modal without an API call
+      activeRecipe   = recipe;
+      servingMultiplier = 1;
+      el.servingCount.textContent = "1x";
+      el.modalDishName.textContent = recipe.name || "Recipe";
+      renderRecipeModalDetails();
+      if (Array.isArray(recipe.steps) && recipe.steps.length) {
+        modalSteps        = recipe.steps;
+        currentStepIndex  = 0;
+        updateModalStep();
+      }
+      el.recipeModal.classList.add("open");
+      history.pushState(null, "", `#recipe/${recipe.id}`);
+      closeSavedSheet();
+    }
+
+    function renderSavedSheet() {
+      const list = getSavedRecipes();
+      const container = document.getElementById("savedRecipeList");
+      if (!container) return;
+
+      if (!list.length) {
+        container.innerHTML = `
+          <div class="savedSheetEmpty">
+            <div>📌</div>
+            <p>No saved recipes yet.<br>Open any recipe and tap <strong>Save recipe</strong>.</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = `<div class="savedRecipeGrid">${list.map(r => {
+        const time  = clampInt(r.time_minutes, 0);
+        const cals  = clampInt(r.calories, 0);
+        const meta  = [time ? `⏱ ${time} min` : null, cals ? `🔥 ${cals} cal` : null]
+                        .filter(Boolean).join("  ·  ");
+        const img   = dishImageUrl(r.name);
+        return `
+          <div class="savedRecipeCard" data-saved-id="${escapeHtml(String(r.id))}">
+            <img class="savedRecipeThumb" src="${escapeHtml(img)}" alt="${escapeHtml(r.name)}" loading="lazy" />
+            <div class="savedRecipeInfo">
+              <div class="savedRecipeName">${escapeHtml(r.name)}</div>
+              ${meta ? `<div class="savedRecipeMeta">${meta}</div>` : ""}
+            </div>
+            <button class="savedRecipeRemove" data-remove-id="${escapeHtml(String(r.id))}" type="button" title="Remove" aria-label="Remove ${escapeHtml(r.name)}">✕</button>
+          </div>`;
+      }).join("")}</div>`;
+
+      // Wire open clicks
+      container.querySelectorAll(".savedRecipeCard").forEach(card => {
+        card.addEventListener("click", e => {
+          if (e.target.closest(".savedRecipeRemove")) return;
+          const id = card.dataset.savedId;
+          const recipe = getSavedRecipes().find(r => String(r.id) === String(id));
+          if (recipe) openSavedRecipeFromBook(recipe);
+        });
+      });
+
+      // Wire remove buttons
+      container.querySelectorAll(".savedRecipeRemove").forEach(btn => {
+        btn.addEventListener("click", e => {
+          e.stopPropagation();
+          unsaveRecipe(btn.dataset.removeId);
+          renderSavedSheet();
+          showToast("Recipe removed from saved", "info", 1800);
+        });
+      });
+    }
+
+    function openSavedSheet() {
+      renderSavedSheet();
+      document.getElementById("savedSheetOverlay")?.classList.remove("hidden");
+    }
+
+    function closeSavedSheet() {
+      document.getElementById("savedSheetOverlay")?.classList.add("hidden");
+    }
+
+    function initPhase6() {
+      // Save button in recipe modal
+      document.getElementById("saveRecipeBtn")?.addEventListener("click", () => {
+        if (!activeRecipe) return;
+        if (isSavedRecipe(activeRecipe.id)) {
+          unsaveRecipe(activeRecipe.id);
+          showToast("Removed from saved recipes", "info", 1800);
+        } else {
+          saveRecipeFull(activeRecipe);
+          showToast("📌 Recipe saved for offline!", "success", 2200);
+        }
+        updateSaveRecipeBtn();
+      });
+
+      // Patch renderRecipeModalDetails to update save button state
+      const _origRender = renderRecipeModalDetails;
+      renderRecipeModalDetails = function() {
+        _origRender();
+        updateSaveRecipeBtn();
+      };
+
+      // More sheet → Saved button
+      document.getElementById("moreSavedBtn")?.addEventListener("click", () => {
+        closeMoreSheet();
+        openSavedSheet();
+      });
+
+      // Close saved sheet
+      document.getElementById("closeSavedSheet")?.addEventListener("click", closeSavedSheet);
+      document.getElementById("savedSheetOverlay")?.addEventListener("click", e => {
+        if (e.target === document.getElementById("savedSheetOverlay")) closeSavedSheet();
+      });
+
+      // Initialise badge count
+      updateSavedCount();
+    }
+    // ── end phase 6 ───────────────────────────────
+
     initTheme();
     initCookMode();
     initNotifications();
@@ -10707,6 +10964,7 @@
     initPhase3();
     initPhase4();
     initPhase5();
+    initPhase6();
     updateExploreBadge();
 
     // "My week" button — always opens report regardless of 7-day gate
