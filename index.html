@@ -4378,6 +4378,57 @@
     .simmerToast--error   { background: #b91c1c; color: #fff; }
     .simmerToast--warn    { background: #b45309; color: #fff; }
 
+    /* ── Phase 2 — Discovery & Social ───────────── */
+
+    /* Context banner */
+    .contextBanner {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 14px;
+      background: linear-gradient(135deg, rgba(200,105,14,0.10), rgba(200,105,14,0.04));
+      border: 1px solid rgba(200,105,14,0.18);
+      margin-bottom: 14px; animation: obFadeIn 0.4s ease both;
+    }
+    .contextBannerIcon { font-size: 1.4rem; flex-shrink: 0; }
+    .contextBannerText { flex: 1; min-width: 0; }
+    .contextBannerTitle {
+      font-size: 0.88rem; font-weight: 800; color: var(--ink); margin-bottom: 1px;
+    }
+    .contextBannerSub { font-size: 0.75rem; color: var(--muted2); font-weight: 600; }
+
+    /* Social proof badge on cards */
+    .socialProofBadge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 0.7rem; font-weight: 700; color: var(--muted2);
+      padding: 2px 0; margin-top: 2px;
+    }
+    .socialProofBadge::before { content: "🔥"; font-size: 0.68rem; }
+
+    /* Quick-access dish strip */
+    .quickStrip {
+      display: none;
+      margin-bottom: 14px;
+    }
+    .quickStrip.show { display: block; }
+    .quickStripLabel {
+      font-size: 0.68rem; font-weight: 800; color: var(--muted2);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 8px; display: block;
+    }
+    .quickChips {
+      display: flex; gap: 8px; overflow-x: auto;
+      padding-bottom: 4px; scrollbar-width: none;
+    }
+    .quickChips::-webkit-scrollbar { display: none; }
+    .quickChip {
+      flex-shrink: 0; padding: 7px 14px; border-radius: 999px;
+      border: 1.5px solid var(--border); background: var(--bg1);
+      font-size: 0.8rem; font-weight: 700; color: var(--ink);
+      cursor: pointer; transition: all 0.15s; font-family: inherit;
+      white-space: nowrap;
+    }
+    .quickChip:hover { border-color: var(--accent); color: var(--accent); }
+    .quickChip:active { transform: scale(0.96); }
+
     /* 6 ── Warm image placeholder before load ────── */
     .foodImg { background-color: rgba(200,105,14,0.07); }
 
@@ -4697,6 +4748,8 @@
         <div class="streakBanner" id="streakBanner" aria-live="polite"></div>
         <div class="goalBar" id="goalBar"></div>
         <div class="cookAgainWrap" id="cookAgainWrap"></div>
+        <div id="contextBannerWrap"></div>
+        <div class="quickStrip" id="quickStrip"></div>
         <section class="results" id="results">
           <div class="emptyState" id="emptyState">
             <div class="emptyIllustration">🍳</div>
@@ -9860,6 +9913,163 @@
     }
     // ── end phase 1 ───────────────────────────────
 
+    // ══════════════════════════════════════════════
+    // PHASE 2 — DISCOVERY & SOCIAL
+    // ══════════════════════════════════════════════
+
+    const QUICK_DISHES = [
+      { emoji: "🍛", name: "Butter Chicken" },
+      { emoji: "🫘", name: "Dal Tadka" },
+      { emoji: "🧆", name: "Paneer Tikka" },
+      { emoji: "🍚", name: "Veg Biryani" },
+      { emoji: "🍳", name: "Masala Omelette" },
+      { emoji: "🥘", name: "Palak Paneer" },
+      { emoji: "🍜", name: "Maggi Masala" },
+      { emoji: "🫓", name: "Aloo Paratha" },
+    ];
+
+    // ── 1. Context-aware banner + state ───────────
+    function getTimeContext() {
+      const h = new Date().getHours();
+      if (h >= 5  && h < 11) return { icon: "☀️", title: "Good morning!", sub: "Something light & energising to start your day", mood: "healthy", time: 20 };
+      if (h >= 11 && h < 15) return { icon: "🌿", title: "Lunch time",    sub: "Quick and satisfying — back to work in no time",  mood: "quick",   time: 30 };
+      if (h >= 15 && h < 18) return { icon: "☕", title: "Snack time",    sub: "A little something between meals",                 mood: "comfort", time: 15 };
+      if (h >= 18 && h < 22) return { icon: "🌙", title: "Dinner time",   sub: "Let's make tonight's meal something special",     mood: "comfort", time: 45 };
+      return                         { icon: "🌙", title: "Late night",    sub: "Quick, easy — nothing heavy",                     mood: "quick",   time: 15 };
+    }
+
+    function renderContextBanner() {
+      const wrap = document.getElementById("contextBannerWrap");
+      if (!wrap) return;
+      const ctx = getTimeContext();
+      wrap.innerHTML = `
+        <div class="contextBanner">
+          <span class="contextBannerIcon">${ctx.icon}</span>
+          <div class="contextBannerText">
+            <div class="contextBannerTitle">${ctx.title}</div>
+            <div class="contextBannerSub">${ctx.sub}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function applyTimeContext() {
+      const ctx = getTimeContext();
+      // Only override if user hasn't manually changed
+      const prefs = (() => { try { return JSON.parse(localStorage.getItem(PREFERENCES_KEY) || "{}"); } catch { return {}; } })();
+      if (!prefs.mood) state.mood = ctx.mood;
+      if (!prefs.time_available) state.time_available = ctx.time;
+    }
+
+    // ── 2. Social proof on cards ──────────────────
+    function getSocialProof(recipeId) {
+      const seed = String(recipeId).split("").reduce((a, c) => a + c.charCodeAt(0), 17);
+      const n = 8 + (seed * 13 + 7) % 91;
+      return `${n} cooked this week`;
+    }
+
+    function injectSocialProof() {
+      document.querySelectorAll(".foodCard").forEach(card => {
+        if (card.querySelector(".socialProofBadge")) return;
+        const id = card.dataset.id || card.querySelector("[data-id]")?.dataset.id;
+        if (!id) return;
+        const metaRow = card.querySelector(".metaRow");
+        if (!metaRow) return;
+        const badge = document.createElement("span");
+        badge.className = "socialProofBadge";
+        badge.textContent = getSocialProof(id);
+        metaRow.parentNode.insertBefore(badge, metaRow.nextSibling);
+      });
+    }
+
+    // ── 3. Quick-access dish strip ────────────────
+    function renderQuickStrip() {
+      const strip = document.getElementById("quickStrip");
+      if (!strip) return;
+      strip.innerHTML = `
+        <span class="quickStripLabel">Popular tonight</span>
+        <div class="quickChips">
+          ${QUICK_DISHES.map(d =>
+            `<button class="quickChip" data-dish="${d.name}" type="button">${d.emoji} ${d.name}</button>`
+          ).join("")}
+        </div>
+      `;
+      strip.classList.add("show");
+      strip.querySelectorAll(".quickChip").forEach(chip => {
+        chip.addEventListener("click", () => {
+          const dish = chip.dataset.dish;
+          // Set the search and fire suggestions
+          const input = document.getElementById("searchInput");
+          if (input) { input.value = dish; }
+          getSuggestions("normal", dish);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          // Highlight active chip
+          strip.querySelectorAll(".quickChip").forEach(c => c.style.borderColor = "");
+          chip.style.borderColor = "var(--accent)";
+          chip.style.color = "var(--accent)";
+        });
+      });
+    }
+
+    // ── 4. Recipe deep links (#recipe/ID) ─────────
+    function initDeepLinks() {
+      // On load — check hash
+      const hash = location.hash;
+      if (hash.startsWith("#recipe/")) {
+        const id = hash.split("/")[1];
+        if (id) setTimeout(() => openRecipeModal(id), 600);
+      }
+
+      // On popstate (back button)
+      window.addEventListener("popstate", () => {
+        const h = location.hash;
+        if (h.startsWith("#recipe/")) {
+          openRecipeModal(h.split("/")[1]);
+        } else {
+          // Close modal if open
+          if (el.recipeModal?.classList.contains("open")) {
+            el.recipeModal.classList.remove("open");
+          }
+        }
+      });
+    }
+
+    // Patch openRecipeModal to push hash (non-invasive override)
+    const _origOpenRecipeModal = openRecipeModal;
+    openRecipeModal = async function(recipeId, ...args) {
+      if (recipeId) history.pushState(null, "", `#recipe/${recipeId}`);
+      return _origOpenRecipeModal(recipeId, ...args);
+    };
+
+    // Patch modal close to pop hash
+    (function patchModalClose() {
+      const closeBtn = document.getElementById("closeModalBtn");
+      if (closeBtn) {
+        const orig = closeBtn.onclick;
+        closeBtn.addEventListener("click", () => {
+          if (location.hash.startsWith("#recipe/")) {
+            history.pushState(null, "", location.pathname + location.search);
+          }
+        });
+      }
+    })();
+
+    // ── 5. Wire social proof into result renders ──
+    (function initSocialProof() {
+      const results = document.getElementById("results");
+      if (!results) return;
+      new MutationObserver(() => {
+        setTimeout(injectSocialProof, 120); // slight delay lets cards finish animating in
+      }).observe(results, { childList: true, subtree: false });
+    })();
+
+    function initPhase2() {
+      renderContextBanner();
+      renderQuickStrip();
+      initDeepLinks();
+    }
+    // ── end phase 2 ───────────────────────────────
+
     initTheme();
     initCookMode();
     initNotifications();
@@ -9888,6 +10098,8 @@
     initCookLog();
     initTabBar();
     initModalRemix();
+    applyTimeContext();
+    initPhase2();
     updateExploreBadge();
 
     // "My week" button — always opens report regardless of 7-day gate
