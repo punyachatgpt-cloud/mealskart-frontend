@@ -5748,9 +5748,10 @@
     function initTagInput() {
       if (!el.tagTextInput) return;
       el.tagInputWrap.addEventListener("click", () => el.tagTextInput.focus());
-      el.tagTextInput.addEventListener("keydown", e => {
+      el.tagTextInput.addEventListener("keydown", async e => {
         if ((e.key === "Enter" || e.key === ",") && el.tagTextInput.value.trim()) {
           e.preventDefault();
+          if (!(await checkLimit("pantry_items"))) return;
           addTag(el.tagTextInput.value);
           el.tagTextInput.value = "";
         } else if (e.key === "Backspace" && !el.tagTextInput.value && state.ingredientTags.length) {
@@ -5783,6 +5784,51 @@
         }
       }
     }
+
+    // ── Phase 5: tiered access gate ───────────────────────────────────────────
+    // checkLimit(feature) — calls /api/auth/check-limit before each gated action.
+    // Enforcement is OFF day one (tier_limits.enforcement_enabled = FALSE for free).
+    // Returns true (allow) until the paywall is flipped on (~month 3).
+    // Always fails open on network error or missing token so no feature is accidentally blocked.
+    async function checkLimit(feature) {
+      const token = localStorage.getItem("simmer_token");
+      if (!token) return true;             // Not logged in — allow silently
+      try {
+        const res = await fetch(`${API_BASE_URL}/auth/check-limit`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+          },
+          body: JSON.stringify({ feature })
+        });
+        if (res.ok) return true;
+        if (res.status === 429) {
+          const data = await res.json().catch(() => ({}));
+          showUpgradeBanner(data.detail || data);
+          return false;
+        }
+        return true;                       // Other server errors — fail open
+      } catch {
+        return true;                       // Network error — fail open
+      }
+    }
+
+    function showUpgradeBanner(detail) {
+      const info = typeof detail === "object" ? detail : {};
+      const feature = (info.feature || "").replace(/_/g, " ");
+      const window_ = info.window || "today";
+      const msg = info.message ||
+        (feature
+          ? `You've reached your ${feature} limit for ${window_}.`
+          : "Daily limit reached.");
+      showToast(
+        `⚡ ${msg} <a href="/upgrade.html" style="color:var(--accent);font-weight:700;text-decoration:underline">Upgrade to Pro →</a>`,
+        "info",
+        6000
+      );
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     function trackInteraction(action, recipeId) {
       try {
@@ -7667,16 +7713,18 @@
       getSuggestions("normal");
     });
 
-    el.decideBtn.addEventListener("click", (e) => {
+    el.decideBtn.addEventListener("click", async (e) => {
       addRipple(el.decideBtn, e);
+      if (!(await checkLimit("decide_for_me"))) return;
       getSuggestions("decide");
     });
 
-    el.planBtn.addEventListener("click", (e) => {
+    el.planBtn.addEventListener("click", async (e) => {
       addRipple(el.planBtn, e);
       // Toggle duration row visibility
       const durRow = document.getElementById("planDurationRow");
       if (durRow) durRow.style.display = durRow.style.display === "none" ? "flex" : "none";
+      if (!(await checkLimit("meal_plan"))) return;
       getMealPlan();
     });
 
@@ -8393,9 +8441,10 @@
 
       const addBtn = picker.querySelector("#colAddBtn");
       const input  = picker.querySelector("#colNewInput");
-      addBtn.addEventListener("click", () => {
+      addBtn.addEventListener("click", async () => {
         const name = input.value.trim();
         if (!name) return;
+        if (!(await checkLimit("collections"))) return;
         addToCollection(name, recipe);
         btn.classList.add("saved");
         hideCollectionPicker();
@@ -8576,7 +8625,8 @@
       if (btnLbl) btnLbl.textContent = `${pct}%`;
     }
 
-    function openGoalSetup() {
+    async function openGoalSetup() {
+      if (!(await checkLimit("goal_tracking"))) return;
       const overlay = document.getElementById("goalSetupOverlay");
       const sheet   = document.getElementById("goalSetupSheet");
       const existing = getGoals() || { calories: 1800, protein: 60, carbs: 225, fat: 60 };
@@ -10578,7 +10628,8 @@
       }
     }
 
-    function openChefChat() {
+    async function openChefChat() {
+      if (!(await checkLimit("ask_chef"))) return;
       const overlay = document.getElementById("chefChatOverlay");
       if (!overlay) return;
 
@@ -11147,7 +11198,8 @@
       "drinks": "🥤", "salad": "🥗", "other": "🍽"
     };
 
-    function openTasteDNA() {
+    async function openTasteDNA() {
+      if (!(await checkLimit("advanced_taste_dna"))) return;
       const overlay = document.getElementById("tasteDNAOverlay");
       const card    = document.getElementById("tasteDNACard");
       if (!overlay || !card) return;
