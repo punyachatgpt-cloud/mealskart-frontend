@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Simmer</title>
+  <meta name="theme-color" content="#0D0702" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Manrope:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg0:          #FAFAF6;
+      --bg1:          #ffffff;
+      --ink:          #1C1008;
+      --muted:        #6B4C2A;
+      --muted2:       #9B7553;
+      --surface:      rgba(250, 250, 246, 0.92);
+      --border:       rgba(200, 160, 110, 0.38);
+      --accent:       #C8690E;
+      --accentGlow:   rgba(200, 105, 14, 0.18);
+      --cta:          var(--accent);
+      --positive:     #16a34a;
+      --danger:       #dc2626;
+      --ink-lo:       var(--muted);
+      --ink-faint:    var(--muted2);
+      --t-xs:         0.72rem;
+      --t-sm:         0.84rem;
+      --t-base:       0.96rem;
+      --t-lg:         1.2rem;
+      --t-xl:         1.58rem;
+      --t-display:    2.2rem;
+      --fw-reg:       500;
+      --fw-med:       700;
+      --fw-bold:      800;
+      --fw-black:     900;
+      --sp-xs:        4px;
+      --sp-sm:        8px;
+      --sp-md:        16px;
+      --sp-lg:        24px;
+      --sp-xl:        40px;
+      --shadow-float: 0 40px 80px -16px rgba(50,20,5,0.28);
+      --radius:       20px;
+    }
+    [data-theme="dark"] {
+      --bg0:          #0D0702;
+      --bg1:          #160C05;
+      --ink:          #F2E5CC;
+      --muted:        #C4906A;
+      --muted2:       #8A6035;
+      --surface:      rgba(22, 12, 5, 0.97);
+      --border:       rgba(180, 110, 45, 0.28);
+      --accent:       #D4891C;
+      --accentGlow:   rgba(212, 137, 28, 0.22);
+      --shadow-float: 0 40px 80px -16px rgba(0,0,0,0.70);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Manrope', system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--bg0);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+    [data-theme="dark"] body {
+      background:
+        radial-gradient(ellipse 70% 45% at 20% 5%, rgba(210,120,28,0.07) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 35% at 85% 90%, rgba(200,105,14,0.04) 0%, transparent 60%),
+        #0D0702;
+    }
+
+    /* ── Shell ────────────────────────────────────────────────── */
+    .ob-shell {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--sp-lg) var(--sp-md);
+    }
+
+    /* ── Card ────────────────────────────────────────────────── */
+    .ob-card {
+      width: 100%;
+      max-width: 440px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--sp-xl) var(--sp-lg);
+      box-shadow: var(--shadow-float);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-lg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Ember top bar (like index.html onboardCard::before) */
+    .ob-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), #F5C060, var(--accent));
+      background-size: 200%;
+      animation: shimmer 2.4s ease-in-out infinite;
+    }
+    @keyframes shimmer { 0%,100% { background-position: 0% } 50% { background-position: 100% } }
+
+    /* ── Progress dots ───────────────────────────────────────── */
+    .ob-progress {
+      display: flex;
+      justify-content: center;
+      gap: var(--sp-sm);
+      padding-top: var(--sp-xs);
+    }
+    .ob-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 250ms ease, width 250ms ease, border-radius 250ms ease;
+    }
+    .ob-dot.active {
+      background: var(--accent);
+      width: 24px;
+      border-radius: 4px;
+    }
+    .ob-dot.done { background: var(--accent); opacity: 0.45; }
+
+    /* ── Step container ──────────────────────────────────────── */
+    .ob-viewport {
+      overflow: hidden;
+      position: relative;
+      /* Height auto-adjusted by JS */
+    }
+
+    .ob-step {
+      display: none;
+      flex-direction: column;
+      gap: var(--sp-lg);
+      animation: slideIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .ob-step.active { display: flex; }
+    .ob-step.out {
+      display: flex;
+      animation: slideOut 0.22s ease-in both;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(32px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes slideOut {
+      from { opacity: 1; transform: translateX(0); }
+      to   { opacity: 0; transform: translateX(-24px); }
+    }
+
+    /* ── Step headings ───────────────────────────────────────── */
+    .ob-step-label {
+      font-size: var(--t-xs);
+      font-weight: var(--fw-bold);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ink-faint);
+    }
+    .ob-title {
+      font-family: 'Fraunces', serif;
+      font-size: var(--t-display);
+      font-weight: var(--fw-med);
+      color: var(--ink);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+    .ob-subtitle {
+      font-size: var(--t-sm);
+      color: var(--ink-lo);
+      font-weight: var(--fw-reg);
+      line-height: 1.5;
+    }
+
+    /* ── Name input ──────────────────────────────────────────── */
+    .name-input-wrap {
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg0);
+      transition: border-color 160ms ease, box-shadow 160ms ease;
+    }
+    .name-input-wrap:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accentGlow);
+    }
+    .name-input {
+      width: 100%;
+      border: none;
+      background: transparent;
+      padding: 15px 16px;
+      font-size: var(--t-lg);
+      font-weight: var(--fw-med);
+      color: var(--ink);
+      font-family: 'Fraunces', serif;
+      outline: none;
+      -webkit-appearance: none;
+    }
+    .name-input::placeholder { color: var(--ink-faint); font-weight: var(--fw-reg); font-family: 'Manrope', sans-serif; }
+
+    /* ── Chip grids ──────────────────────────────────────────── */
+    .chip-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--sp-sm);
+    }
+
+    .ob-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      background: transparent;
+      color: var(--ink-lo);
+      font-size: var(--t-sm);
+      font-weight: var(--fw-med);
+      font-family: inherit;
+      cursor: pointer;
+      transition: border-color 160ms ease, color 160ms ease, background 160ms ease, transform 120ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .ob-chip:hover {
+      border-color: var(--accent);
+      color: var(--ink);
+    }
+    .ob-chip.selected {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accentGlow);
+      transform: scale(1.02);
+    }
+    .ob-chip .emoji { font-size: 1.1em; }
+
+    /* Single-select (diet) — radio behaviour */
+    .chip-grid.single .ob-chip.selected {
+      font-weight: var(--fw-bold);
+    }
+
+    /* ── Bottom action row ───────────────────────────────────── */
+    .ob-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sp-md);
+    }
+
+    .btn-skip {
+      background: none;
+      border: none;
+      color: var(--ink-faint);
+      font-size: var(--t-sm);
+      font-weight: var(--fw-med);
+      cursor: pointer;
+      font-family: inherit;
+      padding: 8px 0;
+      transition: color 150ms ease;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .btn-skip:hover { color: var(--ink-lo); }
+
+    .btn-next {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-xs);
+      padding: 13px 24px;
+      background: var(--cta);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: var(--t-base);
+      font-weight: var(--fw-bold);
+      cursor: pointer;
+      transition: transform 200ms ease, filter 200ms ease, box-shadow 200ms ease;
+      box-shadow: 0 4px 16px -2px rgba(200,105,14,0.35);
+      flex-shrink: 0;
+    }
+    .btn-next:hover:not(:disabled) {
+      filter: brightness(1.08);
+      box-shadow: 0 8px 24px -4px rgba(200,105,14,0.45);
+      transform: translateY(-1px);
+    }
+    .btn-next:active:not(:disabled) { transform: scale(0.97); transition-duration: 80ms; }
+    .btn-next:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-next .arrow { font-size: 1.1em; transition: transform 200ms ease; }
+    .btn-next:hover:not(:disabled) .arrow { transform: translateX(3px); }
+
+    /* Loading spinner */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0; display: none;
+    }
+    .btn-next.loading .spinner { display: block; }
+    .btn-next.loading .btn-label { opacity: 0.5; }
+    .btn-next.loading .arrow { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Finish / success state ─────────────────────────────── */
+    .ob-success {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--sp-md);
+      text-align: center;
+      padding: var(--sp-lg) 0;
+    }
+    .ob-success .icon { font-size: 3.5rem; animation: popIn 0.32s cubic-bezier(0.34,1.56,0.64,1); }
+    .ob-success h3 {
+      font-family: 'Fraunces', serif;
+      font-size: var(--t-xl);
+      font-weight: var(--fw-med);
+      color: var(--ink);
+    }
+    .ob-success p { font-size: var(--t-sm); color: var(--ink-lo); }
+    @keyframes popIn { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    /* Theme toggle */
+    .theme-toggle {
+      position: fixed; top: 16px; right: 16px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 50%; width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 1rem;
+      transition: background 200ms ease, border-color 200ms ease;
+    }
+    .theme-toggle:hover { border-color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+
+  <main class="ob-shell">
+    <div class="ob-card" id="obCard" role="main">
+
+      <!-- Progress dots -->
+      <div class="ob-progress" id="obProgress" role="progressbar" aria-valuemin="1" aria-valuemax="3">
+        <div class="ob-dot active" data-step="0"></div>
+        <div class="ob-dot" data-step="1"></div>
+        <div class="ob-dot" data-step="2"></div>
+      </div>
+
+      <!-- Viewport holds the active step -->
+      <div class="ob-viewport" id="obViewport">
+
+        <!-- Step 1: Name -->
+        <div class="ob-step active" id="step0">
+          <div>
+            <p class="ob-step-label">Step 1 of 3</p>
+            <h2 class="ob-title">What should we<br>call you?</h2>
+            <p class="ob-subtitle" style="margin-top:8px">We'll personalise your experience.</p>
+          </div>
+          <div class="name-input-wrap">
+            <input
+              class="name-input"
+              id="nameInput"
+              type="text"
+              inputmode="text"
+              autocomplete="given-name"
+              placeholder="Your first name"
+              maxlength="40"
+              aria-label="Your first name"
+            />
+          </div>
+          <div class="ob-actions">
+            <button class="btn-skip" id="skipStep0">Skip</button>
+            <button class="btn-next" id="nextStep0">
+              <div class="spinner" aria-hidden="true"></div>
+              <span class="btn-label">Next</span>
+              <span class="arrow" aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Diet -->
+        <div class="ob-step" id="step1">
+          <div>
+            <p class="ob-step-label">Step 2 of 3</p>
+            <h2 class="ob-title">Any dietary<br>preferences?</h2>
+            <p class="ob-subtitle" style="margin-top:8px">We'll filter out what doesn't work for you.</p>
+          </div>
+          <div class="chip-grid single" id="dietGrid" role="radiogroup" aria-label="Dietary preference">
+            <button class="ob-chip" data-value="veg" role="radio" aria-checked="false">
+              <span class="emoji">🥗</span> Vegetarian
+            </button>
+            <button class="ob-chip" data-value="vegan" role="radio" aria-checked="false">
+              <span class="emoji">🌱</span> Vegan
+            </button>
+            <button class="ob-chip" data-value="non-veg" role="radio" aria-checked="false">
+              <span class="emoji">🍗</span> Non-veg
+            </button>
+            <button class="ob-chip" data-value="jain" role="radio" aria-checked="false">
+              <span class="emoji">🙏</span> Jain
+            </button>
+            <button class="ob-chip" data-value="gluten-free" role="radio" aria-checked="false">
+              <span class="emoji">🌾</span> Gluten-free
+            </button>
+            <button class="ob-chip" data-value="any" role="radio" aria-checked="false">
+              <span class="emoji">🍽️</span> No preference
+            </button>
+          </div>
+          <div class="ob-actions">
+            <button class="btn-skip" id="skipStep1">Skip</button>
+            <button class="btn-next" id="nextStep1">
+              <span class="btn-label">Next</span>
+              <span class="arrow" aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 3: Cuisines -->
+        <div class="ob-step" id="step2">
+          <div>
+            <p class="ob-step-label">Step 3 of 3</p>
+            <h2 class="ob-title">What cuisines<br>do you love?</h2>
+            <p class="ob-subtitle" style="margin-top:8px">Pick as many as you like — we'll cook to your cravings.</p>
+          </div>
+          <div class="chip-grid" id="cuisineGrid" role="group" aria-label="Favourite cuisines">
+            <button class="ob-chip" data-value="north-indian">🫕 North Indian</button>
+            <button class="ob-chip" data-value="south-indian">🥘 South Indian</button>
+            <button class="ob-chip" data-value="street-food">🌯 Street Food</button>
+            <button class="ob-chip" data-value="mughlai">🍖 Mughlai</button>
+            <button class="ob-chip" data-value="bengali">🐟 Bengali</button>
+            <button class="ob-chip" data-value="gujarati">🥗 Gujarati</button>
+            <button class="ob-chip" data-value="chinese">🥡 Indo-Chinese</button>
+            <button class="ob-chip" data-value="continental">🍝 Continental</button>
+            <button class="ob-chip" data-value="mediterranean">🫒 Mediterranean</button>
+            <button class="ob-chip" data-value="desserts">🍮 Desserts</button>
+          </div>
+          <div class="ob-actions">
+            <button class="btn-skip" id="skipStep2">Skip</button>
+            <button class="btn-next" id="nextStep2">
+              <div class="spinner" aria-hidden="true"></div>
+              <span class="btn-label">Let's cook</span>
+              <span class="arrow" aria-hidden="true">🔥</span>
+            </button>
+          </div>
+        </div>
+
+      </div><!-- /ob-viewport -->
+
+      <!-- Success state -->
+      <div class="ob-success" id="obSuccess">
+        <div class="icon">🔥</div>
+        <h3>Your kitchen is ready.</h3>
+        <p>Taking you to Simmer…</p>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      // ── Theme ─────────────────────────────────────────────────
+      const toggle = document.getElementById('themeToggle');
+      const saved = localStorage.getItem('simmer_theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      applyTheme(saved);
+      toggle.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        applyTheme(next); localStorage.setItem('simmer_theme', next);
+      });
+      function applyTheme(t) {
+        document.documentElement.dataset.theme = t;
+        toggle.textContent = t === 'dark' ? '☀️' : '🌙';
+      }
+
+      // Auth guard — must be logged in to onboard
+      const token = localStorage.getItem('simmer_token');
+      if (!token) { window.location.href = '/signup.html'; return; }
+
+      // ── State ──────────────────────────────────────────────────
+      let currentStep = 0;
+      const TOTAL = 3;
+      const state = { name: '', diet: '', cuisines: [] };
+
+      const dots = Array.from(document.querySelectorAll('.ob-dot'));
+      function updateDots(step) {
+        dots.forEach((d, i) => {
+          d.classList.toggle('active', i === step);
+          d.classList.toggle('done',   i < step);
+        });
+        document.getElementById('obProgress').setAttribute('aria-valuenow', step + 1);
+      }
+
+      // ── Step transition ────────────────────────────────────────
+      function goToStep(nextIdx) {
+        const current = document.getElementById('step' + currentStep);
+        const next    = document.getElementById('step' + nextIdx);
+        if (!next) return;
+
+        current.classList.add('out');
+        setTimeout(() => {
+          current.classList.remove('active', 'out');
+          next.classList.add('active');
+          currentStep = nextIdx;
+          updateDots(currentStep);
+        }, 220);
+      }
+
+      // ── Step 1: Name ───────────────────────────────────────────
+      document.getElementById('nextStep0').addEventListener('click', () => {
+        state.name = document.getElementById('nameInput').value.trim().slice(0, 40);
+        goToStep(1);
+      });
+      document.getElementById('skipStep0').addEventListener('click', () => {
+        state.name = '';
+        goToStep(1);
+      });
+      // Allow Enter to advance
+      document.getElementById('nameInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('nextStep0').click();
+      });
+
+      // ── Step 2: Diet (single-select) ───────────────────────────
+      const dietChips = Array.from(document.querySelectorAll('#dietGrid .ob-chip'));
+      dietChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          dietChips.forEach(c => { c.classList.remove('selected'); c.setAttribute('aria-checked', 'false'); });
+          chip.classList.add('selected');
+          chip.setAttribute('aria-checked', 'true');
+          state.diet = chip.dataset.value;
+        });
+      });
+      document.getElementById('nextStep1').addEventListener('click', () => goToStep(2));
+      document.getElementById('skipStep1').addEventListener('click', () => { state.diet = ''; goToStep(2); });
+
+      // ── Step 3: Cuisines (multi-select) ───────────────────────
+      const cuisineChips = Array.from(document.querySelectorAll('#cuisineGrid .ob-chip'));
+      cuisineChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          const val = chip.dataset.value;
+          if (chip.classList.contains('selected')) {
+            chip.classList.remove('selected');
+            state.cuisines = state.cuisines.filter(v => v !== val);
+          } else {
+            chip.classList.add('selected');
+            state.cuisines.push(val);
+          }
+        });
+      });
+
+      document.getElementById('skipStep2').addEventListener('click', () => submitOnboarding(false));
+      document.getElementById('nextStep2').addEventListener('click', () => submitOnboarding(false));
+
+      // ── Submit ─────────────────────────────────────────────────
+      async function submitOnboarding(skipped) {
+        const btn = document.getElementById('nextStep2');
+        btn.disabled = true;
+        btn.classList.add('loading');
+
+        // Always persist to localStorage as source-of-truth for now (Phase 5 will server-sync)
+        const prefs = JSON.parse(localStorage.getItem('foodai_preferences') || '{}');
+        if (state.diet)               prefs.diet = state.diet;
+        if (state.cuisines.length)    prefs.cuisines = state.cuisines;
+        if (state.name)               localStorage.setItem('simmer_display_name', state.name);
+        localStorage.setItem('foodai_preferences', JSON.stringify(prefs));
+
+        // POST to backend (best-effort — failure is non-blocking)
+        try {
+          await fetch('/api/auth/onboarding', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + localStorage.getItem('simmer_token')
+            },
+            body: JSON.stringify({
+              display_name:  state.name   || null,
+              diet:          state.diet   || null,
+              cuisines:      state.cuisines,
+              skipped
+            })
+          });
+        } catch {
+          // Non-blocking — localStorage is the fallback
+        }
+
+        // Show success
+        document.getElementById('step2').classList.remove('active');
+        const progress = document.getElementById('obProgress');
+        progress.style.display = 'none';
+        const success = document.getElementById('obSuccess');
+        success.style.display = 'flex';
+
+        setTimeout(() => { window.location.href = '/'; }, 1600);
+      }
+
+      // ── Focus first input ──────────────────────────────────────
+      document.getElementById('nameInput').focus();
+    })();
+  </script>
+</body>
+</html>
