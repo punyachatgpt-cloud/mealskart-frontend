@@ -131,19 +131,20 @@
     }
 
     .brand p {
-      margin: 12px 0 0;
-      color: var(--muted);
-      font-size: 1.1rem;
-      font-weight: 500;
-      line-height: 1.6;
-      max-width: 45ch;
+      margin: 6px 0 0;
+      color: var(--ink);
+      font-family: 'Fraunces', serif;
+      font-size: var(--t-lg);
+      font-weight: var(--fw-med);
+      line-height: 1.25;
+      max-width: none;
     }
 
     .microcopy {
       text-align: right;
-      color: var(--muted);
-      font-weight: 800;
-      font-size: 0.94rem;
+      color: var(--ink-faint);
+      font-weight: var(--fw-reg);
+      font-size: var(--t-xs);
       white-space: nowrap;
     }
 
@@ -217,6 +218,30 @@
       color: var(--muted2);
       text-transform: none;
       letter-spacing: 0;
+    }
+
+    /* ── Sidebar Tier 2: filter section labels subordinated (Step 2) ── */
+    #timePanel .label,
+    #moodPanel .label,
+    #categoryPanel .label,
+    #budgetPanel .label,
+    #ingredientsPanel .label {
+      font-size: var(--t-xs);
+      font-weight: var(--fw-med);
+      color: var(--ink-lo);
+      letter-spacing: 0.04em;
+    }
+
+    /* ── My Week button: chrome weight, not feature weight (Step 2) ── */
+    #weeklyReportBtn {
+      font-size: var(--t-xs) !important;
+      font-weight: var(--fw-reg) !important;
+      color: var(--ink-faint) !important;
+      border-color: var(--border) !important;
+    }
+    #weeklyReportBtn:hover {
+      color: var(--ink-lo) !important;
+      border-color: var(--ink-lo) !important;
     }
 
     .seg {
@@ -403,10 +428,10 @@
     }
 
     .trust {
-      margin: 8px 0 0;
-      color: var(--muted2);
-      font-weight: 700;
-      font-size: 0.9rem;
+      margin: 6px 0 0;
+      color: var(--ink-faint);
+      font-weight: var(--fw-reg);
+      font-size: var(--t-xs);
       text-align: center;
     }
 
@@ -610,7 +635,7 @@
       .hint { display: none; }
       .label { justify-content: flex-start; }
       .brand h1 { font-size: clamp(24px, 7vw, 30px); }
-      .brand p { font-size: 0.96rem; }
+      .brand p { font-size: var(--t-base); }
       .chip {
         min-height: 42px;
         padding: 10px 12px;
@@ -3355,15 +3380,16 @@
     /* Sidebar collections button */
     .collectionsLink {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 12px; border: 1px solid var(--border);
-      border-radius: 12px; background: var(--bg1); cursor: pointer;
-      font-size: 0.84rem; font-weight: 700; color: var(--ink);
-      transition: all 0.15s; margin-bottom: 0;
+      padding: 6px 4px; border: none;
+      border-radius: 0; background: transparent; cursor: pointer;
+      font-size: var(--t-xs); font-weight: var(--fw-med); color: var(--ink-faint);
+      transition: color 0.15s; margin-bottom: 0; font-family: inherit;
     }
-    .collectionsLink:hover { border-color: var(--accent); color: var(--accent); }
+    .collectionsLink:hover { color: var(--ink-lo); }
     .collectionsLinkCount {
-      background: var(--accent); color: #fff; border-radius: 999px;
-      padding: 2px 8px; font-size: 0.72rem; font-weight: 800;
+      background: transparent; color: var(--ink-lo);
+      border: 1px solid var(--border); border-radius: 999px;
+      padding: 1px 7px; font-size: var(--t-xs); font-weight: var(--fw-med);
     }
 
     /* ══════════════════════════════════════════════
@@ -3718,8 +3744,9 @@
     }
     .shoppingEmpty .shoppingEmptyIcon { font-size: 2.5rem; margin-bottom: 12px; }
     .shoppingBadge {
-      background: var(--accent); color: #fff; border-radius: 999px;
-      padding: 2px 8px; font-size: 0.72rem; font-weight: 800;
+      background: transparent; color: var(--ink-lo);
+      border: 1px solid var(--border); border-radius: 999px;
+      padding: 1px 7px; font-size: var(--t-xs); font-weight: var(--fw-med);
       display: none;
     }
     .shoppingBadge.visible { display: inline-block; }
@@ -4412,13 +4439,13 @@
     }
     .exploreLink {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 8px 12px; border-radius: 12px;
-      border: 1px solid var(--border); background: var(--bg0);
+      padding: 6px 4px; border-radius: 0;
+      border: none; background: transparent;
       cursor: pointer; font-family: inherit;
-      font-size: 0.8rem; font-weight: 700; color: var(--ink); width: 100%;
-      transition: all 0.18s; margin-top: 2px;
+      font-size: var(--t-xs); font-weight: var(--fw-med); color: var(--ink-faint); width: 100%;
+      transition: color 0.18s; margin-top: 2px;
     }
-    .exploreLink:hover { border-color: var(--accent); color: var(--accent); }
+    .exploreLink:hover { color: var(--ink-lo); }
 
     /* ════════════════════════════════════════════════════
        NUTRITION DASHBOARD — STYLES
