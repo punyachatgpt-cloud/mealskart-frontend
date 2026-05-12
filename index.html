@@ -298,19 +298,8 @@
       font-weight: 700;
     }
 
-    .chip.selected::after {
-      content: "";
-      position: absolute;
-      inset: -4px;
-      border-radius: inherit;
-      border: 1px solid rgba(249, 115, 22, 0.18);
-      animation: selectedPulse 1.8s ease-in-out infinite;
-      pointer-events: none;
-    }
-
-    @keyframes selectedPulse {
-      50% { opacity: 0.35; transform: scale(1.04); }
-    }
+    /* selectedPulse removed — chips rest at static selected state (Step 6) */
+    .chip.selected::after { content: none; }
 
     .field {
       width: 100%;
@@ -355,7 +344,7 @@
       color: white;
       background: linear-gradient(135deg, #C8690E 0%, #8A4508 100%);
       box-shadow: 0 4px 16px rgba(200,105,14,0.32), 0 1px 3px rgba(0,0,0,0.12);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform 200ms ease-out, box-shadow 200ms ease-out, filter 200ms ease-out;
       overflow: hidden;
     }
 
@@ -387,19 +376,19 @@
 
     @media (hover: hover) and (pointer: fine) {
       .btn:hover {
-        transform: translateY(-1px) scale(1.01);
-        filter: brightness(0.98);
-        box-shadow: 0 26px 54px rgba(184, 86, 12, 0.38);
+        transform: translateY(-2px);
+        filter: brightness(0.97);
+        box-shadow: 0 20px 44px rgba(184, 86, 12, 0.34);
       }
       .btn.secondary:hover {
-        transform: translateY(-1px) scale(1.01);
-        box-shadow: 0 22px 46px rgba(60, 25, 5, 0.11);
-        filter: brightness(0.99);
+        transform: translateY(-2px);
+        box-shadow: 0 16px 36px rgba(60, 25, 5, 0.10);
+        filter: brightness(0.98);
       }
       .chip:hover { transform: translateY(-1px); }
     }
 
-    .btn:active { transform: translateY(0) scale(0.985); }
+    .btn:active { transform: scale(0.97); transition-duration: 80ms; }
 
     .btn:focus-visible,
     .chip:focus-visible,
@@ -661,7 +650,7 @@
       cursor: pointer;
       position: relative;
       transform: translateY(0);
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform 250ms ease-out, box-shadow 250ms ease-out, border-color 200ms ease-out;
       animation: cardEnter 0.6s cubic-bezier(.2,.9,.2,1) both;
       min-height: 100%;
       min-width: 0;
@@ -1112,12 +1101,12 @@
 
     @media (hover: hover) and (pointer: fine) {
       .foodCard:hover {
-        transform: translateY(-8px);
-        box-shadow: var(--shadow-hover);
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-overlay);
         border-color: var(--accent);
       }
       .foodCard:hover .foodImg {
-        transform: scale(1.05);
+        transform: scale(1.04);
       }
     }
 
@@ -2673,27 +2662,18 @@
       100% { transform: scale(1.12); opacity: 0; }
     }
 
-    /* ── Enhanced chip selected glow ─────────────── */
-    .chip.selected {
-      animation: chipGlow 2.2s ease-in-out infinite;
-    }
-    @keyframes chipGlow {
-      0%, 100% { box-shadow: 0 4px 14px var(--accentGlow); }
-      50%       { box-shadow: 0 6px 24px var(--accentGlow), 0 0 0 4px rgba(200,105,14,0.07); }
-    }
+    /* chipGlow infinite removed — static selected shadow sufficient (Step 6) */
+    .chip.selected { animation: none; }
 
-    /* ── Card hover: warm glow lift ──────────────── */
+    /* ── Card hover: unified lift (Step 6) ──────────── */
     @media (hover: hover) and (pointer: fine) {
       .foodCard:hover {
-        transform: translateY(-10px) scale(1.009);
-        box-shadow:
-          0 0 0 1.5px var(--accent),
-          0 44px 88px -16px rgba(200,105,14,0.20),
-          0 20px 40px -12px rgba(80,30,5,0.1);
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-overlay);
         border-color: var(--accent);
       }
       .foodCard:hover .foodImg {
-        transform: scale(1.07);
+        transform: scale(1.04);
       }
     }
 
@@ -4084,16 +4064,10 @@
     /* ⑩ Smart chips — typographic labels (Step 4 override) */
     .smartChip { border-radius: 0; border: none; background: transparent; padding: 0; }
 
-    /* ⑪ Food card hover — ring + lift */
+    /* ⑪ Food card hover — unified token (Step 6) */
     @media (hover: hover) and (pointer: fine) {
-      .foodCard:hover {
-        box-shadow: 0 28px 56px -8px rgba(15,23,42,0.22),
-                    0 0 0 1.5px var(--accent);
-      }
-      [data-theme="dark"] .foodCard:hover {
-        box-shadow: 0 28px 56px -8px rgba(0,0,0,0.55),
-                    0 0 0 1.5px var(--accent);
-      }
+      .foodCard:hover { box-shadow: var(--shadow-overlay); }
+      [data-theme="dark"] .foodCard:hover { box-shadow: var(--shadow-overlay); }
     }
 
     /* ⑫ Mobile bar — dark mode glass */
@@ -4905,13 +4879,15 @@
       background: rgba(18,10,4,0.88);
     }
 
-    /* 4 ── FAB attention pulse (3 shots, 1.5 s delay) */
+    /* 4 ── FAB attention pulse — removed page-load auto-fire (Step 6)
+       JS can re-add via .chefFab.idle class after inactivity if needed */
     @keyframes fabGlowPulse {
       0%, 100% { box-shadow: 0 8px 28px rgba(200,105,14,0.45); }
       50%       { box-shadow: 0 8px 28px rgba(200,105,14,0.45),
                               0 0 0 12px rgba(200,105,14,0.12); }
     }
-    .chefFab { animation: fabGlowPulse 2.4s ease-in-out 1.5s 3; }
+    .chefFab { animation: none; }
+    .chefFab.idle { animation: fabGlowPulse 2.4s ease-in-out 0s 3; }
 
     /* 5 ── Toast notifications ───────────────────── */
     .simmerToast {
