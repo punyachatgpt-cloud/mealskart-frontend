@@ -2810,27 +2810,29 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 48px 24px;
+      padding: 56px 24px;
       text-align: center;
-      gap: 10px;
+      gap: 12px;
     }
     .emptyIllustration {
-      font-size: 4rem;
+      font-size: 5rem;
       animation: flamePulse 2.2s ease-in-out infinite;
       line-height: 1;
     }
     .emptyState h3 {
       font-family: 'Fraunces', serif;
-      font-size: 1.4rem;
-      font-weight: 900;
+      font-size: var(--t-xl);
+      font-weight: var(--fw-med);
       color: var(--ink);
       margin: 0;
+      line-height: 1.2;
     }
     .emptyState p {
-      color: var(--muted);
-      font-size: 0.94rem;
-      max-width: 28ch;
-      line-height: 1.5;
+      color: var(--ink-lo);
+      font-size: var(--t-sm);
+      font-weight: var(--fw-reg);
+      max-width: 32ch;
+      line-height: 1.55;
       margin: 0;
     }
     /* hide empty state once real results arrive */
@@ -2841,20 +2843,20 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      background: linear-gradient(90deg, rgba(200,105,14,0.07) 0%, rgba(200,105,14,0.03) 100%);
-      border-bottom: 1px solid rgba(200,105,14,0.14);
-      padding: 8px 20px;
+      background: transparent;
+      border-bottom: 1px solid var(--border);
+      padding: 7px 20px;
       overflow: hidden;
     }
     .trendingLabel {
-      font-size: 0.72rem;
-      font-weight: 800;
-      color: var(--accent);
+      font-size: var(--t-xs);
+      font-weight: var(--fw-med);
+      color: var(--ink-lo);
       white-space: nowrap;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
       padding-right: 8px;
-      border-right: 1px solid rgba(249,115,22,0.25);
+      border-right: 1px solid var(--border);
     }
     .trendingTrack {
       overflow: hidden;
@@ -2866,14 +2868,14 @@
       gap: 14px;
       white-space: nowrap;
       animation: tickerScroll 36s linear infinite;
-      font-size: 0.78rem;
-      font-weight: 600;
+      font-size: var(--t-xs);
+      font-weight: var(--fw-med);
       color: var(--ink);
     }
     .trendingInner:hover { animation-play-state: paused; }
     .tDot {
-      color: var(--accent);
-      opacity: 0.5;
+      color: var(--ink-faint);
+      opacity: 0.6;
       font-size: 0.6rem;
     }
     @keyframes tickerScroll {
@@ -3789,7 +3791,8 @@
     /* streakBanner + cookAgainCard dark mode — editorial styles (Step 3) */
     [data-theme="dark"] .streakBanner { background: transparent !important; border: none !important; color: var(--ink-lo) !important; }
     [data-theme="dark"] .cookAgainCard { background: transparent !important; border: none !important; border-left: 4px solid var(--accent) !important; }
-    [data-theme="dark"] .communityBar { background: linear-gradient(90deg, rgba(232,160,32,0.07) 0%, rgba(232,160,32,0.03) 100%) !important; border-color: rgba(180,110,40,0.20) !important; }
+    /* communityBar dark mode — transparent (Step 5) */
+    [data-theme="dark"] .communityBar { background: transparent !important; }
     [data-theme="dark"] .reportTopDish { background: linear-gradient(135deg, rgba(232,160,32,0.09) 0%, rgba(200,120,20,0.06) 100%) !important; border-color: rgba(180,110,40,0.22) !important; }
     [data-theme="dark"] .groceryActionBtn.primary { background: linear-gradient(135deg, #C8690E, #9E4E08) !important; }
     [data-theme="dark"] .shareCardBtn.sh { background: linear-gradient(135deg, #E8A020, #C07808) !important; }
@@ -3894,15 +3897,15 @@
        COMMUNITY FEED
        ══════════════════════════════════════════════ */
     .communityBar {
-      padding: 10px 20px 10px;
+      padding: 7px 20px;
       display: flex; align-items: center; gap: 12px;
       border-bottom: 1px solid var(--border);
       overflow: hidden;
     }
     .communityLabel {
-      font-size: 0.72rem; font-weight: 800;
-      color: var(--muted); white-space: nowrap;
-      text-transform: uppercase; letter-spacing: 0.04em;
+      font-size: var(--t-xs); font-weight: var(--fw-med);
+      color: var(--ink-lo); white-space: nowrap;
+      text-transform: uppercase; letter-spacing: 0.05em;
       padding-right: 10px; border-right: 1px solid var(--border);
     }
     .communityFeedTrack { overflow: hidden; flex: 1; }
@@ -3912,18 +3915,18 @@
     }
     .communityFeedInner:hover { animation-play-state: paused; }
     .communityPill {
-      display: inline-flex; align-items: center; gap: 7px;
-      background: var(--bg1); border: 1px solid var(--border);
-      border-radius: 999px; padding: 5px 12px 5px 5px;
-      font-size: 0.74rem; font-weight: 600; color: var(--ink);
+      display: inline-flex; align-items: center; gap: 6px;
+      background: transparent; border: none;
+      border-radius: 0; padding: 4px 8px 4px 0;
+      font-size: var(--t-xs); font-weight: var(--fw-reg); color: var(--ink);
     }
     .communityAvatar {
-      width: 22px; height: 22px; border-radius: 999px;
+      width: 20px; height: 20px; border-radius: 999px;
       background: linear-gradient(135deg, #C8690E, #9E4E08);
       display: grid; place-items: center;
-      font-size: 0.62rem; font-weight: 900; color: #fff; flex: 0 0 auto;
+      font-size: 0.58rem; font-weight: 900; color: #fff; flex: 0 0 auto;
     }
-    .communityTime { color: var(--muted2); font-weight: 600; }
+    .communityTime { color: var(--ink-faint); font-weight: var(--fw-reg); }
 
     /* ── Offline banner ──────────────────────────── */
     .offlineBanner {
