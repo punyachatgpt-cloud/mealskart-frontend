@@ -1919,6 +1919,37 @@
       border-color: var(--accent);
     }
 
+    /* ── Taste DNA inline card (Phase B) ────────── */
+    .tasteDNAInline {
+      background: linear-gradient(135deg, var(--goldBg), transparent);
+      border: 1.5px solid var(--goldBorder);
+      border-radius: var(--radiusSm, 16px);
+      padding: 12px 16px;
+      margin-bottom: 14px;
+      display: none;
+    }
+    .tasteDNAInline.show { display: block; }
+    .tasteDNAInlineTitle {
+      font-size: 0.7rem; font-weight: 800; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;
+    }
+    .tasteDNAInlineRow {
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+    .tasteDNAInlineStat {
+      flex: 1; min-width: 70px; text-align: center;
+      background: var(--bg1); border-radius: 12px; padding: 8px 6px;
+      border: 1px solid var(--border);
+    }
+    .tasteDNAInlineVal {
+      font-size: 0.95rem; font-weight: 900; color: var(--ink);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .tasteDNAInlineLbl {
+      font-size: 0.6rem; font-weight: 700; color: var(--muted2);
+      text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;
+    }
+
     /* ── Universal Search mode banner ───────────── */
     .uniSearchBanner {
       display: none;
@@ -1993,6 +2024,8 @@
     .searchDropItem:hover { background: rgba(200,105,14,0.09); }
     .searchDropIcon { color: var(--muted); font-size: 0.88rem; flex-shrink: 0; min-width: 16px; text-align: center; }
     .searchDropText { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .searchDropThumb { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+    .searchDropCat { font-size: 0.68rem; font-weight: 700; color: var(--muted2); background: var(--bg2); border-radius: 6px; padding: 2px 6px; white-space: nowrap; text-transform: capitalize; flex-shrink: 0; }
     .searchDropRemoveBtn {
       background: none; border: none; padding: 2px 6px;
       border-radius: 6px; color: var(--muted); cursor: pointer;
@@ -4502,6 +4535,17 @@
        AI RECIPE REMIX — STYLES
        ════════════════════════════════════════════════════ */
 
+    /* Shopping list button on cards (Phase C) */
+    .cardShopBtn {
+      width: 100%; margin-top: 8px; padding: 7px 10px;
+      border-radius: 10px; border: 1.5px solid var(--border);
+      background: none; font-family: inherit; font-size: 0.78rem;
+      font-weight: 700; color: var(--muted); cursor: pointer;
+      transition: all 0.15s; text-align: center;
+    }
+    .cardShopBtn:hover { border-color: var(--accent); color: var(--accent); background: rgba(200,105,14,0.07); }
+    .cardShopBtn.added { border-color: var(--accent); color: var(--accent); background: rgba(200,105,14,0.10); }
+
     /* Remix strip on each food card */
     .remixStrip {
       display: flex; gap: 6px; flex-wrap: wrap;
@@ -4875,6 +4919,7 @@
     }
     .quickChip:hover { border-color: var(--accent); color: var(--accent); }
     .quickChip:active { transform: scale(0.96); }
+    .quickChip.active { border-color: var(--accent); color: var(--accent); background: rgba(200,105,14,0.10); font-weight: 700; }
 
     /* 6 ── Warm image placeholder before load ────── */
     .foodImg { background-color: rgba(200,105,14,0.07); }
@@ -5209,6 +5254,8 @@
         <div class="goalBar" id="goalBar"></div>
         <div class="cookAgainWrap" id="cookAgainWrap"></div>
         <div id="contextBannerWrap"></div>
+        <!-- Taste DNA inline card — shown after 3+ cooks -->
+        <div class="tasteDNAInline" id="tasteDNAInline"></div>
         <!-- Universal Search mode indicator — shown when a live search is active -->
         <div class="uniSearchBanner" id="uniSearchBanner">
           <span>🔍 Showing results for: <strong id="uniSearchTerm"></strong></span>
@@ -6294,6 +6341,21 @@
     let currentResults = [];
     let searchDebounce = null;
     let dropdownOpen = false;
+    let autocompleteDebounce = null;
+    let autocompleteAbort = null;
+
+    async function fetchAutocompleteSuggestions(q) {
+      if (!q || q.length < 2) return [];
+      if (autocompleteAbort) autocompleteAbort.abort();
+      autocompleteAbort = new AbortController();
+      try {
+        const params = new URLSearchParams({ q, diet: state.diet || "non-veg", limit: 5 });
+        const resp = await fetch(`${API_BASE_URL}/search?${params}`, { signal: autocompleteAbort.signal });
+        if (!resp.ok) return [];
+        const data = await resp.json();
+        return Array.isArray(data) ? data : [];
+      } catch { return []; }
+    }
 
     const QUICK_FILTERS = [
       { label: "⚡ Quick (<20 min)", mood: "quick", time: 20 },
@@ -6362,13 +6424,33 @@
       return best;
     }
 
-    function buildSearchDropdown(q) {
+    function buildSearchDropdown(q, apiSuggestions = []) {
       const dropdown = document.getElementById("searchDropdown");
       if (!dropdown) return;
 
       const history = getSearchHistory();
-      const suggestions = q ? getCardSuggestions(q) : [];
+      const cardMatches = q ? getCardSuggestions(q) : [];
       const sections = [];
+
+      // Live API suggestions (Phase A1 — from /search endpoint)
+      if (apiSuggestions.length > 0 && q) {
+        const items = apiSuggestions.map(s => {
+          const thumb = (s.image_url && s.image_url.startsWith("http"))
+            ? s.image_url : dishImageUrl(s.name);
+          return `
+          <div class="searchDropItem" data-search="${escapeHtml(s.name)}">
+            <img class="searchDropThumb" src="${thumb}" alt="" loading="lazy"
+              onerror="this.src='${dishImageUrl(s.name)}'">
+            <span class="searchDropText">${escapeHtml(s.name)}</span>
+            ${s.category ? `<span class="searchDropCat">${escapeHtml(s.category.replace(/-/g," "))}</span>` : ""}
+          </div>`;
+        }).join("");
+        sections.push(`
+          <div class="searchDropSection">
+            <div class="searchDropSectionTitle">🔍 Live matches</div>
+            ${items}
+          </div>`);
+      }
 
       // Recent searches
       if (history.length > 0 && !q) {
@@ -6385,9 +6467,9 @@
           </div>`);
       }
 
-      // Live suggestions
-      if (suggestions.length > 0) {
-        const items = suggestions.map(s => `
+      // Card matches (from already-rendered results)
+      if (cardMatches.length > 0 && apiSuggestions.length === 0) {
+        const items = cardMatches.map(s => `
           <div class="searchDropItem" data-search="${escapeHtml(s)}">
             <span class="searchDropIcon">🍽️</span>
             <span class="searchDropText">${escapeHtml(s)}</span>
@@ -6948,6 +7030,7 @@
               <button class="remixBtn" data-remix="spicier"   type="button">🌶 Spicier</button>
               <button class="remixBtn" data-remix="quicker"   type="button">⚡ Quicker</button>
             </div>
+            <button class="cardShopBtn" type="button" aria-label="Add to shopping list">🛒 Add to list</button>
           </div>
         `;
 
@@ -6996,6 +7079,20 @@
           }
         });
 
+        // Shopping list button — uses card._item so remix swaps are respected
+        card.querySelector(".cardShopBtn")?.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const count = addRecipeToShoppingList(card._item);
+          const btn = e.currentTarget;
+          btn.textContent = count > 0 ? `✓ ${count} item${count !== 1 ? "s" : ""} added` : "✓ Already in list";
+          btn.classList.add("added");
+          setTimeout(() => {
+            btn.textContent = "🛒 Add to list";
+            btn.classList.remove("added");
+          }, 2200);
+          updateShoppingBadge?.();
+        });
+
         // Wire remix buttons — stopPropagation so card click doesn't fire
         card.querySelectorAll(".remixBtn").forEach(btn => {
           btn.addEventListener("click", (e) => {
@@ -7039,6 +7136,9 @@
       });
 
       updatePreferenceHint();
+      // Refresh taste DNA card and cuisine strip after every results render
+      renderTasteDNAInlineCard();
+      syncCuisineStripActive();
     }
 
     function normalizeIngredientName(value) {
@@ -7460,19 +7560,26 @@
           clearBtn?.classList.toggle("visible", val.length > 0);
           el.searchInput.classList.toggle("hasValue", val.length > 0);
 
-          // Always update dropdown (fast, local)
+          // 250ms — fast autocomplete preview in dropdown (Phase A1)
+          clearTimeout(autocompleteDebounce);
+          autocompleteDebounce = setTimeout(async () => {
+            if (val.trim().length >= 2) {
+              const apiSuggestions = await fetchAutocompleteSuggestions(val.trim());
+              buildSearchDropdown(val, apiSuggestions);
+            } else {
+              buildSearchDropdown(val);
+            }
+          }, 250);
+
+          // 550ms — full search fires and updates the results panel
           clearTimeout(searchDebounce);
           searchDebounce = setTimeout(() => {
-            buildSearchDropdown(val);
-
             if (val.trim().length >= 2) {
-              // 🔥 Universal Search: fire a real backend query, not just card filter
               commitSearch(val.trim());
             } else if (!val.trim()) {
-              // Cleared → restore normal recommendations
               clearUniSearch();
             }
-          }, 550);   // 550ms debounce — comfortable for typing
+          }, 550);
         });
 
         el.searchInput.addEventListener("keydown", (e) => {
@@ -8566,8 +8673,28 @@
           : {};
         const topDishName = Object.entries(topDish).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
 
+        // Top 3 cuisines by cook count
+        const top3Cuisines = Object.entries(catCount)
+          .filter(([k]) => k !== "all")
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 3)
+          .map(([k]) => k.replace(/-/g, " "));
+
+        // Preferred diet
+        const dietCount = { veg: 0, "non-veg": 0 };
+        log.forEach(e => { if (e.diet) dietCount[e.diet] = (dietCount[e.diet] || 0) + 1; });
+        const preferredDiet = dietCount["non-veg"] >= dietCount["veg"] ? "non-veg" : "veg";
+
+        // Average cook time this week
+        const avgCookTime = weekEntries.length
+          ? Math.round(weekEntries.reduce((s, e) => s + (Number(e.time) || 30), 0) / weekEntries.length)
+          : 30;
+
         return {
           topCategory,
+          top3Cuisines,
+          preferredDiet,
+          avgCookTime,
           lovedDishes:    [...new Set(lovedDishes)].slice(0, 3),
           totalCooks:     log.length,
           weekCooks:      weekEntries.length,
@@ -10709,11 +10836,29 @@
     }
 
     // ── 3. Quick-access dish strip ────────────────
+    const CUISINE_CHIPS = [
+      { label: "All",          value: "all",         emoji: "✨" },
+      { label: "North Indian", value: "north-indian", emoji: "🍛" },
+      { label: "Continental",  value: "continental",  emoji: "🍝" },
+      { label: "Chinese",      value: "chinese",      emoji: "🥡" },
+      { label: "South Indian", value: "south-indian", emoji: "🥘" },
+      { label: "Snacks",       value: "snacks",       emoji: "🧆" },
+    ];
+
     function renderQuickStrip() {
       const strip = document.getElementById("quickStrip");
       if (!strip) return;
+
       strip.innerHTML = `
-        <span class="quickStripLabel">Popular tonight</span>
+        <span class="quickStripLabel">Craving a cuisine?</span>
+        <div class="quickChips" id="cuisineChips">
+          ${CUISINE_CHIPS.map(c => `
+            <button class="quickChip${state.category === c.value ? " active" : ""}"
+              data-cuisine="${c.value}" type="button">
+              ${c.emoji} ${c.label}
+            </button>`).join("")}
+        </div>
+        <span class="quickStripLabel" style="margin-top:10px">Popular tonight</span>
         <div class="quickChips">
           ${QUICK_DISHES.map(d =>
             `<button class="quickChip" data-dish="${d.name}" type="button">${d.emoji} ${d.name}</button>`
@@ -10721,20 +10866,42 @@
         </div>
       `;
       strip.classList.add("show");
-      strip.querySelectorAll(".quickChip").forEach(chip => {
+
+      // Cuisine chip clicks — set category filter and fetch
+      strip.querySelectorAll(".quickChip[data-cuisine]").forEach(chip => {
         chip.addEventListener("click", () => {
-          const dish = chip.dataset.dish;
-          // Set the search and fire suggestions
-          const input = document.getElementById("searchInput");
-          if (input) { input.value = dish; }
-          getSuggestions("normal", dish);
-          window.scrollTo({ top: 0, behavior: "smooth" });
-          // Highlight active chip
-          strip.querySelectorAll(".quickChip").forEach(c => c.style.borderColor = "");
-          chip.style.borderColor = "var(--accent)";
-          chip.style.color = "var(--accent)";
+          const val = chip.dataset.cuisine;
+          state.category = val;
+          setSelected("category", val);
+          savePreferences();
+          updateMicrocopy();
+          getSuggestions("normal");
+          // Sync active state on strip chips
+          strip.querySelectorAll(".quickChip[data-cuisine]").forEach(c =>
+            c.classList.toggle("active", c.dataset.cuisine === val));
         });
       });
+
+      // Popular tonight dish chips — search by dish name
+      strip.querySelectorAll(".quickChip[data-dish]").forEach(chip => {
+        chip.addEventListener("click", () => {
+          const dish = chip.dataset.dish;
+          const input = document.getElementById("searchInput");
+          if (input) {
+            input.value = dish;
+            input.classList.add("hasValue");
+            document.getElementById("searchClearBtn")?.classList.add("visible");
+          }
+          setUniSearchBanner(dish);
+          searchRecipes(dish);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      });
+    }
+
+    function syncCuisineStripActive() {
+      document.querySelectorAll("#cuisineChips .quickChip[data-cuisine]").forEach(c =>
+        c.classList.toggle("active", c.dataset.cuisine === state.category));
     }
 
     // ── 4. Recipe deep links (#recipe/ID) ─────────
@@ -10868,6 +11035,43 @@
             <div class="contextBannerSub">Because you loved <strong>${dish}</strong>${extras}</div>
           </div>
         </div>`;
+    }
+
+    function renderTasteDNAInlineCard() {
+      const card = document.getElementById("tasteDNAInline");
+      if (!card) return;
+      const profile = getPersonalisationProfile();
+      if (!profile || profile.totalCooks < 3) { card.classList.remove("show"); return; }
+
+      const topCuisine  = profile.top3Cuisines?.[0] || profile.topCategory?.replace(/-/g," ") || "—";
+      const diet        = profile.preferredDiet || "—";
+      const avgTime     = profile.avgCookTime   || 30;
+      const totalCooks  = profile.totalCooks    || 0;
+
+      card.innerHTML = `
+        <div class="tasteDNAInlineTitle">🧬 Your Taste DNA</div>
+        <div class="tasteDNAInlineRow">
+          <div class="tasteDNAInlineStat">
+            <div class="tasteDNAInlineVal">${escapeHtml(topCuisine)}</div>
+            <div class="tasteDNAInlineLbl">Top Cuisine</div>
+          </div>
+          <div class="tasteDNAInlineStat">
+            <div class="tasteDNAInlineVal">${escapeHtml(diet)}</div>
+            <div class="tasteDNAInlineLbl">Diet</div>
+          </div>
+          <div class="tasteDNAInlineStat">
+            <div class="tasteDNAInlineVal">${avgTime}m</div>
+            <div class="tasteDNAInlineLbl">Avg Cook</div>
+          </div>
+          <div class="tasteDNAInlineStat">
+            <div class="tasteDNAInlineVal">${totalCooks}</div>
+            <div class="tasteDNAInlineLbl">Meals Made</div>
+          </div>
+        </div>`;
+      card.classList.add("show");
+
+      // Also refresh the "Because you loved X" banner
+      renderForYouBanner();
     }
 
     function initPhase3() {
