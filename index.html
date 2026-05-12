@@ -5052,6 +5052,16 @@
             🔕<span class="bellDot"></span>
           </button>
           <button class="themeBtn" id="themeBtn" type="button" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
+          <!-- Auth entry point -->
+          <a id="authBtn" href="/login.html"
+            style="display:inline-flex;align-items:center;gap:5px;padding:5px 13px;background:var(--accent);color:#fff;border-radius:999px;font-family:inherit;font-size:0.72rem;font-weight:700;text-decoration:none;transition:opacity 0.15s"
+            onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+            Sign in
+          </a>
+          <button id="authAvatarBtn" type="button" title="Your account"
+            style="display:none;width:32px;height:32px;border-radius:50%;background:var(--accent);border:2px solid var(--accent);color:#fff;font-size:0.8rem;font-weight:700;cursor:pointer;transition:opacity 0.15s"
+            onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+          </button>
           <div class="microcopy" id="microcopy">Dinner ready in 15 mins &#9889;</div>
         </div>
         <button id="weeklyReportBtn" type="button"
@@ -5828,6 +5838,78 @@
         6000
       );
     }
+    // ─────────────────────────────────────────────────────────────────────────
+    // ── Auth topbar state ─────────────────────────────────────────────────────
+    (function initAuthTopbar() {
+      const token = localStorage.getItem("simmer_token");
+      const authBtn      = document.getElementById("authBtn");
+      const avatarBtn    = document.getElementById("authAvatarBtn");
+      if (!token) return; // show "Sign in" link (default)
+
+      // Logged in — hide sign-in link, show avatar initial
+      authBtn.style.display = "none";
+      avatarBtn.style.display = "inline-flex";
+      avatarBtn.style.alignItems = "center";
+      avatarBtn.style.justifyContent = "center";
+
+      // Try to set avatar initial from stored preferences
+      try {
+        const prefs = JSON.parse(localStorage.getItem("foodai_preferences") || "{}");
+        const name = prefs.display_name || "";
+        avatarBtn.textContent = name ? name[0].toUpperCase() : "U";
+      } catch { avatarBtn.textContent = "U"; }
+
+      // Avatar click → tiny dropdown (logout)
+      avatarBtn.addEventListener("click", function(e) {
+        e.stopPropagation();
+        let menu = document.getElementById("authDropdown");
+        if (menu) { menu.remove(); return; }
+
+        menu = document.createElement("div");
+        menu.id = "authDropdown";
+        menu.style.cssText = [
+          "position:absolute","top:calc(100% + 6px)","right:0",
+          "background:var(--surface)","border:1px solid var(--border)",
+          "border-radius:10px","padding:6px","min-width:140px",
+          "box-shadow:0 8px 24px rgba(0,0,0,0.18)","z-index:9999",
+          "font-family:var(--font-body)","font-size:0.82rem"
+        ].join(";");
+
+        const items = [
+          { label: "👤  Profile", href: null, action: null },
+          { label: "🚪  Sign out", href: null, action: "logout" }
+        ];
+        items.forEach(item => {
+          const btn = document.createElement("button");
+          btn.textContent = item.label;
+          btn.style.cssText = "display:block;width:100%;text-align:left;background:none;border:none;padding:8px 10px;border-radius:6px;cursor:pointer;color:var(--text);font-size:inherit;font-family:inherit;transition:background 0.1s";
+          btn.onmouseover = () => btn.style.background = "var(--border)";
+          btn.onmouseout  = () => btn.style.background = "none";
+          btn.addEventListener("click", async () => {
+            menu.remove();
+            if (item.action === "logout") {
+              const t = localStorage.getItem("simmer_token");
+              if (t) {
+                try {
+                  await fetch(`${API_BASE_URL}/auth/logout`, {
+                    method: "POST",
+                    headers: { "Authorization": "Bearer " + t }
+                  });
+                } catch {}
+              }
+              localStorage.removeItem("simmer_token");
+              window.location.href = "/login.html";
+            }
+          });
+          menu.appendChild(btn);
+        });
+
+        // Position relative to avatar button
+        avatarBtn.style.position = "relative";
+        avatarBtn.appendChild(menu);
+        document.addEventListener("click", () => menu.remove(), { once: true });
+      });
+    })();
     // ─────────────────────────────────────────────────────────────────────────
 
     function trackInteraction(action, recipeId) {
