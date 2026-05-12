@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign in — Simmer</title>
+  <meta name="theme-color" content="#0D0702" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Manrope:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg0:          #FAFAF6;
+      --bg1:          #ffffff;
+      --ink:          #1C1008;
+      --muted:        #6B4C2A;
+      --muted2:       #9B7553;
+      --surface:      rgba(250, 250, 246, 0.92);
+      --border:       rgba(200, 160, 110, 0.38);
+      --accent:       #C8690E;
+      --accentGlow:   rgba(200, 105, 14, 0.18);
+      --cta:          var(--accent);
+      --positive:     #16a34a;
+      --danger:       #dc2626;
+      --ink-lo:       var(--muted);
+      --ink-faint:    var(--muted2);
+      --t-xs:         0.72rem;
+      --t-sm:         0.84rem;
+      --t-base:       0.96rem;
+      --t-xl:         1.58rem;
+      --fw-reg:       500;
+      --fw-med:       700;
+      --fw-bold:      800;
+      --fw-black:     900;
+      --sp-xs:        4px;
+      --sp-sm:        8px;
+      --sp-md:        16px;
+      --sp-lg:        24px;
+      --sp-xl:        40px;
+      --shadow-float: 0 40px 80px -16px rgba(50,20,5,0.28);
+      --radius:       20px;
+    }
+    [data-theme="dark"] {
+      --bg0:          #0D0702;
+      --bg1:          #160C05;
+      --ink:          #F2E5CC;
+      --muted:        #C4906A;
+      --muted2:       #8A6035;
+      --surface:      rgba(22, 12, 5, 0.97);
+      --border:       rgba(180, 110, 45, 0.28);
+      --accent:       #D4891C;
+      --accentGlow:   rgba(212, 137, 28, 0.22);
+      --shadow-float: 0 40px 80px -16px rgba(0,0,0,0.70);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Manrope', system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--bg0);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+    [data-theme="dark"] body {
+      background:
+        radial-gradient(ellipse 70% 45% at 20% 5%, rgba(210,120,28,0.06) 0%, transparent 65%),
+        radial-gradient(ellipse 50% 40% at 80% 95%, rgba(200,105,14,0.04) 0%, transparent 65%),
+        #0D0702;
+    }
+
+    .auth-shell {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--sp-lg) var(--sp-md);
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 400px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: var(--sp-xl) var(--sp-lg);
+      box-shadow: var(--shadow-float);
+      display: flex;
+      flex-direction: column;
+      gap: var(--sp-lg);
+    }
+
+    .auth-brand { text-align: center; }
+    .auth-brand .flame { font-size: 2.2rem; line-height: 1; display: block; margin-bottom: var(--sp-xs); }
+    .auth-brand h1 {
+      font-family: 'Fraunces', serif;
+      font-size: var(--t-xl);
+      font-weight: var(--fw-black);
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    .auth-heading h2 {
+      font-family: 'Fraunces', serif;
+      font-size: var(--t-xl);
+      font-weight: var(--fw-med);
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+      margin-bottom: var(--sp-xs);
+    }
+    .auth-heading p {
+      font-size: var(--t-sm);
+      color: var(--ink-lo);
+      font-weight: var(--fw-reg);
+      line-height: 1.5;
+    }
+
+    .auth-form { display: flex; flex-direction: column; gap: var(--sp-md); }
+
+    .field-group { display: flex; flex-direction: column; gap: var(--sp-xs); }
+    .field-label {
+      font-size: var(--t-xs);
+      font-weight: var(--fw-bold);
+      color: var(--ink-lo);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .phone-input-wrap {
+      display: flex;
+      align-items: center;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      background: var(--bg0);
+      transition: border-color 160ms ease, box-shadow 160ms ease;
+      overflow: hidden;
+    }
+    .phone-input-wrap:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accentGlow);
+    }
+    .phone-input-wrap.error {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 3px rgba(220,38,38,0.12);
+    }
+    .phone-prefix {
+      padding: 14px 12px 14px 16px;
+      font-size: var(--t-base);
+      font-weight: var(--fw-bold);
+      color: var(--ink-lo);
+      border-right: 1.5px solid var(--border);
+      white-space: nowrap;
+      background: transparent;
+      user-select: none;
+    }
+    .phone-input {
+      flex: 1; border: none; background: transparent;
+      padding: 14px 16px;
+      font-size: var(--t-base);
+      font-weight: var(--fw-med);
+      color: var(--ink);
+      font-family: inherit;
+      outline: none;
+      -webkit-appearance: none;
+      min-width: 0;
+    }
+    .phone-input::placeholder { color: var(--ink-faint); font-weight: var(--fw-reg); }
+
+    .field-error {
+      font-size: var(--t-xs);
+      color: var(--danger);
+      font-weight: var(--fw-med);
+      min-height: 18px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 160ms ease;
+    }
+    .field-error.visible { opacity: 1; }
+
+    .btn-cta {
+      width: 100%;
+      padding: 15px var(--sp-lg);
+      background: var(--cta);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: var(--t-base);
+      font-weight: var(--fw-bold);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--sp-sm);
+      transition: transform 200ms ease, filter 200ms ease, box-shadow 200ms ease;
+      box-shadow: 0 4px 16px -2px rgba(200,105,14,0.35);
+    }
+    .btn-cta:hover:not(:disabled) {
+      filter: brightness(1.08);
+      box-shadow: 0 8px 24px -4px rgba(200,105,14,0.45);
+      transform: translateY(-1px);
+    }
+    .btn-cta:active:not(:disabled) { transform: scale(0.97); transition-duration: 80ms; }
+    .btn-cta:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0; display: none;
+    }
+    .btn-cta.loading .spinner { display: block; }
+    .btn-cta.loading .btn-label { opacity: 0.5; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .auth-divider {
+      display: flex; align-items: center; gap: var(--sp-md);
+      color: var(--ink-faint); font-size: var(--t-xs);
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    .auth-footer { text-align: center; font-size: var(--t-sm); color: var(--ink-lo); font-weight: var(--fw-reg); }
+    .auth-footer a {
+      color: var(--accent); font-weight: var(--fw-med); text-decoration: none;
+      transition: opacity 150ms ease;
+    }
+    .auth-footer a:hover { opacity: 0.80; text-decoration: underline; }
+
+    .auth-footer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: var(--t-sm);
+      color: var(--ink-lo);
+    }
+    .auth-footer-row a {
+      color: var(--accent); font-weight: var(--fw-med); text-decoration: none;
+      transition: opacity 150ms ease; font-size: var(--t-sm);
+    }
+    .auth-footer-row a:hover { opacity: 0.80; }
+
+    .theme-toggle {
+      position: fixed; top: 16px; right: 16px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 50%; width: 38px; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 1rem;
+      transition: background 200ms ease, border-color 200ms ease;
+    }
+    .theme-toggle:hover { border-color: var(--accent); }
+  </style>
+</head>
+<body>
+
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+
+  <main class="auth-shell">
+    <div class="auth-card" role="main">
+
+      <div class="auth-brand">
+        <span class="flame" aria-hidden="true">🔥</span>
+        <h1>Simmer</h1>
+      </div>
+
+      <div class="auth-heading">
+        <h2>Welcome back.</h2>
+        <p>Enter your number and we'll send a quick OTP.</p>
+      </div>
+
+      <form class="auth-form" id="loginForm" novalidate>
+        <div class="field-group">
+          <label class="field-label" for="phoneInput">Mobile number</label>
+          <div class="phone-input-wrap" id="phoneWrap">
+            <span class="phone-prefix">🇮🇳 +91</span>
+            <input
+              class="phone-input"
+              id="phoneInput"
+              type="tel"
+              inputmode="numeric"
+              autocomplete="tel-national"
+              placeholder="98765 43210"
+              maxlength="10"
+              aria-describedby="phoneError"
+              required
+            />
+          </div>
+          <span class="field-error" id="phoneError" role="alert" aria-live="polite"></span>
+        </div>
+
+        <button type="submit" class="btn-cta" id="sendOtpBtn">
+          <div class="spinner" aria-hidden="true"></div>
+          <span class="btn-label">Send OTP</span>
+        </button>
+      </form>
+
+      <div class="auth-footer-row">
+        <a href="/recover.html">Trouble signing in?</a>
+        <a href="/signup.html">Create account</a>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      const toggle = document.getElementById('themeToggle');
+      const savedTheme = localStorage.getItem('simmer_theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      applyTheme(savedTheme);
+      toggle.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        applyTheme(next);
+        localStorage.setItem('simmer_theme', next);
+      });
+      function applyTheme(t) {
+        document.documentElement.dataset.theme = t;
+        toggle.textContent = t === 'dark' ? '☀️' : '🌙';
+      }
+
+      // Redirect if already logged in
+      if (localStorage.getItem('simmer_token')) {
+        window.location.href = '/';
+      }
+
+      const form    = document.getElementById('loginForm');
+      const input   = document.getElementById('phoneInput');
+      const wrap    = document.getElementById('phoneWrap');
+      const errorEl = document.getElementById('phoneError');
+      const btn     = document.getElementById('sendOtpBtn');
+
+      function showError(msg) {
+        errorEl.textContent = '⚠ ' + msg;
+        errorEl.classList.add('visible');
+        wrap.classList.add('error');
+        input.setAttribute('aria-invalid', 'true');
+      }
+      function clearError() {
+        errorEl.classList.remove('visible');
+        wrap.classList.remove('error');
+        input.removeAttribute('aria-invalid');
+      }
+
+      input.addEventListener('input', () => {
+        input.value = input.value.replace(/\D/g, '');
+        if (input.value.length > 0) clearError();
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearError();
+
+        const digits = input.value.replace(/\D/g, '');
+        if (digits.length !== 10) {
+          showError('Enter a valid 10-digit Indian mobile number.');
+          input.focus();
+          return;
+        }
+        if (!/^[6-9]/.test(digits)) {
+          showError('Indian mobile numbers start with 6, 7, 8, or 9.');
+          input.focus();
+          return;
+        }
+
+        btn.disabled = true;
+        btn.classList.add('loading');
+
+        const phone = '+91' + digits;
+
+        try {
+          const res  = await fetch('/api/auth/request-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone })
+          });
+          const data = await res.json().catch(() => ({}));
+
+          if (res.ok) {
+            sessionStorage.setItem('simmer_pending_phone', phone);
+            sessionStorage.setItem('simmer_otp_intent', 'login');
+            window.location.href = '/verify-otp.html';
+          } else {
+            showError(data.detail || data.message || 'Could not send OTP. Please try again.');
+            btn.disabled = false;
+            btn.classList.remove('loading');
+          }
+        } catch {
+          showError('Network error — check your connection.');
+          btn.disabled = false;
+          btn.classList.remove('loading');
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
