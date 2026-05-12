@@ -1,0 +1,3 @@
+## 2025-05-14 - [Accessibility for Icon-Only Buttons and Dynamic Updates]
+**Learning:** In this design system, icon-only interactive elements (using emojis or symbols like '✕', '-', '+') frequently lack descriptive metadata. Providing both `aria-label` for screen readers and `title` for hover hints is essential. Additionally, dynamic text updates (such as serving size changes) require `aria-live="polite"` to be properly announced to assistive technology users.
+**Action:** Audit all icon-only buttons for `aria-label` and `title` attributes. Ensure all dynamic status or count updates use ARIA live regions.
