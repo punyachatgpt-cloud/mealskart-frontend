@@ -6472,8 +6472,8 @@
     function commitSearch(q) {
       pushSearchHistory(q);
       clearTimeout(autoFetchDebounce);
-      setUniSearchBanner(q);   // show "Showing results for: …" banner
-      getSuggestions("normal", q);
+      setUniSearchBanner(q);
+      searchRecipes(q);          // ← dedicated /search endpoint, not /recommend
     }
 
     function applySearch(query) {
@@ -7214,6 +7214,61 @@
       el.decideHint.style.display = isDecide ? "block" : "none";
     }
 
+    // ── Dedicated search function — calls /search, NOT /recommend ────────────
+    // Completely separate from recommendation logic so mood/time/explore-exploit
+    // never interfere with finding a specific dish by name.
+    let isSearching = false;
+    let searchAbort = null;
+
+    async function searchRecipes(q) {
+      if (!q || q.trim().length < 2) return;
+      q = q.trim();
+
+      // Cancel any in-flight search
+      if (searchAbort) searchAbort.abort();
+      searchAbort = new AbortController();
+
+      if (isSearching) return;
+      isSearching = true;
+
+      // Show loading state without blocking the recommend buttons
+      const emptyState = document.getElementById("emptyState");
+      if (emptyState) emptyState.style.display = "none";
+      renderLoadingCards("normal");
+
+      try {
+        const params = new URLSearchParams({ q, diet: state.diet || "non-veg", limit: 6 });
+        const resp = await fetch(`${API_BASE_URL}/search?${params}`, {
+          signal: searchAbort.signal
+        });
+        if (!resp.ok) throw new Error(`Search failed: ${resp.status}`);
+        const data = await resp.json();
+        const items = Array.isArray(data) ? data : [];
+
+        if (items.length === 0) {
+          setUniSearchBanner("");
+          renderEmpty(`No recipes found for "${q}". Try a different name.`);
+        } else {
+          // Inject minimal fields that renderResults expects
+          const enriched = items.map((item, i) => ({
+            ...item,
+            score: items.length - i,
+            why: "Best name match",
+            ingredient_match_percent: 0,
+            tags: Array.isArray(item.tags) ? item.tags.join(", ") : (item.tags || ""),
+            _tags: Array.isArray(item.tags) ? item.tags : [],
+          }));
+          renderResults(enriched, "normal");
+        }
+      } catch (err) {
+        if (err.name === "AbortError") return;   // superseded by newer search
+        setUniSearchBanner("");
+        renderEmpty("Search failed. Check your connection and try again.");
+      } finally {
+        isSearching = false;
+      }
+    }
+
     async function getSuggestions(mode = "normal", queryOverride = null) {
       if (isLoadingSuggestions) return;
       isLoadingSuggestions = true;
@@ -7232,22 +7287,19 @@
       renderLoadingCards(mode);
 
       try {
-        const searchQ    = queryOverride || (el.searchInput?.value?.trim() || "");
         const ingredients = getIngredients();
-        // If user typed something in the search box, use that as name_query.
-        // If search box is empty but they have 1-2 ingredient tags (e.g. "pork"),
-        // also pass those as name_query so the backend can match recipe names —
-        // many recipes list "pork belly slices" but the recipe name says "pork".
-        const nameQ = searchQ || (ingredients.length <= 2 ? ingredients.join(" ") : "");
-        const cacheKey = JSON.stringify({ ...state, mode, ingredients, nameQ });
+        // NOTE: name_query is intentionally NOT derived from ingredient tags here.
+        // The search box calls /search directly via searchRecipes().
+        // getSuggestions() is only for filter-based recommendations (buttons).
+        const cacheKey = JSON.stringify({ ...state, mode, ingredients });
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
           try {
             const parsed = JSON.parse(cached);
             const cachedData = parsed && typeof parsed === "object" ? parsed.data : null;
             const cachedTime = parsed && typeof parsed === "object" ? parsed.time : null;
-            const isFresh = typeof cachedTime === "number" && (Date.now() - cachedTime < 10 * 60 * 1000);
-            if (isFresh && Array.isArray(cachedData)) {
+            const isFresh = typeof cachedTime === "number" && (Date.now() - cachedTime < 5 * 60 * 1000);
+            if (isFresh && Array.isArray(cachedData) && cachedData.length > 0) {
               renderResults(cachedData, mode);
               localStorage.setItem(LAST_MODE_KEY, mode);
               if (mode === "decide" && cachedData.length > 0) trackInteraction("decide", cachedData[0].id);
@@ -7264,22 +7316,11 @@
             ...state,
             mode,
             ingredients,
-            // name_query: substring-matches recipe name + ingredients on the backend.
-            // Works for both search-box queries ("pork") AND single pantry-tag lookups.
-            ...(nameQ ? { name_query: nameQ } : {})
           })
         });
 
         const data = await response.json();
         const resultItems = Array.isArray(data) ? data : [];
-
-        // If the backend found nothing for a name_query, clear banner & show "no results"
-        if (resultItems.length === 0 && nameQ) {
-          setUniSearchBanner("");   // don't keep "Showing results for: X" if nothing found
-          renderEmpty(`No recipes found for "${nameQ}". Try a different search.`);
-          try { localStorage.setItem(cacheKey, JSON.stringify({ data: [], time: Date.now() })); } catch(_) {}
-          return;
-        }
 
         try {
           localStorage.setItem(cacheKey, JSON.stringify({ data: resultItems, time: Date.now() }));
@@ -7389,13 +7430,16 @@
       }
 
       function clearUniSearch() {
+        // Cancel any in-flight search request
+        if (searchAbort) { searchAbort.abort(); searchAbort = null; }
+        isSearching = false;
         el.searchInput.value = "";
         el.searchInput.classList.remove("hasValue");
         document.getElementById("searchClearBtn")?.classList.remove("visible");
         setUniSearchBanner("");
         removeDYM();
         closeSearchDropdown();
-        getSuggestions("normal");   // restore normal recommendations
+        getSuggestions("normal");   // restore normal filter-based recommendations
       }
 
       document.getElementById("uniSearchClearBtn")?.addEventListener("click", clearUniSearch);
