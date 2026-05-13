@@ -1,6 +1,6 @@
 // Simmer Service Worker — cache-first static, network-first API
-const CACHE_NAME = "simmer-v3";
-const API_CACHE  = "simmer-api-v3";
+const CACHE_NAME = "simmer-v4";
+const API_CACHE  = "simmer-api-v4";
 
 const STATIC_ASSETS = [
   "/",
