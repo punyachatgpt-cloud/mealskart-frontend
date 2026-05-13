@@ -388,7 +388,7 @@
       .chip:hover { transform: translateY(-1px); }
     }
 
-    .btn:active { transform: scale(0.97); transition-duration: 80ms; }
+    .btn:active { transform: scale(0.97); transition-duration: 80ms; filter: brightness(0.96); }
 
     .btn:focus-visible,
     .chip:focus-visible,
@@ -3968,7 +3968,7 @@
       .chip.selected:hover { transform: translateY(-2px) scale(1.05); }
     }
     .chip:active { transform: scale(0.94) !important; transition-duration: 0.1s !important; }
-    .chip.selected { transform: scale(1.02); }
+    .chip.selected { transform: scale(1.0); }
 
     /* ④ Primary CTA — ember gradient + boosted glow */
     .btn:not(.secondary) {
@@ -5013,11 +5013,7 @@
       animation: modalSlideUp 0.38s cubic-bezier(0.34,1.06,0.64,1) both;
     }
 
-    /* 10 ─ Tactile CTA press on mobile ─────────── */
-    .btn:active {
-      transform: scale(0.968) !important;
-      filter: brightness(0.96);
-    }
+    /* 10 ─ Tactile CTA press — see canonical rule in base styles */
 
     /* 11 ─ Subtle result-count pill ─────────────── */
     .resultCountPill {
@@ -10729,6 +10725,24 @@
       document.getElementById("chefChatOverlay")?.classList.add("hidden");
     }
 
+    function initFabIdlePulse() {
+      const fab = document.getElementById("chefFab");
+      if (!fab) return;
+      let idleTimer = null;
+      function scheduleIdle() {
+        clearTimeout(idleTimer);
+        fab.classList.remove("idle");
+        idleTimer = setTimeout(() => {
+          fab.classList.add("idle");
+          fab.addEventListener("animationend", () => fab.classList.remove("idle"), { once: true });
+        }, 8000);
+      }
+      ["mousemove", "keydown", "pointerdown", "scroll"].forEach(evt =>
+        document.addEventListener(evt, scheduleIdle, { passive: true })
+      );
+      scheduleIdle();
+    }
+
     function initChefChat() {
       document.getElementById("chefFab")?.addEventListener("click", openChefChat);
       document.getElementById("closeChefChat")?.addEventListener("click", closeChefChat);
@@ -12264,6 +12278,7 @@
     document.getElementById("exploreBtn")?.addEventListener("click", openCuisineExplorer);
     initShoppingList();
     initChefChat();
+    initFabIdlePulse();
     initCookLog();
     initTabBar();
     initModalRemix();
