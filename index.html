@@ -1731,8 +1731,7 @@
       font-size: 0.8rem;
     }
 
-    .servingRow,
-    .timerRow {
+    .servingRow {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -1740,8 +1739,85 @@
       margin: 0 0 10px;
     }
 
-    .servingLabel,
-    .timerText {
+    /* ── Circular ring timer ─────────────────────── */
+    .timerWrap {
+      display: none;
+      justify-content: center;
+      margin: 0 0 14px;
+    }
+
+    .timerRingBtn {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      padding: 0;
+      border-radius: 50%;
+    }
+
+    .timerRingSvg {
+      width: 96px;
+      height: 96px;
+      transform: rotate(-90deg);
+      display: block;
+    }
+
+    .timerRingTrack {
+      fill: none;
+      stroke: rgba(15, 23, 42, 0.1);
+      stroke-width: 5;
+    }
+
+    [data-theme="dark"] .timerRingTrack { stroke: rgba(255,255,255,0.12); }
+
+    .timerRingFill {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 5;
+      stroke-linecap: round;
+      stroke-dasharray: 169.6;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 0.9s linear, stroke 0.3s ease;
+    }
+
+    .timerRingFill.done { stroke: #22c55e; }
+
+    .timerRingInner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .timerRingTime {
+      font-size: 1.05rem;
+      font-weight: 900;
+      color: var(--ink);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .timerRingLabel {
+      font-size: 0.58rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    @keyframes timerPulse {
+      0%, 100% { transform: scale(1);    box-shadow: 0 0 0   0 rgba(180, 80, 20, 0); }
+      50%       { transform: scale(1.04); box-shadow: 0 0 0 8px rgba(180, 80, 20, 0.12); }
+    }
+
+    .timerRingBtn.running { animation: timerPulse 1.8s ease-in-out infinite; }
+
+    .servingLabel {
       color: rgba(11, 18, 32, 0.86);
       font-weight: 950;
       font-size: 0.9rem;
@@ -1757,8 +1833,7 @@
       border: 1px solid rgba(15, 23, 42, 0.08);
     }
 
-    .servingBtn,
-    .timerBtn {
+    .servingBtn {
       border: 1px solid rgba(120, 40, 8, 0.12);
       background: rgba(255, 255, 255, 0.82);
       color: rgba(120, 40, 8, 0.88);
@@ -1997,8 +2072,7 @@
       .modalMetaGrid { grid-template-columns: 1fr; }
       .macroGrid { grid-template-columns: repeat(2, 1fr); }
       .ingredientChecklist { grid-template-columns: 1fr; }
-      .servingRow,
-      .timerRow { align-items: flex-start; flex-direction: column; }
+      .servingRow { align-items: flex-start; flex-direction: column; }
       .stepActions { grid-template-columns: 1fr; }
     }
 
@@ -5481,9 +5555,17 @@
           <p class="stepText" id="stepText">Loading…</p>
         </div>
       </div>
-      <div class="timerRow" id="timerRow">
-        <div class="timerText" id="timerText">No timer for this step</div>
-        <button class="timerBtn" id="timerBtn" type="button">Start</button>
+      <div class="timerWrap" id="timerRow">
+        <button class="timerRingBtn" id="timerBtn" type="button" aria-label="Start timer">
+          <svg class="timerRingSvg" viewBox="0 0 64 64" aria-hidden="true">
+            <circle class="timerRingTrack" cx="32" cy="32" r="27"/>
+            <circle class="timerRingFill" id="timerRingFill" cx="32" cy="32" r="27"/>
+          </svg>
+          <div class="timerRingInner">
+            <span class="timerRingTime" id="timerText">0:00</span>
+            <span class="timerRingLabel" id="timerRingLabel">tap to start</span>
+          </div>
+        </button>
       </div>
       <div class="stepActions">
         <button class="btn secondary" id="prevStepBtn" type="button">Previous</button>
@@ -5881,6 +5963,8 @@
       stepText: document.getElementById("stepText"),
       timerRow: document.getElementById("timerRow"),
       timerText: document.getElementById("timerText"),
+      timerRingFill: document.getElementById("timerRingFill"),
+      timerRingLabel: document.getElementById("timerRingLabel"),
       timerBtn: document.getElementById("timerBtn"),
       prevStepBtn: document.getElementById("prevStepBtn"),
       nextStepBtn: document.getElementById("nextStepBtn"),
@@ -7661,6 +7745,11 @@
       timerId = null;
       timerSeconds = 0;
       timerRemaining = 0;
+      el.timerBtn?.classList.remove("running");
+      if (el.timerRingFill) {
+        el.timerRingFill.style.strokeDashoffset = 0;
+        el.timerRingFill.classList.remove("done");
+      }
     }
 
     function formatTimer(seconds) {
@@ -7674,16 +7763,34 @@
       return match ? clampInt(match[1], 0) * 60 : 0;
     }
 
+    const TIMER_CIRCUMFERENCE = 169.6; // 2π × r(27)
+
     function updateTimerUI() {
       if (!timerSeconds) {
         el.timerRow.style.display = "none";
         return;
       }
       el.timerRow.style.display = "flex";
-      el.timerText.textContent = timerRemaining > 0
-        ? `Timer ${formatTimer(timerRemaining)}`
-        : `Timer ${formatTimer(timerSeconds)}`;
-      el.timerBtn.textContent = timerId ? "Pause" : (timerRemaining > 0 ? "Resume" : "Start");
+
+      // Ring fill: drains clockwise as time passes
+      const ratio = timerRemaining > 0 ? timerRemaining / timerSeconds : 0;
+      el.timerRingFill.style.strokeDashoffset = TIMER_CIRCUMFERENCE * (1 - ratio);
+      el.timerRingFill.classList.toggle("done", timerRemaining === 0 && timerSeconds > 0);
+
+      // Centre time display
+      const displaySecs = timerRemaining > 0 ? timerRemaining : timerSeconds;
+      el.timerText.textContent = formatTimer(displaySecs);
+
+      // Label under the time
+      if (timerRemaining === 0 && timerSeconds > 0) {
+        el.timerRingLabel.textContent = "done!";
+      } else if (timerId) {
+        el.timerRingLabel.textContent = "tap to pause";
+      } else if (timerRemaining > 0 && timerRemaining < timerSeconds) {
+        el.timerRingLabel.textContent = "tap to resume";
+      } else {
+        el.timerRingLabel.textContent = "tap to start";
+      }
     }
 
     function highlightStepText(text) {
@@ -8205,20 +8312,24 @@
     el.timerBtn.addEventListener("click", () => {
       if (!timerSeconds) return;
       if (timerId) {
+        // Pause
         clearInterval(timerId);
         timerId = null;
+        el.timerBtn.classList.remove("running");
         updateTimerUI();
         return;
       }
-      if (timerRemaining <= 0) timerRemaining = timerSeconds;
+      if (timerRemaining <= 0) timerRemaining = timerSeconds; // restart
+      el.timerBtn.classList.add("running");
       timerId = setInterval(() => {
         timerRemaining = Math.max(0, timerRemaining - 1);
         updateTimerUI();
         if (timerRemaining <= 0) {
           clearInterval(timerId);
           timerId = null;
-          el.timerText.textContent = "Timer complete";
-          el.timerBtn.textContent = "Restart";
+          el.timerBtn.classList.remove("running");
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+          updateTimerUI();
         }
       }, 1000);
       updateTimerUI();
@@ -8253,6 +8364,31 @@
         updateModalStep();
       }
     });
+
+    // ── Swipe left/right on step card to navigate steps ─────────────────────
+    (function attachStepSwipe() {
+      const wrap = document.querySelector(".stepCardWrap");
+      if (!wrap) return;
+      let startX = 0, startY = 0;
+      wrap.addEventListener("touchstart", e => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+      }, { passive: true });
+      wrap.addEventListener("touchend", e => {
+        const dx = e.changedTouches[0].clientX - startX;
+        const dy = e.changedTouches[0].clientY - startY;
+        if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return; // too short or mostly vertical
+        if (dx < 0 && currentStepIndex < modalSteps.length - 1) {
+          _stepNavDirection = "forward";
+          currentStepIndex++;
+          updateModalStep();
+        } else if (dx > 0 && currentStepIndex > 0) {
+          _stepNavDirection = "back";
+          currentStepIndex--;
+          updateModalStep();
+        }
+      }, { passive: true });
+    })();
 
     el.closeModalBtn.addEventListener("click", closeRecipeModal);
     el.recipeModal.addEventListener("click", (event) => {
