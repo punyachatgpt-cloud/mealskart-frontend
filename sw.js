@@ -91,6 +91,17 @@ async function networkFirstAPI(request) {
 }
 
 async function cacheFirstStatic(request) {
+  const url = new URL(request.url);
+  // Never serve index.html from cache — always fetch fresh so JS updates deploy immediately
+  const isHtml = url.pathname === "/" || url.pathname === "/index.html" || !url.pathname.includes(".");
+  if (isHtml) {
+    try {
+      return await fetch(request);
+    } catch {
+      const fallback = await caches.match("/index.html");
+      return fallback || new Response("Offline", { status: 503 });
+    }
+  }
   const cached = await caches.match(request);
   if (cached) return cached;
   try {
@@ -101,7 +112,6 @@ async function cacheFirstStatic(request) {
     }
     return response;
   } catch {
-    // Return cached index.html as fallback for navigation
     const fallback = await caches.match("/index.html");
     return fallback || new Response("Offline", { status: 503 });
   }
