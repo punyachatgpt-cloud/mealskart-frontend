@@ -7763,6 +7763,8 @@
 
     async function getSuggestions(mode = "normal", queryOverride = null) {
       if (isLoadingSuggestions) return;
+      // Don't overwrite active search results with filter-based recommendations
+      if (uniSearchActive) return;
       isLoadingSuggestions = true;
 
       // Hide empty/staff-pick state
@@ -7791,7 +7793,7 @@
             const cachedData = parsed && typeof parsed === "object" ? parsed.data : null;
             const cachedTime = parsed && typeof parsed === "object" ? parsed.time : null;
             const isFresh = typeof cachedTime === "number" && (Date.now() - cachedTime < 5 * 60 * 1000);
-            if (isFresh && Array.isArray(cachedData) && cachedData.length > 0) {
+            if (isFresh && Array.isArray(cachedData) && cachedData.length > 0 && !uniSearchActive) {
               renderResults(cachedData, mode);
               localStorage.setItem(LAST_MODE_KEY, mode);
               if (mode === "decide" && cachedData.length > 0) trackInteraction("decide", cachedData[0].id);
@@ -7819,6 +7821,9 @@
         clearTimeout(slowHint);
         const data = await response.json();
         const resultItems = Array.isArray(data) ? data : [];
+
+        // Abort render if a search became active while we were waiting
+        if (uniSearchActive) return;
 
         try {
           localStorage.setItem(cacheKey, JSON.stringify({ data: resultItems, time: Date.now() }));
