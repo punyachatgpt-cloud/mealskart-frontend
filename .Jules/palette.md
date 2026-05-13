@@ -1,0 +1,3 @@
+## 2025-05-15 - [Enhancing Micro-Interactions in Recipe Controls]
+**Learning:** In a dense, static-HTML utility app like Simmer, providing multi-modal feedback (visual :disabled states, ARIA-live announcements, and haptic vibrations) is critical for making small controls like serving selectors feel robust and accessible. Relying solely on JS logic to disable buttons without corresponding CSS feedback leads to a "dead" feeling in the UI.
+**Action:** Always pair JS-driven state changes (like `btn.disabled = true`) with explicit CSS `:disabled` styles and ARIA attributes to ensure the state is communicated visually, tactually, and to assistive technologies simultaneously.
