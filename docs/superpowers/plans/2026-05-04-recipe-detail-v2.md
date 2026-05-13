@@ -16,23 +16,23 @@
 - Modify: `mealskart-backend/fastapi_app.py`
 - Modify: `mealskart-backend/tests/test_api_contract.py`
 
-- [ ] Add failing tests that assert recipe detail includes `servings`, `nutrition`, `ingredients_with_quantities`, and `substitutions`.
-- [ ] Implement an enrichment map for an initial recipe set with graceful fallback.
-- [ ] Include enriched fields in `/recommend` and `/recipe/{id}`.
-- [ ] Run `python -m unittest tests.test_api_contract -v`.
+- [x] Add failing tests that assert recipe detail includes `servings`, `nutrition`, `ingredients_with_quantities`, and `substitutions`.
+- [x] Implement an enrichment map for an initial recipe set with graceful fallback.
+- [x] Include enriched fields in `/recommend` and `/recipe/{id}`.
+- [x] Run `python -m unittest tests.test_api_contract -v`.
 
 ### Task 2: Frontend Modal V2
 
 **Files:**
 - Modify: `index.html`
 
-- [ ] Add serving controls, nutrition panel, ingredient checklist, missing ingredient section, substitution chips, and timer UI.
-- [ ] Use existing ingredient input to calculate missing ingredients when opening recipe details.
-- [ ] Scale ingredient quantities and nutrition values by serving multiplier.
-- [ ] Run embedded JavaScript syntax verification with Node.
+- [x] Add serving controls, nutrition panel, ingredient checklist, missing ingredient section, substitution chips, and timer UI.
+- [x] Use existing ingredient input to calculate missing ingredients when opening recipe details.
+- [x] Scale ingredient quantities and nutrition values by serving multiplier.
+- [x] Run embedded JavaScript syntax verification with Node.
 
 ### Task 3: Final Verification
 
-- [ ] Run backend contract tests.
-- [ ] Run frontend JavaScript syntax check.
-- [ ] Check git status and summarize changed files.
+- [x] Run backend contract tests.
+- [x] Run frontend JavaScript syntax check.
+- [x] Check git status and summarize changed files.
