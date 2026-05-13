@@ -2029,6 +2029,20 @@
       transition: background 0.13s, color 0.13s;
     }
     .uniSearchClearBtn:hover { background: rgba(200,105,14,0.15); color: var(--accent); }
+    .searchLoadMoreWrap {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 4px 20px; gap: 12px; flex-wrap: wrap;
+    }
+    .searchCountText {
+      font-size: 0.82rem; color: var(--muted2);
+    }
+    .searchCountText strong { color: var(--text); }
+    .loadMoreBtn {
+      padding: 9px 20px; border-radius: 22px; border: 1.5px solid var(--accent);
+      background: transparent; color: var(--accent); font-size: 0.85rem;
+      font-weight: 600; cursor: pointer; transition: background 0.18s, color 0.18s;
+    }
+    .loadMoreBtn:hover { background: var(--accent); color: #fff; }
     [data-theme="dark"] .uniSearchBanner {
       background: rgba(200,105,14,0.14);
       border-color: rgba(200,105,14,0.30);
@@ -7216,9 +7230,12 @@
     function renderResults(items, mode) {
       el.results.innerHTML = "";
       el.results.classList.toggle("decideResults", mode === "decide");
-      el.results.classList.toggle("hasHero", mode !== "decide");
+      el.results.classList.toggle("hasHero", mode === "normal");  // hero only for normal recommend
 
-      const incoming = mode === "decide" ? items.slice(0, 1) : items.slice(0, 3);
+      // search mode shows all passed items; decide = 1; normal = 3
+      const incoming = mode === "decide" ? items.slice(0, 1)
+                     : mode === "search"  ? items
+                     :                      items.slice(0, 3);
       const recentCooked = getRecentCookedIds();
       let visible = incoming;
       if (mode === "normal" && recentCooked.length > 0) {
@@ -7255,8 +7272,8 @@
         const isFirst  = index === 0;
         const isDecide = mode === "decide" && isFirst;
         const isFav    = favorites.has(String(item.id));
-        const isHero   = mode !== "decide" && isFirst;
-        const isPersonalised = topCat && (item.category || "").toLowerCase().includes(topCat.toLowerCase());
+        const isHero   = mode === "normal" && isFirst;  // no hero in search/decide
+        const isPersonalised = mode === "normal" && topCat && (item.category || "").toLowerCase().includes(topCat.toLowerCase());
 
         const card = document.createElement("article");
         card.className = [
@@ -7265,11 +7282,11 @@
           isHero   ? "heroCard"   : ""
         ].filter(Boolean).join(" ");
         card.tabIndex = 0;
-        card.style.animationDelay = `${index * 100}ms`;
+        card.style.animationDelay = `${Math.min(index, 5) * 80}ms`;  // cap delay at 5 cards
 
         const badges = [
           isDecide ? '<span class="badge gold">&#11088; Your Meal is Decided</span>'
-                   : isFirst ? '<span class="badge gold">&#11088; Recommended</span>' : "",
+                   : (mode === "normal" && isFirst) ? '<span class="badge gold">&#11088; Recommended</span>' : "",
           isPersonalised && !isFirst ? '<span class="badge personalised">💛 Picked for you</span>' : "",
           tagBadges(state.diet, item.tags, item.category)
         ].filter(Boolean).join("");
@@ -7625,28 +7642,84 @@
       el.decideHint.style.display = isDecide ? "block" : "none";
     }
 
-    // ── Dedicated search function — calls /search, NOT /recommend ────────────
-    // Completely separate from recommendation logic so mood/time/explore-exploit
-    // never interfere with finding a specific dish by name.
+    // ── Dedicated search — calls /search, NOT /recommend ─────────────────────
+    // No diet/time/mood filters. Fetches up to 50 results at once and paginates
+    // client-side so "Show more" requires no extra API call.
     let searchAbort = null;
+    let _searchAllResults = [];   // full result set from last search
+    let _searchShownCount = 0;    // cards currently visible
+    let _searchQuery      = "";   // active query (used by load-more)
+    const SEARCH_PAGE     = 12;   // cards per batch
+
+    function _enrichSearchItem(item, whyLabel) {
+      return {
+        ...item,
+        score: 0,
+        why: whyLabel,
+        ingredient_match_percent: 0,
+        tags: Array.isArray(item.tags) ? item.tags.join(", ") : (item.tags || ""),
+        _tags: Array.isArray(item.tags) ? item.tags : [],
+      };
+    }
+
+    function _renderSearchFooter() {
+      document.getElementById("searchLoadMoreWrap")?.remove();
+      const total  = _searchAllResults.length;
+      const shown  = _searchShownCount;
+      if (total === 0) return;
+
+      const wrap = document.createElement("div");
+      wrap.id = "searchLoadMoreWrap";
+      wrap.className = "searchLoadMoreWrap";
+      const remaining = total - shown;
+      const nextBatch = Math.min(SEARCH_PAGE, remaining);
+
+      wrap.innerHTML = `
+        <span class="searchCountText">Showing <strong>${shown}</strong> of <strong>${total}</strong> results for "<em>${escapeHtml(_searchQuery)}</em>"</span>
+        ${remaining > 0 ? `<button class="loadMoreBtn" id="searchLoadMoreBtn">Show ${nextBatch} more ↓</button>` : ""}
+      `;
+      el.results.after(wrap);
+
+      document.getElementById("searchLoadMoreBtn")?.addEventListener("click", () => {
+        _searchShownCount = Math.min(_searchShownCount + SEARCH_PAGE, total);
+        const ql = _searchQuery.toLowerCase();
+        const whyLabel = _whyLabelFor(ql);
+        renderResults(_searchAllResults.slice(0, _searchShownCount).map(it => _enrichSearchItem(it, whyLabel)), "search");
+        _renderSearchFooter();
+      });
+    }
+
+    function _whyLabelFor(ql) {
+      if (ql === "vegan" || ql === "vegetarian") return "Vegetarian pick";
+      if (ql === "non-veg" || ql === "meat")     return "Non-veg pick";
+      if (["drinks","drink","juice","smoothie","beverage"].includes(ql)) return "Drinks";
+      if (["snacks","snack","starter","appetizer"].includes(ql))         return "Snack";
+      if (["salad","salads"].includes(ql))                               return "Salad";
+      return "Best match";
+    }
 
     async function searchRecipes(q) {
       if (!q || q.trim().length < 2) return;
       q = q.trim();
 
-      // Cancel any in-flight search — AbortController handles deduplication,
-      // no separate isSearching flag needed (it caused a race: new search was
-      // aborted before starting because the old flag was still true).
+      // Cancel any in-flight request — AbortController handles deduplication.
       if (searchAbort) searchAbort.abort();
       searchAbort = new AbortController();
       const signal = searchAbort.signal;
+
+      // Reset pagination state for new query
+      _searchAllResults = [];
+      _searchShownCount = 0;
+      _searchQuery      = q;
+      document.getElementById("searchLoadMoreWrap")?.remove();
 
       const emptyState = document.getElementById("emptyState");
       if (emptyState) emptyState.style.display = "none";
       renderLoadingCards("normal");
 
       try {
-        const params = new URLSearchParams({ q, diet: state.diet || "non-veg", limit: 12 });
+        // No diet param — search is universal, no filter applied
+        const params = new URLSearchParams({ q, limit: 50 });
         const resp = await fetch(`${API_BASE_URL}/search?${params}`, { signal });
         if (!resp.ok) throw new Error(`Search failed: ${resp.status}`);
         const data = await resp.json();
@@ -7655,24 +7728,15 @@
         if (items.length === 0) {
           setUniSearchBanner("");
           renderEmpty(`No recipes found for "${q}". Try a dish name, ingredient, or cuisine.`);
-        } else {
-          const ql = q.toLowerCase();
-          const whyLabel = ql === "vegan" || ql === "vegetarian" ? "Vegetarian pick"
-            : ql === "non-veg" || ql === "meat" ? "Non-veg pick"
-            : ["drinks","drink","juice","smoothie","beverage"].includes(ql) ? "Drinks"
-            : ["snacks","snack","starter","appetizer"].includes(ql) ? "Snack"
-            : ["salad","salads"].includes(ql) ? "Salad"
-            : "Best match";
-          const enriched = items.map((item, i) => ({
-            ...item,
-            score: items.length - i,
-            why: whyLabel,
-            ingredient_match_percent: 0,
-            tags: Array.isArray(item.tags) ? item.tags.join(", ") : (item.tags || ""),
-            _tags: Array.isArray(item.tags) ? item.tags : [],
-          }));
-          renderResults(enriched, "normal");
+          return;
         }
+
+        const whyLabel = _whyLabelFor(q.toLowerCase());
+        _searchAllResults = items.map(it => _enrichSearchItem(it, whyLabel));
+        _searchShownCount = Math.min(SEARCH_PAGE, _searchAllResults.length);
+
+        renderResults(_searchAllResults.slice(0, _searchShownCount), "search");
+        _renderSearchFooter();
       } catch (err) {
         if (err.name === "AbortError") return;
         setUniSearchBanner("");
@@ -7847,9 +7911,11 @@
       }
 
       function clearUniSearch() {
-        // Cancel any in-flight search request
         if (searchAbort) { searchAbort.abort(); searchAbort = null; }
-        isSearching = false;
+        _searchAllResults = [];
+        _searchShownCount = 0;
+        _searchQuery      = "";
+        document.getElementById("searchLoadMoreWrap")?.remove();
         el.searchInput.value = "";
         el.searchInput.classList.remove("hasValue");
         document.getElementById("searchClearBtn")?.classList.remove("visible");
