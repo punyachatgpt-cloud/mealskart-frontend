@@ -7646,7 +7646,7 @@
       renderLoadingCards("normal");
 
       try {
-        const params = new URLSearchParams({ q, diet: state.diet || "non-veg", limit: 6 });
+        const params = new URLSearchParams({ q, diet: state.diet || "non-veg", limit: 12 });
         const resp = await fetch(`${API_BASE_URL}/search?${params}`, { signal });
         if (!resp.ok) throw new Error(`Search failed: ${resp.status}`);
         const data = await resp.json();
@@ -7654,12 +7654,19 @@
 
         if (items.length === 0) {
           setUniSearchBanner("");
-          renderEmpty(`No recipes found for "${q}". Try a different name.`);
+          renderEmpty(`No recipes found for "${q}". Try a dish name, ingredient, or cuisine.`);
         } else {
+          const ql = q.toLowerCase();
+          const whyLabel = ql === "vegan" || ql === "vegetarian" ? "Vegetarian pick"
+            : ql === "non-veg" || ql === "meat" ? "Non-veg pick"
+            : ["drinks","drink","juice","smoothie","beverage"].includes(ql) ? "Drinks"
+            : ["snacks","snack","starter","appetizer"].includes(ql) ? "Snack"
+            : ["salad","salads"].includes(ql) ? "Salad"
+            : "Best match";
           const enriched = items.map((item, i) => ({
             ...item,
             score: items.length - i,
-            why: "Best name match",
+            why: whyLabel,
             ingredient_match_percent: 0,
             tags: Array.isArray(item.tags) ? item.tags.join(", ") : (item.tags || ""),
             _tags: Array.isArray(item.tags) ? item.tags : [],
