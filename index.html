@@ -7803,10 +7803,10 @@
           } catch (error) {}
         }
 
-        // Show a hint after 5s so the user knows we're waking the server
+        // Show a hint after 3s so the user knows we're waking the server
         const slowHint = setTimeout(() => {
-          if (isLoadingSuggestions) el.statusText.textContent = "Waking up server… just a moment ☕";
-        }, 5000);
+          if (isLoadingSuggestions) el.statusText.textContent = "Waking up kitchen… just a moment ☕";
+        }, 3000);
 
         const response = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
           method: "POST",
@@ -7833,8 +7833,8 @@
         localStorage.setItem(LAST_MODE_KEY, mode);
         if (mode === "decide" && Array.isArray(data) && data.length > 0) trackInteraction("decide", data[0].id);
       } catch (error) {
-        el.statusText.innerHTML = "&#9888; Something went wrong. Please try again.";
-        renderEmpty("No dishes found. Try different options.");
+        el.statusText.innerHTML = "Server is warming up — tap <b>Suggest</b> to retry.";
+        renderEmpty("Tap Suggest to load recipes.");
       } finally {
         el.loading.style.display = "none";
         el.suggestBtn.disabled = false;
@@ -12497,6 +12497,9 @@
     updateStreakBanner();
     renderCookAgain();
     maybeShowOnboarding();
+    // Fire a silent ping to wake the Render backend before the real request.
+    // fetch() is fire-and-forget — errors are intentionally swallowed.
+    fetch(`${API_BASE_URL}/health`).catch(() => {});
     if (localStorage.getItem(ONBOARDING_KEY)) {
       getSuggestions(getInitialMode());
     }
