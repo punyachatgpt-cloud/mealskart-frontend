@@ -1873,36 +1873,109 @@
     }
     .closeBtn:active { transform: scale(0.98); }
 
-    .stepLabel {
-      margin: 0 0 6px;
-      color: var(--muted);
-      font-weight: 800;
-      font-size: 0.9rem;
+    /* ── Step dots navigation ───────────────────── */
+    .stepDotsRow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin: 0 0 14px;
+      flex-wrap: wrap;
     }
 
-    .stepText {
-      margin: 0 0 24px;
-      color: var(--ink);
-      font-weight: 600;
-      line-height: 1.6;
-      font-size: 1.15rem;
-    }
-
-    .stepProgress {
+    .stepDot {
+      width: 8px;
       height: 8px;
       border-radius: 999px;
-      background: rgba(15, 23, 42, 0.08);
+      background: rgba(15, 23, 42, 0.15);
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: width 0.22s ease, background 0.22s ease;
+      flex-shrink: 0;
+    }
+
+    [data-theme="dark"] .stepDot { background: rgba(255,255,255,0.18); }
+
+    .stepDot.done {
+      background: var(--accent);
+      opacity: 0.45;
+    }
+
+    .stepDot.active {
+      width: 28px;
+      background: var(--accent);
+      opacity: 1;
+    }
+
+    /* ── Step card ───────────────────────────────── */
+    .stepCardWrap {
       overflow: hidden;
       margin: 0 0 14px;
     }
 
-    .stepProgressBar {
-      height: 100%;
-      width: 0;
-      border-radius: inherit;
-      background: linear-gradient(90deg, var(--accent), var(--accent2));
-      transition: width 0.18s ease;
+    .stepCard {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: var(--bg0);
+      border: 1.5px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      min-height: 80px;
     }
+
+    .stepNumBadge {
+      flex-shrink: 0;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-weight: 900;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(180, 80, 20, 0.28);
+    }
+
+    .stepText {
+      margin: 0;
+      color: var(--ink);
+      font-weight: 600;
+      line-height: 1.65;
+      font-size: 1rem;
+      flex: 1;
+    }
+
+    .stepIngredient {
+      font-weight: 900;
+      border-bottom: 1.5px dotted var(--accent);
+      padding-bottom: 1px;
+    }
+
+    .stepTime {
+      color: var(--accent);
+      font-weight: 800;
+      background: var(--accentGlow);
+      border-radius: 4px;
+      padding: 0 3px;
+    }
+
+    /* ── Step slide animations ───────────────────── */
+    @keyframes stepSlideRight {
+      from { transform: translateX(36px); opacity: 0; }
+      to   { transform: translateX(0);    opacity: 1; }
+    }
+
+    @keyframes stepSlideLeft {
+      from { transform: translateX(-36px); opacity: 0; }
+      to   { transform: translateX(0);     opacity: 1; }
+    }
+
+    .stepCard.slideForward { animation: stepSlideRight 0.26s cubic-bezier(0.2,0.8,0.2,1) both; }
+    .stepCard.slideBack    { animation: stepSlideLeft  0.26s cubic-bezier(0.2,0.8,0.2,1) both; }
 
     .stepActions {
       display: grid;
@@ -5401,9 +5474,13 @@
         <button class="modalRemixBtn" id="modalRemixQuicker"   data-remix="quicker"   type="button">⚡ Quicker</button>
       </div>
       <button class="cookModeEntryBtn" id="cookModeEntryBtn" type="button">🍳 Enter Cook Mode — full screen</button>
-      <p class="stepLabel" id="stepCountLabel">Step 1</p>
-      <div class="stepProgress" aria-hidden="true"><div class="stepProgressBar" id="stepProgressBar"></div></div>
-      <p class="stepText" id="stepText">Loading...</p>
+      <div class="stepDotsRow" id="stepDotsRow" role="tablist" aria-label="Recipe steps"></div>
+      <div class="stepCardWrap">
+        <div class="stepCard" id="stepCard">
+          <div class="stepNumBadge" id="stepNumBadge">1</div>
+          <p class="stepText" id="stepText">Loading…</p>
+        </div>
+      </div>
       <div class="timerRow" id="timerRow">
         <div class="timerText" id="timerText">No timer for this step</div>
         <button class="timerBtn" id="timerBtn" type="button">Start</button>
@@ -5798,8 +5875,9 @@
       servingMinusBtn: document.getElementById("servingMinusBtn"),
       servingPlusBtn: document.getElementById("servingPlusBtn"),
       servingCount: document.getElementById("servingCount"),
-      stepCountLabel: document.getElementById("stepCountLabel"),
-      stepProgressBar: document.getElementById("stepProgressBar"),
+      stepDotsRow: document.getElementById("stepDotsRow"),
+      stepCard: document.getElementById("stepCard"),
+      stepNumBadge: document.getElementById("stepNumBadge"),
       stepText: document.getElementById("stepText"),
       timerRow: document.getElementById("timerRow"),
       timerText: document.getElementById("timerText"),
@@ -7608,16 +7686,72 @@
       el.timerBtn.textContent = timerId ? "Pause" : (timerRemaining > 0 ? "Resume" : "Start");
     }
 
+    function highlightStepText(text) {
+      // Bold ingredient names that appear in the current recipe
+      const ingredientNames = (activeRecipe?.ingredients || [])
+        .map(i => (typeof i === "string" ? i : i.name || "").trim())
+        .filter(n => n.length > 2)
+        .sort((a, b) => b.length - a.length); // longest first to avoid partial matches
+
+      let html = escapeHtml(text);
+
+      // Highlight time expressions first (so they don't get ingredient-wrapped)
+      html = html.replace(/(\d+[–\-]?\d*\s*(?:minute|minutes|min|mins|second|seconds|sec|secs|hour|hours|hr|hrs)s?)/gi,
+        '<span class="stepTime">$1</span>');
+
+      // Highlight ingredient names (case-insensitive, whole-word)
+      for (const name of ingredientNames) {
+        const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        html = html.replace(new RegExp(`\\b(${escaped})\\b`, "gi"),
+          '<span class="stepIngredient">$1</span>');
+      }
+
+      return html;
+    }
+
+    function renderStepDots(total, current) {
+      el.stepDotsRow.innerHTML = Array.from({ length: total }, (_, i) => {
+        const cls = i < current ? "done" : i === current ? "active" : "";
+        return `<button class="stepDot ${cls}" data-step="${i}" aria-label="Step ${i + 1}" aria-selected="${i === current}"></button>`;
+      }).join("");
+
+      el.stepDotsRow.querySelectorAll(".stepDot").forEach(dot => {
+        dot.addEventListener("click", () => {
+          const target = Number(dot.dataset.step);
+          if (target === currentStepIndex) return;
+          _stepNavDirection = target > currentStepIndex ? "forward" : "back";
+          currentStepIndex = target;
+          updateModalStep();
+        });
+      });
+    }
+
+    let _stepNavDirection = "forward";
+
     function updateModalStep() {
       clearTimer();
       const stepNo = currentStepIndex + 1;
-      const total = modalSteps.length;
-      el.stepCountLabel.textContent = `Step ${stepNo} of ${total}`;
-      el.stepText.textContent = modalSteps[currentStepIndex] || "No step found";
-      el.stepProgressBar.style.width = total > 0 ? `${Math.round((stepNo / total) * 100)}%` : "0%";
+      const total  = modalSteps.length;
+      const rawText = modalSteps[currentStepIndex] || "No step found";
+
+      // Dots
+      renderStepDots(total, currentStepIndex);
+
+      // Badge number
+      el.stepNumBadge.textContent = stepNo;
+
+      // Step text with highlights — use innerHTML
+      el.stepText.innerHTML = highlightStepText(rawText);
+
+      // Slide animation
+      el.stepCard.classList.remove("slideForward", "slideBack");
+      void el.stepCard.offsetWidth; // force reflow to restart animation
+      el.stepCard.classList.add(_stepNavDirection === "back" ? "slideBack" : "slideForward");
+
       el.prevStepBtn.disabled = currentStepIndex <= 0;
-      el.nextStepBtn.textContent = stepNo >= total ? "Done" : "Next Step";
-      timerSeconds = stepTimerSeconds(el.stepText.textContent);
+      el.nextStepBtn.textContent = stepNo >= total ? "Done ✓" : "Next Step →";
+
+      timerSeconds = stepTimerSeconds(rawText);
       timerRemaining = timerSeconds;
       updateTimerUI();
     }
@@ -8093,6 +8227,7 @@
     el.nextStepBtn.addEventListener("click", (e) => {
       addRipple(el.nextStepBtn, e);
       if (currentStepIndex < modalSteps.length - 1) {
+        _stepNavDirection = "forward";
         currentStepIndex += 1;
         updateModalStep();
         return;
@@ -8113,6 +8248,7 @@
     el.prevStepBtn.addEventListener("click", (e) => {
       addRipple(el.prevStepBtn, e);
       if (currentStepIndex > 0) {
+        _stepNavDirection = "back";
         currentStepIndex -= 1;
         updateModalStep();
       }
