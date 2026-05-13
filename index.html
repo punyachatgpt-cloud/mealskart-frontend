@@ -7887,6 +7887,7 @@
     }
 
     let autoFetchDebounce = null;
+    let uniSearchActive   = "";   // tracks active search term; read by getSuggestions
 
     function bindInputs() {
       document.querySelectorAll("[data-group]").forEach((btn) => {
@@ -7915,8 +7916,6 @@
       // Typing any query fires a real backend search (debounced 550ms).
       // Works for: dish names, cuisines, ingredients, meal types.
       // Examples: "pork", "Thai curry", "pasta", "vegan breakfast", "biryani"
-
-      let uniSearchActive = "";   // currently active search term
 
       function setUniSearchBanner(term) {
         const banner   = document.getElementById("uniSearchBanner");
