@@ -7889,6 +7889,38 @@
     let autoFetchDebounce = null;
     let uniSearchActive   = "";   // tracks active search term; read by getSuggestions
 
+    function setUniSearchBanner(term) {
+      const banner   = document.getElementById("uniSearchBanner");
+      const termEl   = document.getElementById("uniSearchTerm");
+      if (!banner || !termEl) return;
+      uniSearchActive = term || "";
+      if (term) {
+        termEl.textContent = term;
+        banner.classList.add("show");
+      } else {
+        banner.classList.remove("show");
+        termEl.textContent = "";
+      }
+    }
+
+    function clearUniSearch() {
+      if (searchAbort) { searchAbort.abort(); searchAbort = null; }
+      _searchAllResults = [];
+      _searchShownCount = 0;
+      _searchQuery      = "";
+      document.getElementById("searchLoadMoreWrap")?.remove();
+      document.querySelector("main.right")?.classList.remove("searchMode");
+      if (el.searchInput) {
+        el.searchInput.value = "";
+        el.searchInput.classList.remove("hasValue");
+      }
+      document.getElementById("searchClearBtn")?.classList.remove("visible");
+      setUniSearchBanner("");
+      removeDYM();
+      closeSearchDropdown();
+      getSuggestions("normal");
+    }
+
     function bindInputs() {
       document.querySelectorAll("[data-group]").forEach((btn) => {
         btn.addEventListener("click", (e) => {
@@ -7911,41 +7943,6 @@
           autoFetchDebounce = setTimeout(() => getSuggestions("normal"), 420);
         });
       });
-
-      // ── Universal Search wiring ──────────────────────────────────────────
-      // Typing any query fires a real backend search (debounced 550ms).
-      // Works for: dish names, cuisines, ingredients, meal types.
-      // Examples: "pork", "Thai curry", "pasta", "vegan breakfast", "biryani"
-
-      function setUniSearchBanner(term) {
-        const banner   = document.getElementById("uniSearchBanner");
-        const termEl   = document.getElementById("uniSearchTerm");
-        if (!banner || !termEl) return;
-        uniSearchActive = term || "";
-        if (term) {
-          termEl.textContent = term;
-          banner.classList.add("show");
-        } else {
-          banner.classList.remove("show");
-          termEl.textContent = "";
-        }
-      }
-
-      function clearUniSearch() {
-        if (searchAbort) { searchAbort.abort(); searchAbort = null; }
-        _searchAllResults = [];
-        _searchShownCount = 0;
-        _searchQuery      = "";
-        document.getElementById("searchLoadMoreWrap")?.remove();
-        document.querySelector("main.right")?.classList.remove("searchMode");
-        el.searchInput.value = "";
-        el.searchInput.classList.remove("hasValue");
-        document.getElementById("searchClearBtn")?.classList.remove("visible");
-        setUniSearchBanner("");
-        removeDYM();
-        closeSearchDropdown();
-        getSuggestions("normal");   // restore normal filter-based recommendations
-      }
 
       document.getElementById("uniSearchClearBtn")?.addEventListener("click", clearUniSearch);
 
