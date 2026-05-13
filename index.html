@@ -5605,7 +5605,129 @@
     const LAST_COOKED_KEY = "last_cooked";
     const RECENT_COOKED_KEY = "recent_cooked_ids";
     const RECIPE_META_KEY = "recipe_meta";
-    const FAVORITES_KEY = "favorite_recipe_ids";
+    const FAVORITES_KEY    = "favorite_recipe_ids";
+    const COLLECTIONS_SYNC = "simmer_collections_v1";
+    const GOALS_SYNC       = "simmer_goals_v1";
+    const DAILY_LOG_SYNC   = "simmer_daily_log_v1";
+    const COOK_LOG_SYNC    = "simmer_cook_log_v1";
+    const PLAN_SYNC        = "simmer_meal_plan_v1";
+    const STREAK_SYNC      = "foodai_streak";
+    const STREAK_DATE_SYNC = "foodai_streak_date";
+
+    // ── Cloud sync ──────────────────────────────────────────────────────────────
+    // Collects all syncable keys into one object to push to / pull from
+    // /api/auth/sync.  Only runs when a simmer_token is present.
+
+    function _safeJson(key, fallback) {
+      try { return JSON.parse(localStorage.getItem(key) || "null") ?? fallback; }
+      catch { return fallback; }
+    }
+
+    function gatherSyncData() {
+      return {
+        favorites:    _safeJson(FAVORITES_KEY, []),
+        recipe_meta:  _safeJson(RECIPE_META_KEY, {}),
+        recent_cooked: _safeJson(RECENT_COOKED_KEY, []),
+        streak:       { count: parseInt(localStorage.getItem(STREAK_SYNC) || "0", 10),
+                        date:  localStorage.getItem(STREAK_DATE_SYNC) || "" },
+        plan:         _safeJson(PLAN_SYNC, null),
+        collections:  _safeJson(COLLECTIONS_SYNC, {}),
+        goals:        _safeJson(GOALS_SYNC, null),
+        daily_log:    _safeJson(DAILY_LOG_SYNC, {}),
+        cook_log:     _safeJson(COOK_LOG_SYNC, []),
+      };
+    }
+
+    function applySyncData(server) {
+      if (!server || typeof server !== "object") return;
+
+      // Favorites — union
+      if (Array.isArray(server.favorites) && server.favorites.length) {
+        const local = _safeJson(FAVORITES_KEY, []);
+        const merged = [...new Set([...local, ...server.favorites])];
+        localStorage.setItem(FAVORITES_KEY, JSON.stringify(merged));
+      }
+
+      // Recipe meta — shallow merge, server wins per key
+      if (server.recipe_meta && typeof server.recipe_meta === "object") {
+        const local = _safeJson(RECIPE_META_KEY, {});
+        localStorage.setItem(RECIPE_META_KEY, JSON.stringify({ ...local, ...server.recipe_meta }));
+      }
+
+      // Recent cooked — server list (most authoritative)
+      if (Array.isArray(server.recent_cooked) && server.recent_cooked.length) {
+        localStorage.setItem(RECENT_COOKED_KEY, JSON.stringify(server.recent_cooked));
+      }
+
+      // Streak — take whichever date is more recent; on same date, take higher count
+      if (server.streak && typeof server.streak === "object") {
+        const localDate  = localStorage.getItem(STREAK_DATE_SYNC) || "";
+        const localCount = parseInt(localStorage.getItem(STREAK_SYNC) || "0", 10);
+        const sv = server.streak;
+        const useServer = !localDate || sv.date > localDate ||
+                          (sv.date === localDate && sv.count > localCount);
+        if (useServer) {
+          localStorage.setItem(STREAK_SYNC, String(sv.count || 0));
+          if (sv.date) localStorage.setItem(STREAK_DATE_SYNC, sv.date);
+        }
+      }
+
+      // Plan, collections, goals — server wins
+      if (server.plan)        localStorage.setItem(PLAN_SYNC,        JSON.stringify(server.plan));
+      if (server.collections) localStorage.setItem(COLLECTIONS_SYNC, JSON.stringify(server.collections));
+      if (server.goals)       localStorage.setItem(GOALS_SYNC,       JSON.stringify(server.goals));
+
+      // Daily log — merge keys, server wins per day
+      if (server.daily_log && typeof server.daily_log === "object") {
+        const local = _safeJson(DAILY_LOG_SYNC, {});
+        localStorage.setItem(DAILY_LOG_SYNC, JSON.stringify({ ...local, ...server.daily_log }));
+      }
+
+      // Cook log — union by entry id/timestamp, keep last 100
+      if (Array.isArray(server.cook_log) && server.cook_log.length) {
+        const local = _safeJson(COOK_LOG_SYNC, []);
+        const seen = new Set();
+        const merged = [...server.cook_log, ...local].filter(e => {
+          const key = String(e.id || "") + String(e.cookedAt || e.timestamp || "");
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        }).slice(0, 100);
+        localStorage.setItem(COOK_LOG_SYNC, JSON.stringify(merged));
+      }
+    }
+
+    let _syncTimer = null;
+    function syncToCloud() {
+      const token = localStorage.getItem("simmer_token");
+      if (!token) return;
+      clearTimeout(_syncTimer);
+      _syncTimer = setTimeout(async () => {
+        try {
+          await fetch(`${API_BASE_URL}/auth/sync`, {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+            body: JSON.stringify({ app_data: gatherSyncData() }),
+          });
+        } catch {}
+      }, 1500);
+    }
+
+    async function syncFromCloud() {
+      const token = localStorage.getItem("simmer_token");
+      if (!token) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/auth/sync`, {
+          headers: { "Authorization": "Bearer " + token }
+        });
+        if (!res.ok) return;
+        const { app_data } = await res.json();
+        applySyncData(app_data);
+        // Push the merged state back so server is in sync with the union
+        syncToCloud();
+      } catch {}
+    }
+    // ───────────────────────────────────────────────────────────────────────────
 
     const state = {
       time_available: 15,
@@ -5842,6 +5964,9 @@
       const avatarBtn    = document.getElementById("authAvatarBtn");
       if (!token) return; // show "Sign in" link (default)
 
+      // Pull server data and merge with local on every fresh page load
+      syncFromCloud();
+
       // Logged in — hide sign-in link, show avatar initial
       authBtn.style.display = "none";
       avatarBtn.style.display = "inline-flex";
@@ -5886,6 +6011,14 @@
             if (item.action === "logout") {
               const t = localStorage.getItem("simmer_token");
               if (t) {
+                try {
+                  // Final sync push before session ends
+                  await fetch(`${API_BASE_URL}/auth/sync`, {
+                    method: "POST",
+                    headers: { "Authorization": "Bearer " + t, "Content-Type": "application/json" },
+                    body: JSON.stringify({ app_data: gatherSyncData() }),
+                  });
+                } catch {}
                 try {
                   await fetch(`${API_BASE_URL}/auth/logout`, {
                     method: "POST",
@@ -5988,6 +6121,7 @@
         const existing = getRecentCookedIds().filter((x) => x !== id);
         const next = [id, ...existing].slice(0, 3);
         localStorage.setItem(RECENT_COOKED_KEY, JSON.stringify(next));
+        syncToCloud();
       } catch (error) {}
     }
 
@@ -6003,6 +6137,7 @@
         const next = (existing && typeof existing === "object") ? existing : {};
         next[id] = { tags, name: String(nameText || ""), updatedAt: Date.now() };
         localStorage.setItem(RECIPE_META_KEY, JSON.stringify(next));
+        syncToCloud();
       } catch (error) {}
     }
 
@@ -6063,6 +6198,7 @@
     function saveFavorites(favoritesSet) {
       try {
         localStorage.setItem(FAVORITES_KEY, JSON.stringify(Array.from(favoritesSet)));
+        syncToCloud();
       } catch (error) {}
     }
 
@@ -6365,6 +6501,7 @@
         count = lastDate === yesterday ? count + 1 : 1;
         localStorage.setItem(STREAK_KEY, String(count));
         localStorage.setItem(STREAK_DATE_KEY, today);
+        syncToCloud();
       } catch {}
     }
 
@@ -6877,7 +7014,7 @@
     let activePlan = null;
     let planDays = 3;
 
-    function savePlan(plan) { try { localStorage.setItem(PLAN_KEY, JSON.stringify(plan)); } catch {} }
+    function savePlan(plan) { try { localStorage.setItem(PLAN_KEY, JSON.stringify(plan)); syncToCloud(); } catch {} }
     function loadSavedPlan() { try { return JSON.parse(localStorage.getItem(PLAN_KEY) || "null"); } catch { return null; } }
 
     function getDayName(dayIndex) {
@@ -8435,7 +8572,7 @@
       catch { return {}; }
     }
     function saveCollections(c) {
-      try { localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(c)); } catch {}
+      try { localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(c)); syncToCloud(); } catch {}
     }
     function totalSaved() {
       const c = getCollections();
@@ -8626,7 +8763,7 @@
       catch { return null; }
     }
     function saveGoals(g) {
-      try { localStorage.setItem(GOALS_KEY, JSON.stringify(g)); } catch {}
+      try { localStorage.setItem(GOALS_KEY, JSON.stringify(g)); syncToCloud(); } catch {}
     }
 
     function todayKey() { return new Date().toDateString(); }
@@ -8656,6 +8793,7 @@
         const keys = Object.keys(all).sort((a,b) => new Date(b)-new Date(a));
         keys.slice(30).forEach(k => delete all[k]);
         localStorage.setItem(DAILY_LOG_KEY, JSON.stringify(all));
+        syncToCloud();
         renderGoalBar();
       } catch {}
     }
@@ -8803,6 +8941,7 @@
         // Keep last 200 entries
         if (log.length > 200) log.splice(0, log.length - 200);
         localStorage.setItem(COOK_LOG_KEY, JSON.stringify(log));
+        syncToCloud();
       } catch {}
     }
 
@@ -8818,6 +8957,7 @@
           }
         }
         localStorage.setItem(COOK_LOG_KEY, JSON.stringify(log));
+        syncToCloud();
       } catch {}
     }
 
