@@ -7628,30 +7628,26 @@
     // ── Dedicated search function — calls /search, NOT /recommend ────────────
     // Completely separate from recommendation logic so mood/time/explore-exploit
     // never interfere with finding a specific dish by name.
-    let isSearching = false;
     let searchAbort = null;
 
     async function searchRecipes(q) {
       if (!q || q.trim().length < 2) return;
       q = q.trim();
 
-      // Cancel any in-flight search
+      // Cancel any in-flight search — AbortController handles deduplication,
+      // no separate isSearching flag needed (it caused a race: new search was
+      // aborted before starting because the old flag was still true).
       if (searchAbort) searchAbort.abort();
       searchAbort = new AbortController();
+      const signal = searchAbort.signal;
 
-      if (isSearching) return;
-      isSearching = true;
-
-      // Show loading state without blocking the recommend buttons
       const emptyState = document.getElementById("emptyState");
       if (emptyState) emptyState.style.display = "none";
       renderLoadingCards("normal");
 
       try {
         const params = new URLSearchParams({ q, diet: state.diet || "non-veg", limit: 6 });
-        const resp = await fetch(`${API_BASE_URL}/search?${params}`, {
-          signal: searchAbort.signal
-        });
+        const resp = await fetch(`${API_BASE_URL}/search?${params}`, { signal });
         if (!resp.ok) throw new Error(`Search failed: ${resp.status}`);
         const data = await resp.json();
         const items = Array.isArray(data) ? data : [];
@@ -7660,7 +7656,6 @@
           setUniSearchBanner("");
           renderEmpty(`No recipes found for "${q}". Try a different name.`);
         } else {
-          // Inject minimal fields that renderResults expects
           const enriched = items.map((item, i) => ({
             ...item,
             score: items.length - i,
@@ -7672,11 +7667,9 @@
           renderResults(enriched, "normal");
         }
       } catch (err) {
-        if (err.name === "AbortError") return;   // superseded by newer search
+        if (err.name === "AbortError") return;
         setUniSearchBanner("");
         renderEmpty("Search failed. Check your connection and try again.");
-      } finally {
-        isSearching = false;
       }
     }
 
