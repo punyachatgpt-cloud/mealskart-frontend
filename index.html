@@ -2029,6 +2029,15 @@
       transition: background 0.13s, color 0.13s;
     }
     .uniSearchClearBtn:hover { background: rgba(200,105,14,0.15); color: var(--accent); }
+    /* Hide personalization widgets when a live search is active */
+    .right.searchMode #streakBanner,
+    .right.searchMode #goalBar,
+    .right.searchMode #cookAgainWrap,
+    .right.searchMode #contextBannerWrap,
+    .right.searchMode #tasteDNAInline,
+    .right.searchMode #quickStrip,
+    .right.searchMode .statusRow { display: none !important; }
+
     .searchLoadMoreWrap {
       display: flex; align-items: center; justify-content: space-between;
       padding: 12px 4px 20px; gap: 12px; flex-wrap: wrap;
@@ -7715,6 +7724,10 @@
 
       const emptyState = document.getElementById("emptyState");
       if (emptyState) emptyState.style.display = "none";
+
+      // Collapse contextual widgets and surface results immediately
+      document.querySelector("main.right")?.classList.add("searchMode");
+
       renderLoadingCards("normal");
 
       try {
@@ -7737,8 +7750,12 @@
 
         renderResults(_searchAllResults.slice(0, _searchShownCount), "search");
         _renderSearchFooter();
+
+        // Scroll the results into view so user sees them immediately
+        document.getElementById("uniSearchBanner")?.scrollIntoView({ behavior: "smooth", block: "start" });
       } catch (err) {
         if (err.name === "AbortError") return;
+        document.querySelector("main.right")?.classList.remove("searchMode");
         setUniSearchBanner("");
         renderEmpty("Search failed. Check your connection and try again.");
       }
@@ -7916,6 +7933,7 @@
         _searchShownCount = 0;
         _searchQuery      = "";
         document.getElementById("searchLoadMoreWrap")?.remove();
+        document.querySelector("main.right")?.classList.remove("searchMode");
         el.searchInput.value = "";
         el.searchInput.classList.remove("hasValue");
         document.getElementById("searchClearBtn")?.classList.remove("visible");
