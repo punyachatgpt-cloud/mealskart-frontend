@@ -5892,7 +5892,7 @@
       });
     }
 
-    async function fetchWithRetry(url, options, retries = 2, timeout = 8000) {
+    async function fetchWithRetry(url, options, retries = 2, timeout = 38000) {
       for (let i = 0; i <= retries; i++) {
         try {
           const controller = new AbortController();
@@ -7720,6 +7720,11 @@
           } catch (error) {}
         }
 
+        // Show a hint after 5s so the user knows we're waking the server
+        const slowHint = setTimeout(() => {
+          if (isLoadingSuggestions) el.statusText.textContent = "Waking up server… just a moment ☕";
+        }, 5000);
+
         const response = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -7730,6 +7735,7 @@
           })
         });
 
+        clearTimeout(slowHint);
         const data = await response.json();
         const resultItems = Array.isArray(data) ? data : [];
 

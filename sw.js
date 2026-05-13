@@ -1,6 +1,6 @@
 // Simmer Service Worker — cache-first static, network-first API
-const CACHE_NAME = "simmer-v2";
-const API_CACHE  = "simmer-api-v2";
+const CACHE_NAME = "simmer-v3";
+const API_CACHE  = "simmer-api-v3";
 
 const STATIC_ASSETS = [
   "/",
@@ -61,7 +61,7 @@ self.addEventListener("fetch", event => {
 async function networkFirstAPI(request) {
   const cache = await caches.open(API_CACHE);
   try {
-    const response = await fetch(request.clone(), { signal: AbortSignal.timeout(9000) });
+    const response = await fetch(request.clone(), { signal: AbortSignal.timeout(35000) });
     if (response.ok) {
       // Tag with timestamp header for TTL check
       const headers = new Headers(response.headers);
