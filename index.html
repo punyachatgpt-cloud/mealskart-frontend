@@ -876,104 +876,102 @@
       width: 100%; background: var(--goldBg); border: 1px solid var(--goldBorder);
       border-radius: 12px; color: var(--accent); font-size: 0.8rem; font-weight: 700;
       padding: 9px 14px; cursor: pointer; text-align: left;
-      transition: background 0.15s, box-shadow 0.15s; margin-bottom: 10px;
+      transition: background 0.15s; margin-bottom: 10px;
     }
-    .browseAllBtn:hover { background: #fdebd0; box-shadow: 0 2px 8px rgba(200,105,14,0.15); }
+    .browseAllBtn:hover { background: #fdebd0; }
     .browseOverlay {
       position: fixed; inset: 0; z-index: 320;
-      background: rgba(20,10,0,0.55); backdrop-filter: blur(4px);
+      background: rgba(20,10,0,0.6); backdrop-filter: blur(4px);
       display: flex; align-items: flex-end; justify-content: center;
     }
     .browseOverlay.hidden { display: none; }
     .browseSheet {
       background: var(--bg0); border-radius: 24px 24px 0 0;
-      width: 100%; max-width: 900px; max-height: 92vh;
+      width: 100%; max-width: 960px; height: 92vh;
       display: flex; flex-direction: column;
-      animation: reportSlideUp 0.32s cubic-bezier(0.34,1.08,0.64,1) both;
+      animation: reportSlideUp 0.3s cubic-bezier(0.34,1.08,0.64,1) both;
     }
-    [data-theme="dark"] .browseSheet { background: var(--bg1); }
+    [data-theme="dark"] .browseSheet { background: #110800; }
     .browseHead {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 18px 20px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+      padding: 16px 20px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0;
     }
-    .browseTitle {
-      font-family: 'Fraunces', serif; font-size: 1.15rem; font-weight: 900;
-      color: var(--ink); margin: 0;
-    }
+    .browseTitle { font-family:'Fraunces',serif; font-size:1.1rem; font-weight:900; color:var(--ink); margin:0; }
     .browseFilters {
-      padding: 14px 18px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0;
-      display: flex; flex-direction: column; gap: 10px;
+      padding: 12px 16px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+      display: flex; flex-direction: column; gap: 8px; overflow-x: auto;
     }
-    .bfGroup { display: flex; align-items: center; gap: 10px; }
-    .bfLabel {
-      font-size: 0.72rem; font-weight: 700; color: var(--muted2);
-      text-transform: uppercase; letter-spacing: 0.04em; min-width: 52px; flex-shrink: 0;
-    }
-    .bfChips { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; }
-    .bfChips.scroll { flex-wrap: nowrap; overflow-x: auto; }
+    .bfGroup { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .bfLabel { font-size:0.68rem; font-weight:700; color:var(--muted2); text-transform:uppercase; letter-spacing:0.05em; min-width:50px; flex-shrink:0; }
+    .bfChips { display:flex; gap:5px; overflow-x:auto; padding-bottom:2px; }
     .bfChip {
-      padding: 5px 12px; border-radius: 999px; border: 1.5px solid var(--border);
-      background: var(--bg1); color: var(--muted); font-size: 0.78rem; font-weight: 600;
-      cursor: pointer; white-space: nowrap; transition: all 0.14s;
+      padding: 4px 11px; border-radius: 999px; border: 1.5px solid var(--border);
+      background: transparent; color: var(--muted); font-size: 0.76rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap; transition: all 0.12s; flex-shrink: 0;
     }
     .bfChip:hover { border-color: var(--accent); color: var(--accent); }
-    .bfChip.active {
-      background: var(--accent); border-color: var(--accent); color: #fff;
+    .bfChip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    [data-theme="dark"] .bfChip { border-color: rgba(255,255,255,0.15); color: var(--muted); }
+    [data-theme="dark"] .bfChip.active { background: var(--accent); color: #fff; }
+    /* Recipe grid — scrollable body */
+    .browseBody { flex: 1; overflow-y: auto; padding: 12px 14px 12px; }
+    .browseCountRow {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px; flex-shrink: 0;
     }
-    .browseCount {
-      padding: 8px 20px 2px; font-size: 0.78rem; color: var(--muted2);
-      font-weight: 600; flex-shrink: 0;
+    .browseCountText { font-size:0.78rem; color:var(--muted2); font-weight:600; }
+    .browsePagination { display:flex; align-items:center; gap:8px; }
+    .browsePageBtn {
+      padding: 4px 14px; border-radius: 8px; border: 1.5px solid var(--border);
+      background: transparent; color: var(--muted); font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; transition: all 0.12s;
     }
+    .browsePageBtn:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
+    .browsePageBtn:disabled { opacity: 0.3; cursor: default; }
+    .browsePageNum { font-size:0.78rem; font-weight:700; color:var(--ink); min-width:60px; text-align:center; }
+    /* ── Recipe cards: image top, text below — no positioning tricks ── */
     .browseGrid {
-      flex: 1; overflow-y: auto; padding: 12px 16px 16px;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
-      gap: 10px; align-items: start;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
     }
-    /* Overlay card — text always readable over gradient, theme-agnostic */
+    @media (max-width: 500px) { .browseGrid { grid-template-columns: repeat(2, 1fr); } }
     .browseCard {
-      position: relative; border-radius: 16px; overflow: hidden;
-      aspect-ratio: 3/4; cursor: pointer; background: #1a0e06;
-      transition: transform 0.18s, box-shadow 0.18s;
+      border-radius: 14px; overflow: hidden; cursor: pointer;
+      background: #fff; border: 1px solid #e8d8c4;
+      transition: transform 0.15s, box-shadow 0.15s;
+      display: flex; flex-direction: column;
     }
-    .browseCard:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
-    .browseCard img {
-      position: absolute; inset: 0; width: 100%; height: 100%;
-      object-fit: cover; display: block;
+    [data-theme="dark"] .browseCard { background: #1e1208; border-color: rgba(180,110,45,0.25); }
+    .browseCard:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.18); }
+    .browseCardImg {
+      width: 100%; height: 130px; object-fit: cover; display: block; flex-shrink: 0;
+      background: #f5e8d4;
     }
-    .browseCardPlaceholder {
-      position: absolute; inset: 0; display: flex;
-      align-items: center; justify-content: center;
-      font-size: 2.4rem; background: rgba(120,60,10,0.35);
+    .browseCardNoImg {
+      width: 100%; height: 130px; display: flex; align-items: center; justify-content: center;
+      font-size: 2.4rem; flex-shrink: 0; background: #f5e8d4;
     }
-    .browseCardOverlay {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      padding: 36px 10px 10px;
-      background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.78) 60%, rgba(0,0,0,0.92) 100%);
+    [data-theme="dark"] .browseCardNoImg { background: rgba(120,60,10,0.3); }
+    .browseCardBody {
+      padding: 9px 10px 11px; flex: 1; display: flex; flex-direction: column; gap: 4px;
     }
     .browseCardName {
-      color: #fff; font-weight: 700; font-size: 0.82rem;
-      line-height: 1.28; margin: 0 0 4px;
+      font-size: 0.82rem; font-weight: 700; line-height: 1.28;
+      color: #1C1008;
       overflow: hidden; display: -webkit-box;
       -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
     }
-    .browseCardMeta {
-      color: rgba(255,255,255,0.78); font-size: 0.7rem;
-      margin: 0 0 5px; font-weight: 500;
-    }
-    .browseCardDietBadge {
+    [data-theme="dark"] .browseCardName { color: #F2E5CC; }
+    .browseCardMeta { font-size: 0.7rem; color: #9B7553; }
+    [data-theme="dark"] .browseCardMeta { color: #C4906A; }
+    .browseCardDiet {
       font-size: 0.62rem; font-weight: 700; padding: 2px 7px;
-      border-radius: 999px; display: inline-block; backdrop-filter: blur(4px);
+      border-radius: 999px; display: inline-block; width: fit-content;
     }
-    .browseCardDietBadge.veg    { background: rgba(22,163,74,0.85); color: #fff; }
-    .browseCardDietBadge.nonveg { background: rgba(220,38,38,0.85); color: #fff; }
-    .browseLoadMore { padding: 16px; text-align: center; flex-shrink: 0; }
-    /* Smooth filter transition — dim grid instead of wipe */
-    .browseGrid.filtering { opacity: 0.35; pointer-events: none; }
-    .browseGrid { transition: opacity 0.18s; }
-    [data-theme="dark"] .bfChip { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.14); color: var(--muted); }
-    [data-theme="dark"] .bfChip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .browseCardDiet.veg    { background: #dcfce7; color: #15803d; }
+    .browseCardDiet.nonveg { background: #fee2e2; color: #dc2626; }
+    .browseGrid.filtering { opacity: 0.4; pointer-events: none; transition: opacity 0.15s; }
 
     .savedSheetOverlay {
       position: fixed; inset: 0; z-index: 295;
@@ -5974,7 +5972,6 @@
         <h3 class="browseTitle">Browse Recipes</h3>
         <button class="closeBtn" id="closeBrowseSheet" type="button">Close</button>
       </div>
-      <!-- Filter strip -->
       <div class="browseFilters" id="browseFilters">
         <div class="bfGroup">
           <span class="bfLabel">Diet</span>
@@ -5986,7 +5983,7 @@
         </div>
         <div class="bfGroup">
           <span class="bfLabel">Cuisine</span>
-          <div class="bfChips scroll">
+          <div class="bfChips">
             <button class="bfChip active" data-bf-group="category" data-bf-val="">All</button>
             <button class="bfChip" data-bf-group="category" data-bf-val="north-indian">North Indian</button>
             <button class="bfChip" data-bf-group="category" data-bf-val="south-indian">South Indian</button>
@@ -6013,10 +6010,17 @@
           </div>
         </div>
       </div>
-      <div class="browseCount" id="browseCount"></div>
-      <div class="browseGrid" id="browseGrid"></div>
-      <div class="browseLoadMore" id="browseLoadMore" style="display:none">
-        <button class="loadMoreBtn" id="browseLoadMoreBtn">Show more ↓</button>
+      <!-- Scrollable body: count + grid + pagination all scroll together -->
+      <div class="browseBody" id="browseBody">
+        <div class="browseCountRow">
+          <span class="browseCountText" id="browseCount"></span>
+          <div class="browsePagination">
+            <button class="browsePageBtn" id="browsePrevBtn" disabled>← Prev</button>
+            <span class="browsePageNum" id="browsePageNum">Page 1</span>
+            <button class="browsePageBtn" id="browseNextBtn" disabled>Next →</button>
+          </div>
+        </div>
+        <div class="browseGrid" id="browseGrid"></div>
       </div>
     </div>
   </div>
@@ -12777,26 +12781,24 @@
     // ── Browse All Sheet ──────────────────────────────────────────────────────
     const _browseFilters = { diet: "", category: "", maxTime: 0, sort: "popular" };
     let _browseTotal = 0;
-    let _browseOffset = 0;
+    let _browsePage  = 0;          // 0-based page index
     const BROWSE_PAGE = 24;
 
-    function _unsplashForRecipe(r) {
-      if (r.image_url) return r.image_url;
-      const kw = encodeURIComponent((r.name || "food").split(" ").slice(0, 2).join(" "));
-      return `https://source.unsplash.com/320x240/?${kw},food`;
-    }
+    async function loadBrowsePage() {
+      const grid    = document.getElementById("browseGrid");
+      const count   = document.getElementById("browseCount");
+      const prevBtn = document.getElementById("browsePrevBtn");
+      const nextBtn = document.getElementById("browseNextBtn");
+      const pageNum = document.getElementById("browsePageNum");
+      const body    = document.getElementById("browseBody");
 
-    async function loadBrowsePage(append = false) {
-      const grid  = document.getElementById("browseGrid");
-      const count = document.getElementById("browseCount");
-      // Save scroll position so "Show more" doesn't jump to top
-      const savedScroll = grid.scrollTop;
-      if (!append) {
-        _browseOffset = 0;
-        // Dim existing cards instead of wiping — smooth, no flash
-        grid.classList.add("filtering");
-      }
-      const params = new URLSearchParams({ limit: BROWSE_PAGE, offset: _browseOffset, sort: _browseFilters.sort });
+      // Dim while loading
+      grid.classList.add("filtering");
+      prevBtn.disabled = true;
+      nextBtn.disabled = true;
+
+      const offset = _browsePage * BROWSE_PAGE;
+      const params = new URLSearchParams({ limit: BROWSE_PAGE, offset, sort: _browseFilters.sort });
       if (_browseFilters.diet)     params.set("diet",     _browseFilters.diet);
       if (_browseFilters.category) params.set("category", _browseFilters.category);
       if (_browseFilters.maxTime)  params.set("max_time", _browseFilters.maxTime);
@@ -12807,12 +12809,12 @@
         _browseTotal = parseInt(resp.headers.get("X-Total-Count") || "0", 10) || items.length;
 
         grid.classList.remove("filtering");
-        if (!append) grid.innerHTML = "";
-        else grid.scrollTop = savedScroll; // restore position after append
-        if (items.length === 0 && !append) {
-          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted2)">No recipes match these filters.</div>';
+        grid.innerHTML = "";
+
+        if (items.length === 0) {
+          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#9B7553">No recipes match these filters.</div>';
           count.textContent = "";
-          document.getElementById("browseLoadMore").style.display = "none";
+          pageNum.textContent = "";
           return;
         }
 
@@ -12822,34 +12824,38 @@
           card.tabIndex = 0;
           const dietCls = r.diet === "veg" ? "veg" : "nonveg";
           const dietLbl = r.diet === "veg" ? "🌱 Veg" : "🍗 Non-veg";
-          const imgContent = r.image_url
-            ? `<img src="${escapeHtml(r.image_url)}" alt="" loading="lazy" onerror="this.remove()">`
-            : `<div class="browseCardPlaceholder">🍽️</div>`;
+          const imgEl = r.image_url
+            ? `<img class="browseCardImg" src="${escapeHtml(r.image_url)}" alt="${escapeHtml(r.name||"")}" loading="lazy" onerror="this.style.display='none'">`
+            : `<div class="browseCardNoImg">🍽️</div>`;
           card.innerHTML = `
-            ${imgContent}
-            <div class="browseCardOverlay">
+            ${imgEl}
+            <div class="browseCardBody">
               <p class="browseCardName">${escapeHtml(r.name || "")}</p>
-              <p class="browseCardMeta">⏱ ${r.time_minutes || "?"}m · ${r.calories || "?"}kcal</p>
-              <span class="browseCardDietBadge ${dietCls}">${dietLbl}</span>
+              <p class="browseCardMeta">⏱ ${r.time_minutes || "?"}m &middot; ${r.calories || "?"}kcal</p>
+              <span class="browseCardDiet ${dietCls}">${dietLbl}</span>
             </div>`;
           card.addEventListener("click", () => { closeBrowseSheet(); openRecipeModal(r.id); });
           card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { closeBrowseSheet(); openRecipeModal(r.id); } });
           grid.appendChild(card);
         });
 
-        _browseOffset += items.length;
-        count.textContent = `Showing ${_browseOffset} of ${_browseTotal} recipes`;
-        const hasMore = _browseOffset < _browseTotal;
-        document.getElementById("browseLoadMore").style.display = hasMore ? "block" : "none";
+        const totalPages = Math.ceil(_browseTotal / BROWSE_PAGE);
+        const showing    = Math.min(offset + items.length, _browseTotal);
+        count.textContent = `${offset + 1}–${showing} of ${_browseTotal} recipes`;
+        pageNum.textContent = `Page ${_browsePage + 1} of ${totalPages}`;
+        prevBtn.disabled = _browsePage === 0;
+        nextBtn.disabled = showing >= _browseTotal;
+
+        // Scroll body back to top after page change
+        if (body) body.scrollTop = 0;
       } catch {
         grid.classList.remove("filtering");
-        if (append) grid.scrollTop = savedScroll;
-        else grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted2)">Could not load recipes.</div>';
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:#9B7553">Could not load recipes.</div>';
       }
     }
 
     function openBrowseSheet() {
-      // Pre-seed diet from sidebar state
+      _browsePage = 0;
       _browseFilters.diet = state.diet || "";
       document.querySelectorAll('[data-bf-group="diet"]').forEach(btn => {
         btn.classList.toggle("active", btn.dataset.bfVal === _browseFilters.diet);
@@ -12868,7 +12874,14 @@
       document.getElementById("browseOverlay")?.addEventListener("click", e => {
         if (e.target === document.getElementById("browseOverlay")) closeBrowseSheet();
       });
-      document.getElementById("browseLoadMoreBtn")?.addEventListener("click", () => loadBrowsePage(true));
+
+      document.getElementById("browsePrevBtn")?.addEventListener("click", () => {
+        if (_browsePage > 0) { _browsePage--; loadBrowsePage(); }
+      });
+      document.getElementById("browseNextBtn")?.addEventListener("click", () => {
+        const totalPages = Math.ceil(_browseTotal / BROWSE_PAGE);
+        if (_browsePage < totalPages - 1) { _browsePage++; loadBrowsePage(); }
+      });
 
       document.getElementById("browseFilters")?.addEventListener("click", e => {
         const btn = e.target.closest(".bfChip");
@@ -12876,11 +12889,11 @@
         const group = btn.dataset.bfGroup;
         const val   = btn.dataset.bfVal;
         if (!group) return;
-        // Deactivate siblings, activate clicked
         btn.closest(".bfChips").querySelectorAll(".bfChip").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         if (group === "maxTime") _browseFilters.maxTime = parseInt(val, 10) || 0;
         else                     _browseFilters[group]  = val;
+        _browsePage = 0;
         loadBrowsePage();
       });
     }
