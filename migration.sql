@@ -312,6 +312,46 @@ CREATE INDEX IF NOT EXISTS idx_recovery_status    ON public.recovery_requests (s
 
 
 -- ═══════════════════════════════════════════════════════════════
+-- TABLE: public.recipes
+-- Stores all recipes — CSV hand-crafted (ids 1-50) and
+-- TheMealDB (ids 1001+). This is the permanent source of truth;
+-- the SQLite simmer.db on Render is no longer used.
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS public.recipes (
+    id           INTEGER     PRIMARY KEY,
+    name         TEXT        NOT NULL,
+    diet         TEXT        NOT NULL DEFAULT 'veg',
+    time_minutes INTEGER     NOT NULL DEFAULT 30,
+    calories     INTEGER              DEFAULT 0,
+    difficulty   TEXT                 DEFAULT 'easy',
+    category     TEXT                 DEFAULT 'other',
+    tags         TEXT                 DEFAULT '',
+    ingredients  TEXT                 DEFAULT '',
+    steps        TEXT                 DEFAULT '',
+    image_url    TEXT                 DEFAULT '',
+    source       TEXT                 DEFAULT 'csv',
+    external_id  TEXT                 DEFAULT '',
+    created_at   TIMESTAMPTZ          DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_recipes_diet     ON public.recipes (diet);
+CREATE INDEX IF NOT EXISTS idx_recipes_category ON public.recipes (category);
+CREATE INDEX IF NOT EXISTS idx_recipes_time     ON public.recipes (time_minutes);
+CREATE INDEX IF NOT EXISTS idx_recipes_source   ON public.recipes (source);
+
+ALTER TABLE public.recipes ENABLE ROW LEVEL SECURITY;
+
+-- Public read: anyone (anon or authenticated) can read the recipe catalogue
+DROP POLICY IF EXISTS "recipes_public_read" ON public.recipes;
+CREATE POLICY "recipes_public_read"
+    ON public.recipes FOR SELECT
+    USING (TRUE);
+
+-- Writes are backend-only (service role bypasses RLS entirely)
+
+
+-- ═══════════════════════════════════════════════════════════════
 -- TABLE: public.saved_recipes
 -- One row per (user, recipe). recipe_data stores the full slim
 -- recipe object so the frontend can open it offline/without an
