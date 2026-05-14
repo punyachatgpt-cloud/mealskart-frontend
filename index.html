@@ -925,47 +925,55 @@
       font-weight: 600; flex-shrink: 0;
     }
     .browseGrid {
-      flex: 1; overflow-y: auto; padding: 12px 16px 12px;
+      flex: 1; overflow-y: auto; padding: 12px 16px 16px;
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 10px; align-items: start;
     }
+    /* Overlay card — text always readable over gradient, theme-agnostic */
     .browseCard {
-      background: var(--bg1); border-radius: 16px; overflow: hidden;
-      border: 1px solid var(--border); cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s;
+      position: relative; border-radius: 16px; overflow: hidden;
+      aspect-ratio: 3/4; cursor: pointer; background: #1a0e06;
+      transition: transform 0.18s, box-shadow 0.18s;
     }
-    .browseCard:hover { transform: translateY(-3px); box-shadow: var(--shadow-card-lg); }
-    .browseCardImg {
-      width: 100%; aspect-ratio: 4/3; object-fit: cover;
-      background: var(--goldBg);
+    .browseCard:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.4); }
+    .browseCard img {
+      position: absolute; inset: 0; width: 100%; height: 100%;
+      object-fit: cover; display: block;
     }
-    .browseCardBody { padding: 10px 10px 12px; background: inherit; }
+    .browseCardPlaceholder {
+      position: absolute; inset: 0; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 2.4rem; background: rgba(120,60,10,0.35);
+    }
+    .browseCardOverlay {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 36px 10px 10px;
+      background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.78) 60%, rgba(0,0,0,0.92) 100%);
+    }
     .browseCardName {
-      font-size: 0.84rem; font-weight: 700; color: var(--ink);
-      line-height: 1.3; margin-bottom: 5px;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-      overflow: hidden;
+      color: #fff; font-weight: 700; font-size: 0.82rem;
+      line-height: 1.28; margin: 0 0 4px;
+      overflow: hidden; display: -webkit-box;
+      -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.6);
     }
     .browseCardMeta {
-      font-size: 0.72rem; color: var(--muted2); display: flex; gap: 6px;
-      align-items: center; margin-bottom: 5px;
+      color: rgba(255,255,255,0.78); font-size: 0.7rem;
+      margin: 0 0 5px; font-weight: 500;
     }
-    .browseCardDiet {
-      font-size: 0.65rem; font-weight: 700; padding: 2px 7px;
-      border-radius: 999px; display: inline-block;
+    .browseCardDietBadge {
+      font-size: 0.62rem; font-weight: 700; padding: 2px 7px;
+      border-radius: 999px; display: inline-block; backdrop-filter: blur(4px);
     }
-    .browseCardDiet.veg    { background: #dcfce7; color: #15803d; }
-    .browseCardDiet.nonveg { background: #fee2e2; color: #dc2626; }
-    .browseLoadMore { padding: 12px; text-align: center; flex-shrink: 0; }
+    .browseCardDietBadge.veg    { background: rgba(22,163,74,0.85); color: #fff; }
+    .browseCardDietBadge.nonveg { background: rgba(220,38,38,0.85); color: #fff; }
+    .browseLoadMore { padding: 16px; text-align: center; flex-shrink: 0; }
     /* Smooth filter transition — dim grid instead of wipe */
-    .browseGrid.filtering { opacity: 0.4; pointer-events: none; transition: opacity 0.15s; }
-    .browseGrid { transition: opacity 0.2s; }
+    .browseGrid.filtering { opacity: 0.35; pointer-events: none; }
+    .browseGrid { transition: opacity 0.18s; }
     [data-theme="dark"] .bfChip { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.14); color: var(--muted); }
     [data-theme="dark"] .bfChip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-    [data-theme="dark"] .browseCard { background: #1e1208; }
-    [data-theme="dark"] .browseCardName { color: var(--ink); }
-    [data-theme="dark"] .browseCardMeta { color: var(--muted); }
 
     .savedSheetOverlay {
       position: fixed; inset: 0; z-index: 295;
@@ -12781,6 +12789,8 @@
     async function loadBrowsePage(append = false) {
       const grid  = document.getElementById("browseGrid");
       const count = document.getElementById("browseCount");
+      // Save scroll position so "Show more" doesn't jump to top
+      const savedScroll = grid.scrollTop;
       if (!append) {
         _browseOffset = 0;
         // Dim existing cards instead of wiping — smooth, no flash
@@ -12798,6 +12808,7 @@
 
         grid.classList.remove("filtering");
         if (!append) grid.innerHTML = "";
+        else grid.scrollTop = savedScroll; // restore position after append
         if (items.length === 0 && !append) {
           grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted2)">No recipes match these filters.</div>';
           count.textContent = "";
@@ -12811,22 +12822,15 @@
           card.tabIndex = 0;
           const dietCls = r.diet === "veg" ? "veg" : "nonveg";
           const dietLbl = r.diet === "veg" ? "🌱 Veg" : "🍗 Non-veg";
-          const imgHtml = r.image_url
-            ? `<img class="browseCardImg" src="${escapeHtml(r.image_url)}" alt="" loading="lazy" onerror="this.src='';this.style.display='none'">`
-            : `<div class="browseCardImg" style="display:flex;align-items:center;justify-content:center;font-size:2rem;background:var(--goldBg)">🍽️</div>`;
-          const isDark = document.documentElement.dataset.theme === "dark";
-          const cardBg   = isDark ? "#1e1208" : "#ffffff";
-          const nameClr  = isDark ? "#F2E5CC" : "#1C1008";
-          const metaClr  = isDark ? "#C4906A" : "#9B7553";
-          const dietBg   = r.diet === "veg" ? "#dcfce7" : "#fee2e2";
-          const dietClr  = r.diet === "veg" ? "#15803d" : "#dc2626";
-          card.style.cssText = `background:${cardBg};border-radius:16px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:transform .15s,box-shadow .15s;`;
+          const imgContent = r.image_url
+            ? `<img src="${escapeHtml(r.image_url)}" alt="" loading="lazy" onerror="this.remove()">`
+            : `<div class="browseCardPlaceholder">🍽️</div>`;
           card.innerHTML = `
-            ${imgHtml}
-            <div style="padding:10px 10px 12px;">
-              <p style="margin:0 0 4px;font-size:0.84rem;font-weight:700;color:${nameClr};line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(r.name || "")}</p>
-              <p style="margin:0 0 5px;font-size:0.72rem;color:${metaClr};">⏱ ${r.time_minutes || "?"}m · ${r.calories || "?"}kcal</p>
-              <span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;background:${dietBg};color:${dietClr};">${dietLbl}</span>
+            ${imgContent}
+            <div class="browseCardOverlay">
+              <p class="browseCardName">${escapeHtml(r.name || "")}</p>
+              <p class="browseCardMeta">⏱ ${r.time_minutes || "?"}m · ${r.calories || "?"}kcal</p>
+              <span class="browseCardDietBadge ${dietCls}">${dietLbl}</span>
             </div>`;
           card.addEventListener("click", () => { closeBrowseSheet(); openRecipeModal(r.id); });
           card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { closeBrowseSheet(); openRecipeModal(r.id); } });
@@ -12839,7 +12843,8 @@
         document.getElementById("browseLoadMore").style.display = hasMore ? "block" : "none";
       } catch {
         grid.classList.remove("filtering");
-        if (!append) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted2)">Could not load recipes.</div>';
+        if (append) grid.scrollTop = savedScroll;
+        else grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted2)">Could not load recipes.</div>';
       }
     }
 
