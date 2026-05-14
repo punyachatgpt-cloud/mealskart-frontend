@@ -2302,6 +2302,7 @@
     .right.searchMode #contextBannerWrap,
     .right.searchMode #tasteDNAInline,
     .right.searchMode #quickStrip,
+    .right.searchMode #forYouStrip,
     .right.searchMode .statusRow { display: none !important; }
 
     .searchLoadMoreWrap {
@@ -5319,6 +5320,55 @@
     .socialProofBadge::before { content: "🔥"; font-size: 0.68rem; }
 
     /* Quick-access dish strip */
+    /* ── For You strip ──────────────────────────────── */
+    .forYouStrip { margin-bottom: 18px; }
+    .forYouHead {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .forYouLabel {
+      font-size: var(--t-xs); font-weight: var(--fw-bold); color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .forYouRefreshBtn {
+      background: none; border: none; cursor: pointer; font-size: 1rem;
+      color: var(--muted2); padding: 2px 6px; border-radius: 6px;
+      transition: color 0.15s, transform 0.3s;
+    }
+    .forYouRefreshBtn:hover { color: var(--accent); }
+    .forYouRefreshBtn.spinning { animation: spin 0.6s linear 1; }
+    .forYouRow {
+      display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .forYouRow::-webkit-scrollbar { display: none; }
+    .forYouCard {
+      flex: 0 0 140px; border-radius: 14px; overflow: hidden; cursor: pointer;
+      background: var(--bg1); border: 1px solid var(--border);
+      box-shadow: var(--shadow-card); transition: transform 0.15s, box-shadow 0.15s;
+      display: flex; flex-direction: column;
+    }
+    .forYouCard:hover { transform: translateY(-3px); box-shadow: var(--shadow-card-lg); }
+    [data-theme="dark"] .forYouCard { background: #1e1208; border-color: rgba(180,110,45,0.22); }
+    .forYouCardImg {
+      width: 100%; height: 90px; object-fit: cover; display: block; flex-shrink: 0;
+      background: rgba(200,105,14,0.07);
+    }
+    .forYouCardNoImg {
+      width: 100%; height: 90px; display: flex; align-items: center;
+      justify-content: center; font-size: 1.8rem; flex-shrink: 0;
+      background: rgba(200,105,14,0.07);
+    }
+    .forYouCardBody { padding: 7px 9px 9px; flex: 1; }
+    .forYouCardName {
+      font-size: 0.74rem; font-weight: 700; color: #1C1008; line-height: 1.3;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden; margin: 0 0 4px;
+    }
+    [data-theme="dark"] .forYouCardName { color: #F2E5CC; }
+    .forYouCardMeta { font-size: 0.66rem; color: #9B7553; }
+    [data-theme="dark"] .forYouCardMeta { color: #C4906A; }
+
     .quickStrip {
       display: none;
       margin-bottom: 14px;
@@ -5428,7 +5478,8 @@
             onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
             Sign in
           </a>
-          <button id="authAvatarBtn" type="button" title="Your account"
+          <button id="authAvatarBtn" type="button" title="View your profile"
+            onclick="window.location.href='/profile.html'"
             style="display:none;width:32px;height:32px;border-radius:50%;background:var(--accent);border:2px solid var(--accent);color:#fff;font-size:0.8rem;font-weight:700;cursor:pointer;transition:opacity 0.15s"
             onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
           </button>
@@ -5691,6 +5742,14 @@
         <div class="uniSearchBanner" id="uniSearchBanner">
           <span>🔍 Showing results for: <strong id="uniSearchTerm"></strong></span>
           <button class="uniSearchClearBtn" id="uniSearchClearBtn" type="button">✕ Clear search</button>
+        </div>
+        <!-- For You strip — shown when user has cook/save history -->
+        <div class="forYouStrip" id="forYouStrip" style="display:none">
+          <div class="forYouHead">
+            <span class="forYouLabel">✨ Picked for you</span>
+            <button class="forYouRefreshBtn" id="forYouRefreshBtn" type="button" title="Refresh picks">↺</button>
+          </div>
+          <div class="forYouRow" id="forYouRow"></div>
         </div>
         <div class="quickStrip" id="quickStrip"></div>
         <section class="results" id="results">
@@ -9773,6 +9832,8 @@
         if (log.length > 200) log.splice(0, log.length - 200);
         localStorage.setItem(COOK_LOG_KEY, JSON.stringify(log));
         syncToCloud();
+        // Refresh For You strip non-blockingly after a new cook entry
+        setTimeout(() => loadForYouStrip(), 300);
       } catch {}
     }
 
@@ -12632,6 +12693,8 @@
         const list = getSavedRecipes().filter(r => String(r.id) !== String(recipe.id));
         list.unshift(slim);
         _savedWriteLocal(list);
+        // Refresh For You strip non-blockingly
+        setTimeout(() => loadForYouStrip(), 300);
         // Fire-and-forget to Supabase when logged in
         const token = localStorage.getItem("simmer_token");
         if (token) {
@@ -12898,6 +12961,71 @@
       });
     }
     // ── end Browse All Sheet ──────────────────────────────────────────────────
+
+    // ── For You Strip ─────────────────────────────────────────────────────────
+    const FOR_YOU_LIMIT = 12;
+
+    function _getForYouSeedIds() {
+      const cookLog = JSON.parse(localStorage.getItem(COOK_LOG_KEY) || "[]");
+      const saved   = JSON.parse(localStorage.getItem("simmer_saved_v1") || "[]");
+      const ids = new Set([
+        ...cookLog.map(e => String(e.id)),
+        ...saved.map(id => String(id)),
+      ]);
+      return [...ids].slice(0, 30); // cap seed count
+    }
+
+    async function loadForYouStrip(force = false) {
+      const seedIds = _getForYouSeedIds();
+      const strip   = document.getElementById("forYouStrip");
+      const row     = document.getElementById("forYouRow");
+      if (!strip || !row) return;
+
+      if (seedIds.length === 0) { strip.style.display = "none"; return; }
+
+      strip.style.display = "block";
+      row.innerHTML = '<span style="font-size:0.75rem;color:var(--muted2);padding:6px 0">Loading…</span>';
+
+      try {
+        const params = new URLSearchParams({ liked_ids: seedIds.join(","), limit: FOR_YOU_LIMIT });
+        const resp   = await fetch(`${API_BASE_URL}/for-you?${params}`);
+        const items  = await resp.json();
+        if (!Array.isArray(items) || items.length === 0) { strip.style.display = "none"; return; }
+
+        row.innerHTML = "";
+        items.forEach(r => {
+          const card = document.createElement("div");
+          card.className = "forYouCard";
+          card.tabIndex = 0;
+          const imgEl = r.image_url
+            ? `<img class="forYouCardImg" src="${escapeHtml(r.image_url)}" alt="${escapeHtml(r.name||"")}" loading="lazy" onerror="this.style.display='none'">`
+            : `<div class="forYouCardNoImg">🍽️</div>`;
+          card.innerHTML = `
+            ${imgEl}
+            <div class="forYouCardBody">
+              <p class="forYouCardName">${escapeHtml(r.name || "")}</p>
+              <p class="forYouCardMeta">⏱ ${r.time_minutes||"?"}m &middot; ${r.calories||"?"}kcal</p>
+            </div>`;
+          card.addEventListener("click", () => openRecipeModal(r.id));
+          card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") openRecipeModal(r.id); });
+          row.appendChild(card);
+        });
+      } catch {
+        strip.style.display = "none";
+      }
+    }
+
+    function initForYouStrip() {
+      const refreshBtn = document.getElementById("forYouRefreshBtn");
+      refreshBtn?.addEventListener("click", async () => {
+        refreshBtn.classList.add("spinning");
+        await loadForYouStrip(true);
+        setTimeout(() => refreshBtn.classList.remove("spinning"), 700);
+      });
+      // Load on app init — non-blocking
+      loadForYouStrip();
+    }
+    // ── end For You Strip ─────────────────────────────────────────────────────
 
     function initPhase6() {
       // Save button in recipe modal
@@ -13436,6 +13564,7 @@
     initPhase5();
     initPhase6();
     initBrowseSheet();
+    initForYouStrip();
     initPhase7();
     initPhase8();
     initPhase9();
