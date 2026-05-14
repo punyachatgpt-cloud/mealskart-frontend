@@ -1,6 +1,6 @@
 // Simmer Service Worker — cache-first static, network-first API
-const CACHE_NAME = "simmer-v4";
-const API_CACHE  = "simmer-api-v4";
+const CACHE_NAME = "simmer-v5";
+const API_CACHE  = "simmer-api-v5";
 
 const STATIC_ASSETS = [
   "/",
@@ -116,6 +116,38 @@ async function cacheFirstStatic(request) {
     return fallback || new Response("Offline", { status: 503 });
   }
 }
+
+// ── Push notifications ────────────────────────────────────────────────────────
+self.addEventListener("push", event => {
+  const data = event.data?.json() || {};
+  const title   = data.title || "Simmer 🔥";
+  const options = {
+    body:    data.body    || "Your personalised recipe picks are waiting.",
+    icon:    "/icons/icon-192.png",
+    badge:   "/icons/badge-72.png",
+    data:    { url: data.url || "/" },
+    vibrate: [100, 50, 100],
+    tag:     "simmer-daily",
+    renotify: true,
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener("notificationclick", event => {
+  event.notification.close();
+  const url = event.notification.data?.url || "/";
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then(list => {
+      for (const client of list) {
+        if (client.url.includes(self.location.origin) && "focus" in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) return clients.openWindow(url);
+    })
+  );
+});
 
 async function cacheFirstExternal(request) {
   const cached = await caches.match(request);

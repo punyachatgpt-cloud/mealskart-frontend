@@ -398,6 +398,25 @@ CREATE POLICY "saved_recipes_delete_own"
 
 
 -- ═══════════════════════════════════════════════════════════════
+-- TABLE: public.push_subscriptions
+-- Stores Web Push endpoint + keys per device.
+-- user_id is nullable — anonymous users can subscribe too.
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS public.push_subscriptions (
+    id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    endpoint    TEXT        NOT NULL UNIQUE,
+    p256dh      TEXT        NOT NULL,
+    auth        TEXT        NOT NULL,
+    user_id     UUID        REFERENCES public.users(id) ON DELETE SET NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_push_subs_user
+    ON public.push_subscriptions (user_id) WHERE user_id IS NOT NULL;
+
+
+-- ═══════════════════════════════════════════════════════════════
 -- VERIFY (run after migration to confirm all tables exist)
 -- ═══════════════════════════════════════════════════════════════
 SELECT table_name

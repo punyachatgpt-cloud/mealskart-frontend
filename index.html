@@ -13168,6 +13168,110 @@
         }
       });
     }
+
+    // ── Web Push notifications ────────────────────────────────────────────────
+    const VAPID_PUBLIC_KEY = "BGHtwH18NL-M1HLEyu5TSkk5XZyssDiYTpL9xjReJUG7vXdRrOVCKeBnMweC2LCtqciQawdQmaRlK9-_6FcBkp4";
+    const PUSH_ASKED_KEY   = "simmer_push_asked_v1";
+
+    function _urlB64ToUint8(base64) {
+      const pad  = "=".repeat((4 - base64.length % 4) % 4);
+      const b64  = (base64 + pad).replace(/-/g, "+").replace(/_/g, "/");
+      const raw  = atob(b64);
+      const arr  = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+      return arr;
+    }
+
+    async function subscribePush() {
+      if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+      try {
+        const reg  = await navigator.serviceWorker.ready;
+        const sub  = await reg.pushManager.subscribe({
+          userVisibleOnly:      true,
+          applicationServerKey: _urlB64ToUint8(VAPID_PUBLIC_KEY),
+        });
+        const key  = sub.getKey("p256dh");
+        const auth = sub.getKey("auth");
+        await fetch(`${API_BASE_URL}/push/subscribe`, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            endpoint: sub.endpoint,
+            p256dh:   btoa(String.fromCharCode(...new Uint8Array(key))),
+            auth:     btoa(String.fromCharCode(...new Uint8Array(auth))),
+          }),
+        });
+      } catch {}
+    }
+
+    function showPushPrompt() {
+      if (localStorage.getItem(PUSH_ASKED_KEY)) return;
+      if (!("Notification" in window) || Notification.permission !== "default") return;
+      localStorage.setItem(PUSH_ASKED_KEY, "1");
+
+      const banner = document.createElement("div");
+      banner.id = "pushBanner";
+      banner.innerHTML = `
+        <span style="font-size:1.3rem">🔔</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:0.88rem">Daily dinner inspiration</div>
+          <div style="font-size:0.78rem;opacity:0.75">Get a recipe nudge every evening</div>
+        </div>
+        <button id="pushAcceptBtn" style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-weight:700;font-size:0.82rem;cursor:pointer;white-space:nowrap">Yes please</button>
+        <button id="pushDismissBtn" style="background:none;border:none;color:var(--ink);opacity:0.5;cursor:pointer;font-size:1.1rem;padding:4px 8px">✕</button>
+      `;
+      Object.assign(banner.style, {
+        position: "fixed", bottom: "80px", left: "50%",
+        transform: "translateX(-50%) translateY(20px)",
+        background: "var(--bg1)", border: "1.5px solid var(--border)",
+        borderRadius: "14px", padding: "12px 14px",
+        display: "flex", alignItems: "center", gap: "10px",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+        zIndex: "9000", maxWidth: "420px", width: "calc(100% - 32px)",
+        opacity: "0", transition: "opacity 0.3s ease, transform 0.3s ease",
+      });
+      document.body.appendChild(banner);
+
+      requestAnimationFrame(() => {
+        banner.style.opacity = "1";
+        banner.style.transform = "translateX(-50%) translateY(0)";
+      });
+
+      const dismiss = () => {
+        banner.style.opacity = "0";
+        banner.style.transform = "translateX(-50%) translateY(10px)";
+        setTimeout(() => banner.remove(), 300);
+      };
+
+      document.getElementById("pushAcceptBtn").addEventListener("click", async () => {
+        dismiss();
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+          await subscribePush();
+          showToast("🔔 You'll get daily dinner inspiration!", "success", 2500);
+        }
+      });
+      document.getElementById("pushDismissBtn").addEventListener("click", dismiss);
+    }
+
+    // Ask after user opens their first recipe (they're engaged, not a cold bounce)
+    (function initPushPrompt() {
+      if (!("Notification" in window) || Notification.permission === "granted") {
+        if (Notification.permission === "granted") subscribePush();
+        return;
+      }
+      const origOpen = window.openRecipeModal;
+      if (typeof origOpen === "function") {
+        window.openRecipeModal = function(...args) {
+          origOpen.apply(this, args);
+          setTimeout(showPushPrompt, 4000);
+        };
+      } else {
+        // Fallback: show after 45s of engagement
+        setTimeout(showPushPrompt, 45000);
+      }
+    })();
+    // ─────────────────────────────────────────────────────────────────────────
   </script>
 </body>
 </html>
