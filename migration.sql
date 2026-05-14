@@ -406,6 +406,6 @@ WHERE table_schema = 'public'
   AND table_name IN (
     'users','tier_limits','usage_log',
     'otp_requests','subscriptions','recovery_requests',
-    'saved_recipes'
+    'recipes','saved_recipes'
   )
 ORDER BY table_name;
