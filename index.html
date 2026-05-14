@@ -12814,11 +12814,15 @@
           const imgHtml = r.image_url
             ? `<img class="browseCardImg" src="${escapeHtml(r.image_url)}" alt="" loading="lazy" onerror="this.src='';this.style.display='none'">`
             : `<div class="browseCardImg" style="display:flex;align-items:center;justify-content:center;font-size:2rem;background:var(--goldBg)">🍽️</div>`;
+          const isDark = document.documentElement.dataset.theme === "dark"
+                      || document.body.dataset.theme === "dark";
+          const nameColor = isDark ? "#F2E5CC" : "#1C1008";
+          const metaColor = isDark ? "#C4906A" : "#9B7553";
           card.innerHTML = `
             ${imgHtml}
             <div class="browseCardBody">
-              <div class="browseCardName">${escapeHtml(r.name)}</div>
-              <div class="browseCardMeta">⏱ ${r.time_minutes || "?"}m &nbsp;·&nbsp; ${r.calories || "?"}kcal</div>
+              <div class="browseCardName" style="color:${nameColor}">${escapeHtml(r.name)}</div>
+              <div class="browseCardMeta" style="color:${metaColor}">⏱ ${r.time_minutes || "?"}m · ${r.calories || "?"}kcal</div>
               <span class="browseCardDiet ${dietCls}">${dietLbl}</span>
             </div>`;
           card.addEventListener("click", () => { closeBrowseSheet(); openRecipeModal(r.id); });
