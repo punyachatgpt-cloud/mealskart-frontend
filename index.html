@@ -2980,6 +2980,30 @@
       min-height: 16px;
     }
 
+    .fridgeSearchBtn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 11px 16px;
+      border-radius: 14px;
+      border: 2px solid var(--accent);
+      background: rgba(200,105,14,0.08);
+      color: var(--accent);
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.12s;
+    }
+    .fridgeSearchBtn:hover {
+      background: rgba(200,105,14,0.16);
+      transform: translateY(-1px);
+    }
+    .fridgeSearchBtn.hidden { display: none; }
+    [data-theme="dark"] .fridgeSearchBtn {
+      background: rgba(200,105,14,0.12);
+      border-color: var(--accent);
+    }
+
     /* ── Warm animated background mesh ───────────── */
     body {
       background:
@@ -5387,6 +5411,22 @@
 
     /* Quick-access dish strip */
     /* ── For You strip ──────────────────────────────── */
+    /* ── Fridge Mode banner ── */
+    .fridgeBanner {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(200,105,14,0.10);
+      border: 1.5px solid var(--accent);
+      border-radius: 14px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      font-size: 0.82rem; font-weight: 700; color: var(--accent);
+    }
+    .fridgeBannerClose {
+      margin-left: auto; background: none; border: none;
+      color: var(--accent); cursor: pointer; font-size: 1rem; line-height: 1; padding: 0;
+    }
+    [data-theme="dark"] .fridgeBanner { background: rgba(200,105,14,0.14); }
+
     .forYouStrip { margin-bottom: 18px; }
     .forYouHead {
       display: flex; align-items: center; justify-content: space-between;
@@ -5740,6 +5780,9 @@
               <div class="tagCount" id="tagCount"></div>
               <div class="micHint" id="micHint"></div>
             </div>
+            <button class="fridgeSearchBtn hidden" id="fridgeSearchBtn" type="button">
+              🧺 What can I make with these?
+            </button>
           </div>
 
           <div class="actions">
@@ -6455,6 +6498,9 @@
       });
       const n = state.ingredientTags.length;
       el.tagCount.textContent = n > 0 ? `${n} ingredient${n > 1 ? "s" : ""} added` : "";
+      // Show/hide fridge search button
+      const fridgeBtn = document.getElementById("fridgeSearchBtn");
+      if (fridgeBtn) fridgeBtn.classList.toggle("hidden", n === 0);
     }
 
     function addTag(raw) {
@@ -7832,6 +7878,23 @@
       el.results.classList.toggle("decideResults", mode === "decide");
       el.results.classList.toggle("hasHero", mode === "normal");  // hero only for normal recommend
 
+      // Fridge mode: sort by ingredient_match_percent descending, show up to 6
+      // Fall through into normal rendering loop with "search" visual mode
+      const isFridgeMode = mode === "fridge";
+      if (isFridgeMode) {
+        items = [...items].sort((a, b) =>
+          (b.ingredient_match_percent || 0) - (a.ingredient_match_percent || 0)
+        ).slice(0, 6);
+        // Prepend fridge banner
+        const banner = document.createElement("div");
+        banner.className = "fridgeBanner";
+        const ingList = [...state.ingredientTags].slice(0, 4).join(", ");
+        banner.innerHTML = `<span>🧺 Recipes using <strong>${escapeHtml(ingList)}</strong></span>
+          <button class="fridgeBannerClose" type="button" aria-label="Clear fridge mode" onclick="getSuggestions('normal')">✕</button>`;
+        el.results.appendChild(banner);
+        mode = "search"; // use search visual mode (no hero/decide styles)
+      }
+
       // search mode shows all passed items; decide = 1; normal = 3
       const incoming = mode === "decide" ? items.slice(0, 1)
                      : mode === "search"  ? items
@@ -8625,6 +8688,12 @@
         // NOTE: name_query is intentionally NOT derived from ingredient tags here.
         // The search box calls /search directly via searchRecipes().
         // getSuggestions() is only for filter-based recommendations (buttons).
+
+        // Fridge mode: relax time/mood constraints so ingredient matching drives results
+        const apiPayload = mode === "fridge"
+          ? { ...state, mode: "normal", time_available: 999, mood: "any", ingredients }
+          : { ...state, mode, ingredients };
+
         const cacheKey = JSON.stringify({ ...state, mode, ingredients });
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
@@ -8651,11 +8720,7 @@
         const response = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...state,
-            mode,
-            ingredients,
-          })
+          body: JSON.stringify(apiPayload)
         });
 
         clearTimeout(slowHint);
@@ -8857,6 +8922,14 @@
     el.suggestBtn.addEventListener("click", (e) => {
       addRipple(el.suggestBtn, e);
       getSuggestions("normal");
+    });
+
+    document.getElementById("fridgeSearchBtn")?.addEventListener("click", (e) => {
+      addRipple(document.getElementById("fridgeSearchBtn"), e);
+      getSuggestions("fridge");
+      // Scroll results into view on mobile
+      const resultsEl = document.getElementById("results") || el.results;
+      if (resultsEl) setTimeout(() => resultsEl.scrollIntoView({ behavior: "smooth", block: "start" }), 400);
     });
 
     el.decideBtn.addEventListener("click", async (e) => {
