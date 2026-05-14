@@ -4492,6 +4492,84 @@
     }
     [data-theme="dark"] .cookModeEntryBtn { color: var(--ink); }
 
+    /* ── Step language selector ──────────────────── */
+    .stepLangRow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 12px;
+    }
+
+    .stepLangLabel {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .stepLangWrap {
+      position: relative;
+    }
+
+    .stepLangBtn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1.5px solid var(--border);
+      background: var(--bg0);
+      color: var(--ink);
+      font-size: 0.75rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color 0.18s, background 0.18s;
+    }
+
+    .stepLangBtn:hover,
+    .stepLangBtn.open { border-color: var(--accent); background: var(--accentGlow); }
+
+    .stepLangBtn.translating { opacity: 0.6; pointer-events: none; }
+
+    .stepLangDropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      z-index: 200;
+      background: var(--bg1);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 6px;
+      min-width: 150px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stepLangDropdown.hidden { display: none; }
+
+    .stepLangOption {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 9px;
+      border: none;
+      background: none;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.15s;
+    }
+
+    .stepLangOption:hover { background: var(--bg0); }
+    .stepLangOption.active { background: var(--accentGlow); font-weight: 800; color: var(--accent); }
+
     /* ════════════════════════════════════════════════════
        CUISINE EXPLORER — STYLES
        ════════════════════════════════════════════════════ */
@@ -5556,6 +5634,13 @@
         <button class="modalRemixBtn" id="modalRemixQuicker"   data-remix="quicker"   type="button">⚡ Quicker</button>
       </div>
       <button class="cookModeEntryBtn" id="cookModeEntryBtn" type="button">🍳 Enter Cook Mode — full screen</button>
+      <div class="stepLangRow">
+        <span class="stepLangLabel">Instructions in</span>
+        <div class="stepLangWrap" id="stepLangWrap">
+          <button class="stepLangBtn" id="stepLangBtn" type="button" aria-haspopup="true">🌐 EN</button>
+          <div class="stepLangDropdown hidden" id="stepLangDropdown" role="listbox"></div>
+        </div>
+      </div>
       <div class="stepDotsRow" id="stepDotsRow" role="tablist" aria-label="Recipe steps"></div>
       <div class="stepCardWrap">
         <div class="stepCard" id="stepCard">
@@ -7843,6 +7928,106 @@
 
     let _stepNavDirection = "forward";
 
+    // ── Step translation ──────────────────────────────────────────────────────
+    const STEP_LANGUAGES = [
+      { code: "en", label: "English",    flag: "🇬🇧" },
+      { code: "hi", label: "हिंदी",      flag: "🇮🇳" },
+      { code: "pa", label: "ਪੰਜਾਬੀ",     flag: "🇮🇳" },
+      { code: "ta", label: "தமிழ்",      flag: "🇮🇳" },
+      { code: "te", label: "తెలుగు",     flag: "🇮🇳" },
+      { code: "bn", label: "বাংলা",      flag: "🇮🇳" },
+      { code: "mr", label: "मराठी",      flag: "🇮🇳" },
+      { code: "gu", label: "ગુજરાતી",   flag: "🇮🇳" },
+      { code: "kn", label: "ಕನ್ನಡ",      flag: "🇮🇳" },
+    ];
+    let _stepLang = localStorage.getItem("simmer_step_lang") || "en";
+    const _translateCache = new Map();
+
+    async function translateText(text, targetLang) {
+      if (!text || targetLang === "en") return text;
+      const key = `${targetLang}::${text}`;
+      if (_translateCache.has(key)) return _translateCache.get(key);
+      try {
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`;
+        const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+        const data = await res.json();
+        const translated = data?.responseData?.translatedText || text;
+        _translateCache.set(key, translated);
+        return translated;
+      } catch {
+        return text;
+      }
+    }
+
+    function updateStepLangBtn() {
+      const btn = document.getElementById("stepLangBtn");
+      if (!btn) return;
+      const lang = STEP_LANGUAGES.find(l => l.code === _stepLang) || STEP_LANGUAGES[0];
+      btn.textContent = `🌐 ${lang.code.toUpperCase()}`;
+    }
+
+    function buildLangDropdown() {
+      const dd = document.getElementById("stepLangDropdown");
+      if (!dd) return;
+      dd.innerHTML = STEP_LANGUAGES.map(l =>
+        `<button class="stepLangOption ${l.code === _stepLang ? "active" : ""}" data-lang="${l.code}" type="button">
+          ${l.flag} ${l.label}
+        </button>`
+      ).join("");
+      dd.querySelectorAll(".stepLangOption").forEach(opt => {
+        opt.addEventListener("click", async () => {
+          _stepLang = opt.dataset.lang;
+          localStorage.setItem("simmer_step_lang", _stepLang);
+          closeLangDropdown();
+          updateStepLangBtn();
+          await applyStepTranslation();
+        });
+      });
+    }
+
+    function openLangDropdown() {
+      buildLangDropdown();
+      document.getElementById("stepLangDropdown")?.classList.remove("hidden");
+      document.getElementById("stepLangBtn")?.classList.add("open");
+    }
+
+    function closeLangDropdown() {
+      document.getElementById("stepLangDropdown")?.classList.add("hidden");
+      document.getElementById("stepLangBtn")?.classList.remove("open");
+    }
+
+    async function applyStepTranslation() {
+      const rawText = modalSteps[currentStepIndex] || "";
+      if (!rawText) return;
+      const btn = document.getElementById("stepLangBtn");
+      if (_stepLang === "en") {
+        el.stepText.innerHTML = highlightStepText(rawText);
+        return;
+      }
+      btn?.classList.add("translating");
+      const translated = await translateText(rawText, _stepLang);
+      btn?.classList.remove("translating");
+      // Only apply if we're still on the same step
+      if (rawText === (modalSteps[currentStepIndex] || "")) {
+        el.stepText.innerHTML = highlightStepText(translated);
+      }
+    }
+
+    // Lang pill toggle
+    document.getElementById("stepLangBtn")?.addEventListener("click", () => {
+      const dd = document.getElementById("stepLangDropdown");
+      if (dd?.classList.contains("hidden")) openLangDropdown();
+      else closeLangDropdown();
+    });
+
+    // Close on outside click
+    document.addEventListener("click", e => {
+      if (!e.target.closest("#stepLangWrap")) closeLangDropdown();
+    });
+
+    // Set initial label from saved preference
+    updateStepLangBtn();
+
     function autoCheckStepIngredients(stepText) {
       const labels = el.modalIngredients.querySelectorAll(".ingredientCheck");
       labels.forEach(label => {
@@ -7890,6 +8075,9 @@
 
       // Auto-check ingredients mentioned in this step
       autoCheckStepIngredients(rawText);
+
+      // Apply translation if a non-English language is selected
+      if (_stepLang !== "en") applyStepTranslation();
     }
 
     async function openRecipeModal(recipeId) {
