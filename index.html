@@ -940,26 +940,32 @@
       width: 100%; aspect-ratio: 4/3; object-fit: cover;
       background: var(--goldBg);
     }
-    .browseCardBody { padding: 10px 10px 12px; }
+    .browseCardBody { padding: 10px 10px 12px; background: inherit; }
     .browseCardName {
       font-size: 0.84rem; font-weight: 700; color: var(--ink);
-      line-height: 1.25; margin-bottom: 4px;
+      line-height: 1.3; margin-bottom: 5px;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
       overflow: hidden;
     }
     .browseCardMeta {
-      font-size: 0.7rem; color: var(--muted2); display: flex; gap: 6px;
-      align-items: center;
+      font-size: 0.72rem; color: var(--muted2); display: flex; gap: 6px;
+      align-items: center; margin-bottom: 5px;
     }
     .browseCardDiet {
       font-size: 0.65rem; font-weight: 700; padding: 2px 7px;
-      border-radius: 999px; margin-top: 5px; display: inline-block;
+      border-radius: 999px; display: inline-block;
     }
     .browseCardDiet.veg    { background: #dcfce7; color: #15803d; }
     .browseCardDiet.nonveg { background: #fee2e2; color: #dc2626; }
     .browseLoadMore { padding: 12px; text-align: center; flex-shrink: 0; }
-    [data-theme="dark"] .bfChip { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: var(--muted2); }
-    [data-theme="dark"] .browseCard { background: rgba(255,255,255,0.04); }
+    /* Smooth filter transition — dim grid instead of wipe */
+    .browseGrid.filtering { opacity: 0.4; pointer-events: none; transition: opacity 0.15s; }
+    .browseGrid { transition: opacity 0.2s; }
+    [data-theme="dark"] .bfChip { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.14); color: var(--muted); }
+    [data-theme="dark"] .bfChip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    [data-theme="dark"] .browseCard { background: #1e1208; }
+    [data-theme="dark"] .browseCardName { color: var(--ink); }
+    [data-theme="dark"] .browseCardMeta { color: var(--muted); }
 
     .savedSheetOverlay {
       position: fixed; inset: 0; z-index: 295;
@@ -12777,7 +12783,8 @@
       const count = document.getElementById("browseCount");
       if (!append) {
         _browseOffset = 0;
-        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted2);font-size:0.9rem">Loading…</div>';
+        // Dim existing cards instead of wiping — smooth, no flash
+        grid.classList.add("filtering");
       }
       const params = new URLSearchParams({ limit: BROWSE_PAGE, offset: _browseOffset, sort: _browseFilters.sort });
       if (_browseFilters.diet)     params.set("diet",     _browseFilters.diet);
@@ -12789,9 +12796,10 @@
         const items = await resp.json();
         _browseTotal = parseInt(resp.headers.get("X-Total-Count") || "0", 10) || items.length;
 
+        grid.classList.remove("filtering");
         if (!append) grid.innerHTML = "";
         if (items.length === 0 && !append) {
-          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted2)">No recipes match these filters.</div>';
+          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted2)">No recipes match these filters.</div>';
           count.textContent = "";
           document.getElementById("browseLoadMore").style.display = "none";
           return;
@@ -12801,16 +12809,16 @@
           const card = document.createElement("div");
           card.className = "browseCard";
           card.tabIndex = 0;
-          const img = r.image_url
-            ? `<img class="browseCardImg" src="${escapeHtml(r.image_url)}" alt="${escapeHtml(r.name)}" loading="lazy" onerror="this.style.display='none'">`
-            : `<div class="browseCardImg" style="display:flex;align-items:center;justify-content:center;font-size:2.2rem">🍽️</div>`;
           const dietCls = r.diet === "veg" ? "veg" : "nonveg";
           const dietLbl = r.diet === "veg" ? "🌱 Veg" : "🍗 Non-veg";
+          const imgHtml = r.image_url
+            ? `<img class="browseCardImg" src="${escapeHtml(r.image_url)}" alt="" loading="lazy" onerror="this.src='';this.style.display='none'">`
+            : `<div class="browseCardImg" style="display:flex;align-items:center;justify-content:center;font-size:2rem;background:var(--goldBg)">🍽️</div>`;
           card.innerHTML = `
-            ${img}
+            ${imgHtml}
             <div class="browseCardBody">
               <div class="browseCardName">${escapeHtml(r.name)}</div>
-              <div class="browseCardMeta">⏱ ${r.time_minutes || "?"}m · ${r.calories || "?"}kcal</div>
+              <div class="browseCardMeta">⏱ ${r.time_minutes || "?"}m &nbsp;·&nbsp; ${r.calories || "?"}kcal</div>
               <span class="browseCardDiet ${dietCls}">${dietLbl}</span>
             </div>`;
           card.addEventListener("click", () => { closeBrowseSheet(); openRecipeModal(r.id); });
@@ -12823,6 +12831,7 @@
         const hasMore = _browseOffset < _browseTotal;
         document.getElementById("browseLoadMore").style.display = hasMore ? "block" : "none";
       } catch {
+        grid.classList.remove("filtering");
         if (!append) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted2)">Could not load recipes.</div>';
       }
     }
