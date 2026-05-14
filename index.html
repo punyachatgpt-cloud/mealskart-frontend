@@ -1759,8 +1759,42 @@
       box-shadow: 0 50px 100px -20px rgba(50, 20, 5, 0.28);
       padding: 0 20px 24px;
       overflow-y: auto;
+      overflow-x: hidden;
       transform: translateY(20px);
       animation: modalIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    /* ── Modal hero image ── */
+    .modalHero {
+      display: none;
+      width: calc(100% + 40px);
+      margin: 0 -20px 0;
+      height: 200px;
+      overflow: hidden;
+      border-radius: 28px 28px 0 0;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .modalHero.show { display: block; }
+    .modalHeroImg {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+    .modalHeroGradient {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 90px;
+      background: linear-gradient(to top, var(--bg1) 0%, transparent 100%);
+      pointer-events: none;
+    }
+    /* Drag handle floats over the gradient when hero is shown */
+    .modal.has-hero .dragHandle {
+      margin-top: -14px;
+      position: relative;
+      z-index: 1;
+      background: rgba(255,255,255,0.55);
     }
 
     @keyframes modalIn {
@@ -1803,21 +1837,22 @@
     .modalMetaItem {
       border-radius: 14px;
       padding: 10px 12px;
-      background: var(--bg0);
-      border: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(200,105,14,0.06), rgba(255,255,255,0.7));
+      border: 1px solid rgba(200,105,14,0.18);
       color: var(--ink);
-      font-weight: 700;
-      font-size: 0.92rem;
+      font-weight: 800;
+      font-size: 0.95rem;
     }
 
     .modalMetaItem span {
       display: block;
-      color: var(--muted2);
-      font-size: 0.68rem;
-      font-weight: 850;
-      margin-bottom: 2px;
+      color: var(--accent);
+      font-size: 0.67rem;
+      font-weight: 800;
+      margin-bottom: 3px;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
+      opacity: 0.75;
     }
 
     .ingredientList {
@@ -5929,10 +5964,14 @@
 
   <div class="modalOverlay" id="recipeModal">
     <section class="modal" role="dialog" aria-modal="true" aria-label="Recipe steps">
+      <div class="modalHero" id="modalHero">
+        <img class="modalHeroImg" id="modalHeroImg" alt="" loading="lazy" />
+        <div class="modalHeroGradient"></div>
+      </div>
       <div class="dragHandle" aria-hidden="true"></div>
       <div class="modalHead">
         <h2 class="modalTitle" id="modalDishName">Recipe</h2>
-        <button class="closeBtn" id="closeModalBtn" type="button">Close</button>
+        <button class="closeBtn" id="closeModalBtn" type="button">✕ Close</button>
       </div>
       <div class="modalMetaGrid" id="modalMeta"></div>
       <div class="servingRow">
@@ -6438,6 +6477,8 @@
       decideBtn: document.getElementById("decideBtn"),
       planBtn: document.getElementById("planBtn"),
       recipeModal: document.getElementById("recipeModal"),
+      modalHero: document.getElementById("modalHero"),
+      modalHeroImg: document.getElementById("modalHeroImg"),
       modalDishName: document.getElementById("modalDishName"),
       modalMeta: document.getElementById("modalMeta"),
       modalIngredients: document.getElementById("modalIngredients"),
@@ -8207,7 +8248,7 @@
       const name = titleCase(item?.name || "");
       const quantity = Number(item?.quantity);
       const unit = String(item?.unit || "").trim();
-      if (!Number.isFinite(quantity)) return name;
+      if (!Number.isFinite(quantity) || quantity === 0) return name;
       const scaled = formatQuantity(quantity * servingMultiplier);
       return `${scaled}${unit ? ` ${unit}` : ""} ${name}`;
     }
@@ -8237,11 +8278,36 @@
       el.servingCount.textContent = `${servingMultiplier}x`;
       el.servingMinusBtn.disabled = servingMultiplier <= 1;
       el.servingPlusBtn.disabled = servingMultiplier >= 4;
+
+      // Hero image
+      const modalSection = el.recipeModal.querySelector(".modal");
+      if (el.modalHero && el.modalHeroImg) {
+        const imgUrl = activeRecipe.image_url;
+        if (imgUrl) {
+          el.modalHeroImg.src = imgUrl;
+          el.modalHeroImg.alt = activeRecipe.name || "";
+          el.modalHeroImg.onerror = () => {
+            el.modalHero.classList.remove("show");
+            modalSection?.classList.remove("has-hero");
+          };
+          el.modalHero.classList.add("show");
+          modalSection?.classList.add("has-hero");
+        } else {
+          el.modalHero.classList.remove("show");
+          modalSection?.classList.remove("has-hero");
+        }
+      }
+
       el.modalMeta.innerHTML = `
-        <div class="modalMetaItem"><span>Time</span>${time || "--"} min</div>
-        <div class="modalMetaItem"><span>Calories</span>${calories || "--"} cal</div>
-        <div class="modalMetaItem"><span>Difficulty</span>${escapeHtml(difficulty)}</div>
+        <div class="modalMetaItem"><span>⏱ Time</span>${time || "--"} min</div>
+        <div class="modalMetaItem"><span>🔥 Calories</span>${calories || "--"} cal</div>
+        <div class="modalMetaItem"><span>📊 Difficulty</span>${escapeHtml(difficulty)}</div>
       `;
+
+      // Only show macros if at least one has a real value
+      const macroVals = [nutrition.protein_g, nutrition.carbs_g, nutrition.fat_g, nutrition.fiber_g];
+      const hasMacros = macroVals.some(v => Number(v) > 0);
+      el.macroGrid.style.display = hasMacros ? "grid" : "none";
       el.macroGrid.innerHTML = `
         <div class="macroItem"><span>Protein</span>${scaleMacro(nutrition.protein_g)}g</div>
         <div class="macroItem"><span>Carbs</span>${scaleMacro(nutrition.carbs_g)}g</div>
