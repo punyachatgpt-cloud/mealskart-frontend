@@ -871,6 +871,96 @@
       background: var(--accentGlow); border-color: var(--accent);
       color: var(--accent);
     }
+    /* ── Browse All Sheet ───────────────────────────────────────────────────── */
+    .browseAllBtn {
+      width: 100%; background: var(--goldBg); border: 1px solid var(--goldBorder);
+      border-radius: 12px; color: var(--accent); font-size: 0.8rem; font-weight: 700;
+      padding: 9px 14px; cursor: pointer; text-align: left;
+      transition: background 0.15s, box-shadow 0.15s; margin-bottom: 10px;
+    }
+    .browseAllBtn:hover { background: #fdebd0; box-shadow: 0 2px 8px rgba(200,105,14,0.15); }
+    .browseOverlay {
+      position: fixed; inset: 0; z-index: 320;
+      background: rgba(20,10,0,0.55); backdrop-filter: blur(4px);
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .browseOverlay.hidden { display: none; }
+    .browseSheet {
+      background: var(--bg0); border-radius: 24px 24px 0 0;
+      width: 100%; max-width: 900px; max-height: 92vh;
+      display: flex; flex-direction: column;
+      animation: reportSlideUp 0.32s cubic-bezier(0.34,1.08,0.64,1) both;
+    }
+    [data-theme="dark"] .browseSheet { background: var(--bg1); }
+    .browseHead {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .browseTitle {
+      font-family: 'Fraunces', serif; font-size: 1.15rem; font-weight: 900;
+      color: var(--ink); margin: 0;
+    }
+    .browseFilters {
+      padding: 14px 18px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .bfGroup { display: flex; align-items: center; gap: 10px; }
+    .bfLabel {
+      font-size: 0.72rem; font-weight: 700; color: var(--muted2);
+      text-transform: uppercase; letter-spacing: 0.04em; min-width: 52px; flex-shrink: 0;
+    }
+    .bfChips { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; }
+    .bfChips.scroll { flex-wrap: nowrap; overflow-x: auto; }
+    .bfChip {
+      padding: 5px 12px; border-radius: 999px; border: 1.5px solid var(--border);
+      background: var(--bg1); color: var(--muted); font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap; transition: all 0.14s;
+    }
+    .bfChip:hover { border-color: var(--accent); color: var(--accent); }
+    .bfChip.active {
+      background: var(--accent); border-color: var(--accent); color: #fff;
+    }
+    .browseCount {
+      padding: 8px 20px 2px; font-size: 0.78rem; color: var(--muted2);
+      font-weight: 600; flex-shrink: 0;
+    }
+    .browseGrid {
+      flex: 1; overflow-y: auto; padding: 12px 16px 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    .browseCard {
+      background: var(--bg1); border-radius: 16px; overflow: hidden;
+      border: 1px solid var(--border); cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .browseCard:hover { transform: translateY(-3px); box-shadow: var(--shadow-card-lg); }
+    .browseCardImg {
+      width: 100%; aspect-ratio: 4/3; object-fit: cover;
+      background: var(--goldBg);
+    }
+    .browseCardBody { padding: 10px 10px 12px; }
+    .browseCardName {
+      font-size: 0.84rem; font-weight: 700; color: var(--ink);
+      line-height: 1.25; margin-bottom: 4px;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .browseCardMeta {
+      font-size: 0.7rem; color: var(--muted2); display: flex; gap: 6px;
+      align-items: center;
+    }
+    .browseCardDiet {
+      font-size: 0.65rem; font-weight: 700; padding: 2px 7px;
+      border-radius: 999px; margin-top: 5px; display: inline-block;
+    }
+    .browseCardDiet.veg    { background: #dcfce7; color: #15803d; }
+    .browseCardDiet.nonveg { background: #fee2e2; color: #dc2626; }
+    .browseLoadMore { padding: 12px; text-align: center; flex-shrink: 0; }
+    [data-theme="dark"] .bfChip { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: var(--muted2); }
+    [data-theme="dark"] .browseCard { background: rgba(255,255,255,0.04); }
+
     .savedSheetOverlay {
       position: fixed; inset: 0; z-index: 295;
       background: rgba(20,10,0,0.55); backdrop-filter: blur(4px);
@@ -5454,9 +5544,10 @@
           <button class="searchClear" id="searchClearBtn" type="button" aria-label="Clear search">✕</button>
           <div class="searchDropdown" id="searchDropdown"></div>
         </div>
-        <div style="font-size:0.75rem;color:var(--muted2);margin:-2px 0 10px 4px;display:flex;align-items:center;gap:5px">
+        <div style="font-size:0.75rem;color:var(--muted2);margin:-2px 0 6px 4px;display:flex;align-items:center;gap:5px">
           ⚡ Results appear as you type — no button needed
         </div>
+        <button class="browseAllBtn" id="browseAllBtn" type="button">🗂 Browse all 500+ recipes →</button>
         <div class="stack">
           <div class="section" id="timePanel">
             <div class="label">Time <span class="hint">how long do you have</span></div>
@@ -5859,6 +5950,60 @@
         <button class="closeBtn" id="closeSavedSheet" type="button">Close</button>
       </div>
       <div id="savedRecipeList"></div>
+    </div>
+  </div>
+
+  <!-- Browse All Sheet -->
+  <div class="browseOverlay hidden" id="browseOverlay">
+    <div class="browseSheet" id="browseSheet">
+      <div class="browseHead">
+        <h3 class="browseTitle">Browse Recipes</h3>
+        <button class="closeBtn" id="closeBrowseSheet" type="button">Close</button>
+      </div>
+      <!-- Filter strip -->
+      <div class="browseFilters" id="browseFilters">
+        <div class="bfGroup">
+          <span class="bfLabel">Diet</span>
+          <div class="bfChips">
+            <button class="bfChip active" data-bf-group="diet" data-bf-val="">All</button>
+            <button class="bfChip" data-bf-group="diet" data-bf-val="veg">🌱 Veg</button>
+            <button class="bfChip" data-bf-group="diet" data-bf-val="non-veg">🍗 Non-veg</button>
+          </div>
+        </div>
+        <div class="bfGroup">
+          <span class="bfLabel">Cuisine</span>
+          <div class="bfChips scroll">
+            <button class="bfChip active" data-bf-group="category" data-bf-val="">All</button>
+            <button class="bfChip" data-bf-group="category" data-bf-val="north-indian">North Indian</button>
+            <button class="bfChip" data-bf-group="category" data-bf-val="south-indian">South Indian</button>
+            <button class="bfChip" data-bf-group="category" data-bf-val="continental">Continental</button>
+            <button class="bfChip" data-bf-group="category" data-bf-val="chinese">Chinese</button>
+            <button class="bfChip" data-bf-group="category" data-bf-val="snacks">Snacks</button>
+          </div>
+        </div>
+        <div class="bfGroup">
+          <span class="bfLabel">Time</span>
+          <div class="bfChips">
+            <button class="bfChip active" data-bf-group="maxTime" data-bf-val="0">Any</button>
+            <button class="bfChip" data-bf-group="maxTime" data-bf-val="15">≤ 15 min</button>
+            <button class="bfChip" data-bf-group="maxTime" data-bf-val="30">≤ 30 min</button>
+            <button class="bfChip" data-bf-group="maxTime" data-bf-val="45">≤ 45 min</button>
+          </div>
+        </div>
+        <div class="bfGroup">
+          <span class="bfLabel">Sort</span>
+          <div class="bfChips">
+            <button class="bfChip active" data-bf-group="sort" data-bf-val="popular">Popular</button>
+            <button class="bfChip" data-bf-group="sort" data-bf-val="quick">Quickest</button>
+            <button class="bfChip" data-bf-group="sort" data-bf-val="healthy">Lowest cal</button>
+          </div>
+        </div>
+      </div>
+      <div class="browseCount" id="browseCount"></div>
+      <div class="browseGrid" id="browseGrid"></div>
+      <div class="browseLoadMore" id="browseLoadMore" style="display:none">
+        <button class="loadMoreBtn" id="browseLoadMoreBtn">Show more ↓</button>
+      </div>
     </div>
   </div>
 
@@ -8226,8 +8371,11 @@
       renderLoadingCards("normal");
 
       try {
-        // No diet param — search is universal, no filter applied
+        // Pass active sidebar filters so search respects diet + cuisine + time
         const params = new URLSearchParams({ q, limit: 50 });
+        if (state.diet)                           params.set("diet", state.diet);
+        if (state.category && state.category !== "all") params.set("category", state.category);
+        if (_browseFilters.maxTime)               params.set("max_time", _browseFilters.maxTime);
         const resp = await fetch(`${API_BASE_URL}/search?${params}`, { signal });
         if (!resp.ok) throw new Error(`Search failed: ${resp.status}`);
         const data = await resp.json();
@@ -12612,6 +12760,111 @@
       document.getElementById("savedSheetOverlay")?.classList.add("hidden");
     }
 
+    // ── Browse All Sheet ──────────────────────────────────────────────────────
+    const _browseFilters = { diet: "", category: "", maxTime: 0, sort: "popular" };
+    let _browseTotal = 0;
+    let _browseOffset = 0;
+    const BROWSE_PAGE = 24;
+
+    function _unsplashForRecipe(r) {
+      if (r.image_url) return r.image_url;
+      const kw = encodeURIComponent((r.name || "food").split(" ").slice(0, 2).join(" "));
+      return `https://source.unsplash.com/320x240/?${kw},food`;
+    }
+
+    async function loadBrowsePage(append = false) {
+      const grid  = document.getElementById("browseGrid");
+      const count = document.getElementById("browseCount");
+      if (!append) {
+        _browseOffset = 0;
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted2);font-size:0.9rem">Loading…</div>';
+      }
+      const params = new URLSearchParams({ limit: BROWSE_PAGE, offset: _browseOffset, sort: _browseFilters.sort });
+      if (_browseFilters.diet)     params.set("diet",     _browseFilters.diet);
+      if (_browseFilters.category) params.set("category", _browseFilters.category);
+      if (_browseFilters.maxTime)  params.set("max_time", _browseFilters.maxTime);
+
+      try {
+        const resp = await fetch(`${API_BASE_URL}/browse?${params}`);
+        const items = await resp.json();
+        _browseTotal = parseInt(resp.headers.get("X-Total-Count") || "0", 10) || items.length;
+
+        if (!append) grid.innerHTML = "";
+        if (items.length === 0 && !append) {
+          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted2)">No recipes match these filters.</div>';
+          count.textContent = "";
+          document.getElementById("browseLoadMore").style.display = "none";
+          return;
+        }
+
+        items.forEach(r => {
+          const card = document.createElement("div");
+          card.className = "browseCard";
+          card.tabIndex = 0;
+          const img = r.image_url
+            ? `<img class="browseCardImg" src="${escapeHtml(r.image_url)}" alt="${escapeHtml(r.name)}" loading="lazy" onerror="this.style.display='none'">`
+            : `<div class="browseCardImg" style="display:flex;align-items:center;justify-content:center;font-size:2.2rem">🍽️</div>`;
+          const dietCls = r.diet === "veg" ? "veg" : "nonveg";
+          const dietLbl = r.diet === "veg" ? "🌱 Veg" : "🍗 Non-veg";
+          card.innerHTML = `
+            ${img}
+            <div class="browseCardBody">
+              <div class="browseCardName">${escapeHtml(r.name)}</div>
+              <div class="browseCardMeta">⏱ ${r.time_minutes || "?"}m · ${r.calories || "?"}kcal</div>
+              <span class="browseCardDiet ${dietCls}">${dietLbl}</span>
+            </div>`;
+          card.addEventListener("click", () => { closeBrowseSheet(); openRecipeModal(r.id); });
+          card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { closeBrowseSheet(); openRecipeModal(r.id); } });
+          grid.appendChild(card);
+        });
+
+        _browseOffset += items.length;
+        count.textContent = `Showing ${_browseOffset} of ${_browseTotal} recipes`;
+        const hasMore = _browseOffset < _browseTotal;
+        document.getElementById("browseLoadMore").style.display = hasMore ? "block" : "none";
+      } catch {
+        if (!append) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--muted2)">Could not load recipes.</div>';
+      }
+    }
+
+    function openBrowseSheet() {
+      // Pre-seed diet from sidebar state
+      _browseFilters.diet = state.diet || "";
+      document.querySelectorAll('[data-bf-group="diet"]').forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.bfVal === _browseFilters.diet);
+      });
+      document.getElementById("browseOverlay").classList.remove("hidden");
+      loadBrowsePage();
+    }
+
+    function closeBrowseSheet() {
+      document.getElementById("browseOverlay").classList.add("hidden");
+    }
+
+    function initBrowseSheet() {
+      document.getElementById("browseAllBtn")?.addEventListener("click", openBrowseSheet);
+      document.getElementById("closeBrowseSheet")?.addEventListener("click", closeBrowseSheet);
+      document.getElementById("browseOverlay")?.addEventListener("click", e => {
+        if (e.target === document.getElementById("browseOverlay")) closeBrowseSheet();
+      });
+      document.getElementById("browseLoadMoreBtn")?.addEventListener("click", () => loadBrowsePage(true));
+
+      document.getElementById("browseFilters")?.addEventListener("click", e => {
+        const btn = e.target.closest(".bfChip");
+        if (!btn) return;
+        const group = btn.dataset.bfGroup;
+        const val   = btn.dataset.bfVal;
+        if (!group) return;
+        // Deactivate siblings, activate clicked
+        btn.closest(".bfChips").querySelectorAll(".bfChip").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        if (group === "maxTime") _browseFilters.maxTime = parseInt(val, 10) || 0;
+        else                     _browseFilters[group]  = val;
+        loadBrowsePage();
+      });
+    }
+    // ── end Browse All Sheet ──────────────────────────────────────────────────
+
     function initPhase6() {
       // Save button in recipe modal
       document.getElementById("saveRecipeBtn")?.addEventListener("click", () => {
@@ -13148,6 +13401,7 @@
     initPhase4();
     initPhase5();
     initPhase6();
+    initBrowseSheet();
     initPhase7();
     initPhase8();
     initPhase9();
