@@ -8063,11 +8063,12 @@
         const matchPercent = clampInt(item.ingredient_match_percent, 0);
         const ingredientPreview = formatIngredientsPreview(item.ingredients_preview);
         const nutrition = item.nutrition || {};
-        const macroPreview = `
+        const hasMacros = [nutrition.protein_g, nutrition.carbs_g, nutrition.fat_g].some(v => Number(v) > 0);
+        const macroPreview = hasMacros ? `
           <div class="miniMacro"><span>Protein</span>${clampInt(nutrition.protein_g, 0)}g</div>
           <div class="miniMacro"><span>Carbs</span>${clampInt(nutrition.carbs_g, 0)}g</div>
           <div class="miniMacro"><span>Fat</span>${clampInt(nutrition.fat_g, 0)}g</div>
-        `;
+        ` : "";
 
         // Prefer the real photo from MealDB; fall back to Unsplash keyword match
         const cardImgUrl = (item.image_url && item.image_url.startsWith("http"))
@@ -8108,7 +8109,7 @@
             </div>
 
             ${ingredientPreview ? `<p class="ingredientPreview"><strong>Uses</strong> ${escapeHtml(ingredientPreview)}</p>` : ""}
-            <div class="miniMacroRow">${macroPreview}</div>
+            ${hasMacros ? `<div class="miniMacroRow">${macroPreview}</div>` : ""}
             <p class="desc">${escapeHtml(desc)}</p>
             <div class="smartStrip">${intelligence}</div>
 
