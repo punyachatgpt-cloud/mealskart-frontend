@@ -196,8 +196,14 @@
       display: flex;
       flex-direction: column;
       gap: 0;
-      /* Extra space so the sticky .actions footer never covers scrollable content */
-      padding-bottom: 12px;
+    }
+
+    /* Utility nav links below sticky actions — scroll normally, never hidden */
+    .utilityLinks {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 12px 0 20px;
     }
 
     .label {
@@ -5789,6 +5795,7 @@
             🧺 What can I make with these?
           </button>
 
+          <!-- Primary action buttons — sticky so always reachable -->
           <div class="actions">
             <button class="btn" id="decideBtn" type="button">&#127860; Decide for me <span style="display:block;font-size:0.7rem;font-weight:400;opacity:0.8;margin-top:2px">picks 1 dish based on your filters</span></button>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -5801,7 +5808,12 @@
               <button class="planDurBtn" data-dur="5" type="button">5</button>
               <button class="planDurBtn" data-dur="7" type="button">7</button>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px">
+            <div class="trust">&#9889; Takes less than 5 seconds</div>
+          </div>
+
+          <!-- Utility links — not sticky, scroll normally -->
+          <div class="utilityLinks">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
               <button class="collectionsLink" id="collectionsBtn" type="button">
                 <span>📚 Collections</span>
                 <span class="collectionsLinkCount" id="collectionsCount">0</span>
@@ -5811,11 +5823,11 @@
                 <span style="font-size:0.72rem;color:var(--muted2)" id="goalBtnLabel">Set</span>
               </button>
             </div>
-            <button class="collectionsLink" id="shoppingListBtn" type="button" style="margin-top:0">
+            <button class="collectionsLink" id="shoppingListBtn" type="button">
               <span>🛒 Shopping List</span>
               <span class="shoppingBadge" id="shoppingBadge">0</span>
             </button>
-            <button class="collectionsLink" id="cookLogBtn" type="button" style="margin-top:0">
+            <button class="collectionsLink" id="cookLogBtn" type="button">
               <span>📖 Cook Log</span>
               <span class="collectionsLinkCount" id="cookLogCount" style="display:none">0</span>
             </button>
@@ -5827,7 +5839,6 @@
               <span>👤 My Profile</span>
               <span style="font-size:0.7rem;color:var(--accent);font-weight:700">→</span>
             </a>
-            <div class="trust">&#9889; Takes less than 5 seconds</div>
           </div>
         </div>
       </aside>
@@ -8742,8 +8753,31 @@
         localStorage.setItem(LAST_MODE_KEY, mode);
         if (mode === "decide" && Array.isArray(data) && data.length > 0) trackInteraction("decide", data[0].id);
       } catch (error) {
-        el.statusText.innerHTML = "Server is warming up — tap <b>Suggest</b> or <b>🧺 What can I make</b> to retry.";
-        renderEmpty("Server waking up — tap any button to retry.");
+        el.statusText.textContent = "Kitchen is warming up… retrying in 6s ☕";
+        renderEmpty("Waking up the kitchen — just a moment…");
+        // Auto-retry once after 6s to handle Render cold-start (~30s spin-up)
+        const retryMode = mode, retryQuery = queryOverride;
+        setTimeout(async () => {
+          try {
+            const r2 = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(retryMode === "fridge"
+                ? { ...state, mode: "normal", time_available: 999, mood: "any", ingredients: getIngredients() }
+                : { ...state, mode: retryMode, ingredients: getIngredients() })
+            });
+            const d2 = await r2.json();
+            if (Array.isArray(d2) && d2.length) {
+              renderResults(d2, retryMode);
+              el.statusText.textContent = "Ready.";
+            } else {
+              el.statusText.innerHTML = "No matches — tap <b>Suggest</b> to try different filters.";
+            }
+          } catch {
+            el.statusText.innerHTML = "Server offline — tap <b>Suggest</b> to retry.";
+            renderEmpty("Couldn't connect. Tap Suggest to retry.");
+          }
+        }, 6000);
       } finally {
         el.loading.style.display = "none";
         el.suggestBtn.disabled = false;
