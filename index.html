@@ -6258,6 +6258,7 @@
 
       // Pull server data and merge with local on every fresh page load
       syncFromCloud();
+      syncSavedFromCloud();
 
       // Logged in — hide sign-in link, show avatar initial
       authBtn.style.display = "none";
@@ -12414,32 +12415,81 @@
       return getSavedRecipes().some(r => String(r.id) === String(id));
     }
 
+    function _savedSlim(recipe) {
+      return {
+        id: recipe.id, name: recipe.name, time_minutes: recipe.time_minutes,
+        calories: recipe.calories, difficulty: recipe.difficulty,
+        category: recipe.category, diet: recipe.diet,
+        ingredients: recipe.ingredients,
+        ingredients_with_quantities: recipe.ingredients_with_quantities,
+        steps: recipe.steps, nutrition: recipe.nutrition,
+        substitutions: recipe.substitutions,
+        savedAt: Date.now()
+      };
+    }
+
+    function _savedWriteLocal(list) {
+      if (list.length > 200) list.length = 200;
+      localStorage.setItem(SAVED_RECIPES_KEY, JSON.stringify(list));
+      updateSavedCount();
+    }
+
     function saveRecipeFull(recipe) {
       if (!recipe?.id) return;
       try {
+        const slim = _savedSlim(recipe);
         const list = getSavedRecipes().filter(r => String(r.id) !== String(recipe.id));
-        const slim = {
-          id: recipe.id, name: recipe.name, time_minutes: recipe.time_minutes,
-          calories: recipe.calories, difficulty: recipe.difficulty,
-          category: recipe.category, diet: recipe.diet,
-          ingredients: recipe.ingredients,
-          ingredients_with_quantities: recipe.ingredients_with_quantities,
-          steps: recipe.steps, nutrition: recipe.nutrition,
-          substitutions: recipe.substitutions,
-          savedAt: Date.now()
-        };
-        list.unshift(slim); // newest first
-        if (list.length > 50) list.length = 50; // cap at 50
-        localStorage.setItem(SAVED_RECIPES_KEY, JSON.stringify(list));
-        updateSavedCount();
+        list.unshift(slim);
+        _savedWriteLocal(list);
+        // Fire-and-forget to Supabase when logged in
+        const token = localStorage.getItem("simmer_token");
+        if (token) {
+          fetch(`${API_BASE_URL}/saved`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({ recipe_id: Number(recipe.id), recipe_data: slim })
+          }).catch(() => {});
+        }
       } catch {}
     }
 
     function unsaveRecipe(id) {
       try {
         const list = getSavedRecipes().filter(r => String(r.id) !== String(id));
-        localStorage.setItem(SAVED_RECIPES_KEY, JSON.stringify(list));
-        updateSavedCount();
+        _savedWriteLocal(list);
+        // Fire-and-forget to Supabase when logged in
+        const token = localStorage.getItem("simmer_token");
+        if (token) {
+          fetch(`${API_BASE_URL}/saved/${Number(id)}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` }
+          }).catch(() => {});
+        }
+      } catch {}
+    }
+
+    // Pull saved recipes from Supabase and merge into localStorage.
+    // Cloud wins for new entries; local-only entries are preserved.
+    async function syncSavedFromCloud() {
+      const token = localStorage.getItem("simmer_token");
+      if (!token) return;
+      try {
+        const res = await fetch(`${API_BASE_URL}/saved`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const cloudRows = await res.json(); // [{recipe_id, recipe_data, saved_at}]
+        if (!Array.isArray(cloudRows) || !cloudRows.length) return;
+        const localList = getSavedRecipes();
+        const localIds  = new Set(localList.map(r => String(r.id)));
+        const merged    = [...localList];
+        for (const row of cloudRows) {
+          if (!localIds.has(String(row.recipe_id))) {
+            merged.push({ ...row.recipe_data, id: row.recipe_id, savedAt: new Date(row.saved_at).getTime() });
+          }
+        }
+        merged.sort((a, b) => (b.savedAt || 0) - (a.savedAt || 0));
+        _savedWriteLocal(merged);
       } catch {}
     }
 
@@ -12529,6 +12579,8 @@
     function openSavedSheet() {
       renderSavedSheet();
       document.getElementById("savedSheetOverlay")?.classList.remove("hidden");
+      // Sync from cloud in background; re-render when done
+      syncSavedFromCloud().then(() => renderSavedSheet());
     }
 
     function closeSavedSheet() {
@@ -12544,7 +12596,8 @@
           showToast("Removed from saved recipes", "info", 1800);
         } else {
           saveRecipeFull(activeRecipe);
-          showToast("📌 Recipe saved for offline!", "success", 2200);
+          const isLoggedIn = !!localStorage.getItem("simmer_token");
+          showToast(isLoggedIn ? "📌 Recipe saved to your account!" : "📌 Recipe saved offline!", "success", 2200);
         }
         updateSaveRecipeBtn();
       });
