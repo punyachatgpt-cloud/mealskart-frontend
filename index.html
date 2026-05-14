@@ -2178,6 +2178,56 @@
       transform: none;
     }
 
+    /* ── Similar Recipes strip (inside recipe modal) ── */
+    .similarRow {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .similarRow::-webkit-scrollbar { display: none; }
+    .simCard {
+      flex: 0 0 120px;
+      scroll-snap-align: start;
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--bg0);
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .simCard:hover { transform: translateY(-2px); border-color: var(--accent); }
+    .simCardImg {
+      width: 100%;
+      height: 72px;
+      object-fit: cover;
+      background: linear-gradient(135deg, rgba(249,115,22,.3), rgba(124,45,18,.5));
+      background-size: cover;
+      background-position: center;
+    }
+    .simCardName {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #1C1008;
+      padding: 6px 7px 4px;
+      line-height: 1.25;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .simCardMeta {
+      font-size: 0.65rem;
+      color: #9B7553;
+      font-weight: 600;
+      padding: 0 7px 6px;
+    }
+    [data-theme="dark"] .simCard { background: #1e1409; border-color: rgba(200,160,110,.22); }
+    [data-theme="dark"] .simCardName { color: #F2E5CC; }
+    [data-theme="dark"] .simCardMeta { color: #9B7553; }
+
     @media (max-width: 480px) {
       .modalMetaGrid { grid-template-columns: 1fr; }
       .macroGrid { grid-template-columns: repeat(2, 1fr); }
@@ -2435,6 +2485,22 @@
       border-radius: 8px;
       padding: 2px 7px;
       letter-spacing: 0.01em;
+    }
+    .myRatingChip {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      font-weight: 800;
+      font-size: 0.72rem;
+      background: #fef3c7;
+      color: #92400e;
+      border-radius: 8px;
+      padding: 2px 7px;
+      letter-spacing: 0.02em;
+    }
+    [data-theme="dark"] .myRatingChip {
+      background: rgba(251,191,36,0.18);
+      color: #fbbf24;
     }
     .cookedCount {
       font-weight: 700;
@@ -5835,6 +5901,12 @@
         <button class="btn secondary" id="prevStepBtn" type="button">Previous</button>
         <button class="btn" id="nextStepBtn" type="button">Next Step</button>
       </div>
+
+      <!-- Similar Recipes strip -->
+      <div class="similarSection" id="similarSection" style="display:none">
+        <p class="modalSectionTitle" style="margin-top:20px">Similar recipes you might like</p>
+        <div class="similarRow" id="similarRow"></div>
+      </div>
     </section>
   </div>
 
@@ -7822,6 +7894,14 @@
         const whyText = buildWhyText(item);
         const desc = String(item.reason || "").trim() || "A good match for your preferences.";
         const stats = recipeStats(item.id, item.name);
+        // Personal rating: find the most recent cook log entry with stars for this recipe
+        const personalRating = (() => {
+          const log = getCookLog();
+          for (let i = log.length - 1; i >= 0; i--) {
+            if (String(log[i].id) === String(item.id) && log[i].stars > 0) return log[i].stars;
+          }
+          return 0;
+        })();
         const intelligence = smartBadges(item, index, mode);
         const calories = clampInt(item.calories, 0);
         const difficulty = titleCase(item.difficulty || "easy");
@@ -7853,6 +7933,7 @@
                 <h3 class="foodName">${escapeHtml(item.name)}</h3>
                 <div class="socialRow">
                   <span class="ratingChip">&#9733; ${stats.rating}</span>
+                  ${personalRating > 0 ? `<span class="myRatingChip" title="Your rating">${"★".repeat(personalRating)}${"☆".repeat(5 - personalRating)} You</span>` : ""}
                   <span class="cookedCount"><span class="countNum" data-target="${stats.count}">0</span> cooked this week</span>
                 </div>
               </div>
@@ -8346,6 +8427,7 @@
         currentStepIndex = 0;
         updateModalStep();
         el.recipeModal.classList.add("open");
+        loadSimilarRecipes(recipe);
         // Wire Cook Mode entry button each time modal opens
         const cmBtn = document.getElementById("cookModeEntryBtn");
         if (cmBtn) {
@@ -8362,6 +8444,39 @@
       clearTimer();
       el.recipeModal.classList.remove("open");
       renderCookAgain();
+    }
+
+    async function loadSimilarRecipes(recipe) {
+      const section = document.getElementById("similarSection");
+      const row     = document.getElementById("similarRow");
+      if (!section || !row || !recipe) return;
+      section.style.display = "none";
+      row.innerHTML = "";
+      try {
+        const cat = recipe.category || "";
+        const url = `${API_BASE_URL}/browse?category=${encodeURIComponent(cat)}&limit=10`;
+        const resp = await fetchWithRetry(url, { method: "GET" });
+        const data = await resp.json();
+        const items = (Array.isArray(data.recipes) ? data.recipes : Array.isArray(data) ? data : [])
+          .filter(r => String(r.id) !== String(recipe.id))
+          .slice(0, 5);
+        if (!items.length) return;
+        row.innerHTML = items.map(r => {
+          const img = (r.image_url && r.image_url.startsWith("http")) ? r.image_url : dishImageUrl(r.name);
+          const time = clampInt(r.time_minutes, 0);
+          return `<div class="simCard" data-id="${r.id}" role="button" tabindex="0" aria-label="${escapeHtml(r.name)}">
+            <div class="simCardImg" style="background-image:url('${img}')"></div>
+            <div class="simCardName">${escapeHtml(r.name)}</div>
+            <div class="simCardMeta">⏱ ${time} min</div>
+          </div>`;
+        }).join("");
+        row.querySelectorAll(".simCard").forEach(card => {
+          const handler = () => openRecipeModal(card.dataset.id);
+          card.addEventListener("click", handler);
+          card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") handler(); });
+        });
+        section.style.display = "block";
+      } catch { /* fail silently */ }
     }
 
     function getInitialMode() {
