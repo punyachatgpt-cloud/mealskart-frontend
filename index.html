@@ -430,7 +430,7 @@
 
     .right {
       padding: 22px;
-      min-height: 620px;
+      min-height: max(620px, calc(100vh - 260px));
       min-width: 0;
       overflow: clip;
       position: relative;
@@ -814,8 +814,8 @@
     }
     .streakCalHeader {
       display: flex; align-items: center; gap: 6px;
-      font-weight: 800; font-size: 0.84rem; color: var(--goldInk);
-      flex-wrap: wrap;
+      font-weight: 800; font-size: 0.86rem; color: var(--goldInk);
+      flex-wrap: wrap; margin-bottom: 2px;
     }
     .shieldBadge {
       display: inline-flex; align-items: center; gap: 3px;
@@ -824,27 +824,29 @@
       padding: 2px 7px; border: 1px solid var(--goldBorder);
     }
     .streakCalRow {
-      display: flex; gap: 4px; align-items: center;
+      display: flex; gap: 5px; align-items: center;
       flex-wrap: wrap;
     }
     .streakDot {
-      width: 21px; height: 21px; border-radius: 50%;
+      width: 24px; height: 24px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.6rem; font-weight: 800; flex-shrink: 0;
-      line-height: 1; transition: transform 0.15s;
+      font-size: 0.62rem; font-weight: 800; flex-shrink: 0;
+      line-height: 1; transition: transform 0.2s cubic-bezier(.4,0,.2,1);
     }
+    .streakDot:hover { transform: scale(1.15); }
     .streakDot.cooked {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      background: linear-gradient(135deg, #f97316, var(--accent2));
       color: #fff;
+      box-shadow: 0 2px 6px rgba(200,105,14,0.35);
     }
     .streakDot.empty {
-      background: rgba(200,105,14,0.10);
-      border: 1.5px dashed rgba(200,105,14,0.28);
-      color: var(--muted2);
+      background: rgba(200,105,14,0.07);
+      border: 1.5px solid rgba(200,105,14,0.20);
+      color: rgba(155,117,83,0.5);
     }
-    .streakDot.today { box-shadow: 0 0 0 2.5px var(--accent); }
+    .streakDot.today { box-shadow: 0 0 0 2.5px var(--accent), 0 2px 8px rgba(200,105,14,0.3); }
     .streakDot.today.cooked {
-      box-shadow: 0 0 0 1.5px #fff, 0 0 0 3.5px var(--accent);
+      box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--accent), 0 3px 10px rgba(200,105,14,0.4);
     }
 
     /* Cook nudge banner */
@@ -2292,32 +2294,36 @@
     .tasteDNAInline {
       background: transparent;
       border: none;
-      border-top: 1px solid rgba(180,110,45,0.10);
+      border-top: 1px solid rgba(180,110,45,0.12);
       border-radius: 0;
-      padding: 10px 0;
-      margin-bottom: 14px;
+      padding: 14px 0;
+      margin-bottom: 16px;
       display: none;
     }
     .tasteDNAInline.show { display: block; }
     .tasteDNAInlineTitle {
-      font-size: var(--t-xs); font-weight: var(--fw-med); color: var(--ink-lo);
-      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;
+      font-size: var(--t-xs); font-weight: var(--fw-bold); color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 5px;
     }
     .tasteDNAInlineRow {
       display: flex; gap: 8px; flex-wrap: wrap;
     }
     .tasteDNAInlineStat {
-      flex: 1; min-width: 64px; text-align: center;
-      background: var(--bg1); border-radius: 10px; padding: 6px 4px;
-      border: 1px solid var(--border);
+      flex: 1; min-width: 66px; text-align: center;
+      background: linear-gradient(135deg, var(--bg1), rgba(254,243,226,0.5));
+      border-radius: 12px; padding: 8px 5px 7px;
+      border: 1px solid var(--goldBorder);
+      transition: transform 0.15s;
     }
+    .tasteDNAInlineStat:hover { transform: translateY(-1px); }
     .tasteDNAInlineVal {
-      font-size: var(--t-sm); font-weight: var(--fw-bold); color: var(--ink);
+      font-size: var(--t-sm); font-weight: var(--fw-black); color: var(--accent);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .tasteDNAInlineLbl {
-      font-size: var(--t-xs); font-weight: var(--fw-reg); color: var(--ink-faint);
-      text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px;
+      font-size: 0.63rem; font-weight: var(--fw-reg); color: var(--muted2);
+      text-transform: uppercase; letter-spacing: 0.04em; margin-top: 3px;
     }
 
     /* ── Universal Search mode banner ───────────── */
@@ -2515,11 +2521,11 @@
       display: none;
       align-items: center;
       gap: 6px;
-      margin-bottom: 8px;
-      padding: 2px 0;
-      border-radius: 0;
-      background: transparent;
-      border: none;
+      margin-bottom: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(249,115,22,0.08), rgba(200,105,14,0.04));
+      border: 1px solid rgba(200,105,14,0.18);
       color: var(--ink-lo);
       font-weight: var(--fw-reg);
       font-size: var(--t-xs);
@@ -2537,28 +2543,30 @@
       display: flex;
       align-items: center;
       gap: 14px;
-      border-radius: 0 12px 12px 0;
-      padding: 10px 16px;
-      background: transparent;
-      border: none;
+      border-radius: 14px;
+      padding: 12px 16px 12px 14px;
+      background: linear-gradient(135deg, rgba(200,105,14,0.07), rgba(200,105,14,0.02));
+      border: 1px solid rgba(200,105,14,0.22);
       border-left: 4px solid var(--accent);
       cursor: pointer;
       transition: all 0.22s cubic-bezier(0.4,0,0.2,1);
     }
-    .cookAgainCard:hover { transform: translateX(3px); }
+    .cookAgainCard:hover { transform: translateX(2px); background: linear-gradient(135deg, rgba(200,105,14,0.11), rgba(200,105,14,0.04)); box-shadow: var(--shadow-card); }
     .cookAgainThumb {
-      width: 54px;
-      height: 54px;
+      width: 58px;
+      height: 58px;
       border-radius: 13px;
       background-size: cover;
       background-position: center;
       flex: 0 0 auto;
-      border: 1px solid rgba(200,105,14,0.13);
+      border: 1.5px solid rgba(200,105,14,0.18);
+      box-shadow: 0 2px 8px rgba(50,20,5,0.12);
     }
     .cookAgainBody { flex: 1; min-width: 0; }
     .cookAgainBody strong { display: block; font-weight: 900; font-size: 0.95rem; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .cookAgainBody span { display: block; font-size: 0.8rem; font-weight: 700; color: var(--muted); margin-top: 2px; }
-    .cookAgainArrow { color: var(--accent); font-size: 1.3rem; font-weight: 900; flex: 0 0 auto; }
+    .cookAgainBody span { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-top: 2px; }
+    .cookAgainArrow { color: var(--accent); font-size: 1.3rem; font-weight: 900; flex: 0 0 auto; opacity: 0.7; transition: opacity 0.15s, transform 0.15s; }
+    .cookAgainCard:hover .cookAgainArrow { opacity: 1; transform: translateX(2px); }
 
     /* ── Drag handle ────────────────────────────── */
     .dragHandle {
@@ -5433,11 +5441,12 @@
     .forYouStrip { margin-bottom: 18px; }
     .forYouHead {
       display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
     .forYouLabel {
       font-size: var(--t-xs); font-weight: var(--fw-bold); color: var(--accent);
-      text-transform: uppercase; letter-spacing: 0.06em;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      display: flex; align-items: center; gap: 5px;
     }
     .forYouRefreshBtn {
       background: none; border: none; cursor: pointer; font-size: 1rem;
@@ -5446,36 +5455,57 @@
     }
     .forYouRefreshBtn:hover { color: var(--accent); }
     .forYouRefreshBtn.spinning { animation: spin 0.6s linear 1; }
+    .forYouRowWrap {
+      position: relative;
+    }
+    .forYouRowWrap::after {
+      content: ''; position: absolute; top: 0; right: 0; bottom: 6px; width: 40px;
+      background: linear-gradient(to right, transparent, var(--bg1));
+      pointer-events: none; border-radius: 0 16px 16px 0;
+    }
+    [data-theme="dark"] .forYouRowWrap::after {
+      background: linear-gradient(to right, transparent, #0e0905);
+    }
     .forYouRow {
-      display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px;
-      scrollbar-width: none;
+      display: flex; gap: 12px; overflow-x: auto; padding-bottom: 6px;
+      scrollbar-width: none; scroll-snap-type: x mandatory;
     }
     .forYouRow::-webkit-scrollbar { display: none; }
     .forYouCard {
-      flex: 0 0 140px; border-radius: 14px; overflow: hidden; cursor: pointer;
+      flex: 0 0 152px; border-radius: 16px; overflow: hidden; cursor: pointer;
       background: var(--bg1); border: 1px solid var(--border);
-      box-shadow: var(--shadow-card); transition: transform 0.15s, box-shadow 0.15s;
-      display: flex; flex-direction: column;
+      box-shadow: var(--shadow-card); transition: transform 0.18s cubic-bezier(.4,0,.2,1), box-shadow 0.18s;
+      display: flex; flex-direction: column; scroll-snap-align: start;
     }
-    .forYouCard:hover { transform: translateY(-3px); box-shadow: var(--shadow-card-lg); }
+    .forYouCard:hover { transform: translateY(-4px); box-shadow: var(--shadow-card-lg); }
     [data-theme="dark"] .forYouCard { background: #1e1208; border-color: rgba(180,110,45,0.22); }
+    .forYouCardImgWrap {
+      position: relative; width: 100%; height: 110px; flex-shrink: 0; overflow: hidden;
+    }
     .forYouCardImg {
-      width: 100%; height: 90px; object-fit: cover; display: block; flex-shrink: 0;
-      background: rgba(200,105,14,0.07);
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      background: linear-gradient(135deg, rgba(200,105,14,0.12), rgba(200,105,14,0.04));
+      transition: transform 0.3s;
     }
+    .forYouCard:hover .forYouCardImg { transform: scale(1.05); }
     .forYouCardNoImg {
-      width: 100%; height: 90px; display: flex; align-items: center;
-      justify-content: center; font-size: 1.8rem; flex-shrink: 0;
-      background: rgba(200,105,14,0.07);
+      width: 100%; height: 110px; display: flex; align-items: center;
+      justify-content: center; font-size: 2.2rem; flex-shrink: 0;
+      background: linear-gradient(135deg, rgba(200,105,14,0.13), rgba(249,115,22,0.06));
     }
-    .forYouCardBody { padding: 7px 9px 9px; flex: 1; }
+    .forYouCardImgOverlay {
+      position: absolute; bottom: 0; left: 0; right: 0; height: 40px;
+      background: linear-gradient(to top, rgba(28,16,8,0.45), transparent);
+      pointer-events: none;
+    }
+    .forYouCardBody { padding: 8px 10px 10px; flex: 1; }
     .forYouCardName {
-      font-size: 0.74rem; font-weight: 700; color: #1C1008; line-height: 1.3;
+      font-size: 0.76rem; font-weight: 700; color: #1C1008; line-height: 1.3;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
       overflow: hidden; margin: 0 0 4px;
     }
     [data-theme="dark"] .forYouCardName { color: #F2E5CC; }
-    .forYouCardMeta { font-size: 0.66rem; color: #9B7553; }
+    .forYouCardMeta { font-size: 0.67rem; color: #9B7553; }
     [data-theme="dark"] .forYouCardMeta { color: #C4906A; }
 
     .quickStrip {
@@ -5871,10 +5901,12 @@
         <!-- For You strip — shown when user has cook/save history -->
         <div class="forYouStrip" id="forYouStrip" style="display:none">
           <div class="forYouHead">
-            <span class="forYouLabel">✨ Picked for you</span>
+            <span class="forYouLabel">🌟 Picked for you</span>
             <button class="forYouRefreshBtn" id="forYouRefreshBtn" type="button" title="Refresh picks">↺</button>
           </div>
-          <div class="forYouRow" id="forYouRow"></div>
+          <div class="forYouRowWrap">
+            <div class="forYouRow" id="forYouRow"></div>
+          </div>
         </div>
         <div class="quickStrip" id="quickStrip"></div>
         <section class="results" id="results">
@@ -13217,7 +13249,11 @@
         card.className = "forYouCard";
         card.tabIndex = 0;
         const imgEl = r.image_url
-          ? `<img class="forYouCardImg" src="${escapeHtml(r.image_url)}" alt="${escapeHtml(r.name||"")}" loading="lazy" onerror="this.style.display='none'">`
+          ? `<div class="forYouCardImgWrap">
+               <img class="forYouCardImg" src="${escapeHtml(r.image_url)}" alt="${escapeHtml(r.name||"")}" loading="lazy"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='none';this.closest('.forYouCardImgWrap').insertAdjacentHTML('afterend','<div class=forYouCardNoImg>🍽️</div>');this.closest('.forYouCardImgWrap').remove()">
+               <div class="forYouCardImgOverlay"></div>
+             </div>`
           : `<div class="forYouCardNoImg">🍽️</div>`;
         card.innerHTML = `
           ${imgEl}
