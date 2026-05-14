@@ -5724,7 +5724,8 @@
           <div class="section" id="timePanel">
             <div class="label">Time <span class="hint">how long do you have</span></div>
             <div class="seg" role="group" aria-label="Time">
-              <button class="chip selected" data-group="time" data-value="15">15 min</button>
+              <button class="chip selected" data-group="time" data-value="999">Any time</button>
+              <button class="chip" data-group="time" data-value="15">15 min</button>
               <button class="chip" data-group="time" data-value="30">30 min</button>
             </div>
           </div>
@@ -5732,7 +5733,8 @@
           <div class="section" id="moodPanel">
             <div class="label">Mood <span class="hint">match the vibe</span></div>
             <div class="seg" role="group" aria-label="Mood">
-              <button class="chip selected" data-group="mood" data-value="quick">quick</button>
+              <button class="chip selected" data-group="mood" data-value="">Any</button>
+              <button class="chip" data-group="mood" data-value="quick">quick</button>
               <button class="chip" data-group="mood" data-value="healthy">healthy</button>
               <button class="chip" data-group="mood" data-value="comfort">comfort</button>
             </div>
@@ -5757,7 +5759,8 @@
           <div class="section" id="dietPanel">
             <div class="label">Diet <span class="hint">always respected</span></div>
             <div class="seg" role="group" aria-label="Diet">
-              <button class="chip selected" data-group="diet" data-value="veg">veg</button>
+              <button class="chip selected" data-group="diet" data-value="">All</button>
+              <button class="chip" data-group="diet" data-value="veg">veg</button>
               <button class="chip" data-group="diet" data-value="non-veg">non-veg</button>
             </div>
           </div>
@@ -6375,9 +6378,9 @@
     // ───────────────────────────────────────────────────────────────────────────
 
     const state = {
-      time_available: 15,
-      mood: "quick",
-      diet: "veg",
+      time_available: 999,  // "Any time" — no restriction by default
+      mood: "",             // "Any" — no mood filter by default
+      diet: "",             // "All" — show veg + non-veg by default
       category: "all",
       budget: "any",
       ingredientTags: []
@@ -6752,7 +6755,8 @@
 
     function updateMicrocopy() {
       const category = state.category === "all" ? "meal" : state.category.replace("-", " ");
-      el.microcopy.innerHTML = `${category} ready in ${state.time_available} mins &#9889;`;
+      const timeLabel = state.time_available >= 999 ? "any time" : `${state.time_available} mins`;
+      el.microcopy.innerHTML = `${category} ready in ${timeLabel} &#9889;`;
     }
 
     function getRecentCookedIds() {
@@ -8640,11 +8644,11 @@
       renderLoadingCards("normal");
 
       try {
-        // Pass active sidebar filters so search respects diet + cuisine + time
+        // Pass active sidebar filters so search respects diet + cuisine + time + mood
         const params = new URLSearchParams({ q, limit: 50 });
-        if (state.diet)                           params.set("diet", state.diet);
+        if (state.diet)                                params.set("diet", state.diet);
         if (state.category && state.category !== "all") params.set("category", state.category);
-        if (_browseFilters.maxTime)               params.set("max_time", _browseFilters.maxTime);
+        if (state.time_available && state.time_available < 999) params.set("max_time", String(state.time_available));
         const resp = await fetch(`${API_BASE_URL}/search?${params}`, { signal });
         if (!resp.ok) throw new Error(`Search failed: ${resp.status}`);
         const data = await resp.json();
@@ -8865,7 +8869,7 @@
           const group = btn.dataset.group;
           const value = btn.dataset.value;
 
-          if (group === "time")     state.time_available = clampInt(value, state.time_available);
+          if (group === "time")     state.time_available = value === "999" ? 999 : clampInt(value, state.time_available);
           if (group === "mood")     state.mood = value;
           if (group === "diet")     state.diet = value;
           if (group === "category") state.category = value;
@@ -8875,9 +8879,15 @@
           savePreferences();
           updateMicrocopy();
 
-          // Auto-refresh results on filter change
+          // Auto-refresh: re-run active search OR re-suggest
           clearTimeout(autoFetchDebounce);
-          autoFetchDebounce = setTimeout(() => getSuggestions("normal"), 420);
+          autoFetchDebounce = setTimeout(() => {
+            if (uniSearchActive) {
+              searchRecipes(uniSearchActive);  // re-filter existing search query
+            } else {
+              getSuggestions("normal");
+            }
+          }, 420);
         });
       });
 
