@@ -1914,6 +1914,14 @@
       accent-color: var(--accent);
     }
 
+    @keyframes ingredientFlash {
+      0%   { background: var(--accentGlow); transform: scale(1.03); }
+      100% { background: transparent;       transform: scale(1); }
+    }
+    .ingredientCheck.justChecked {
+      animation: ingredientFlash 0.55s ease-out both;
+    }
+
     .missingBox,
     .substitutionBox {
       border-radius: 16px;
@@ -7835,6 +7843,24 @@
 
     let _stepNavDirection = "forward";
 
+    function autoCheckStepIngredients(stepText) {
+      const labels = el.modalIngredients.querySelectorAll(".ingredientCheck");
+      labels.forEach(label => {
+        const span = label.querySelector("span");
+        const cb   = label.querySelector("input[type=checkbox]");
+        if (!span || !cb || cb.checked) return;
+        const name = span.textContent.toLowerCase();
+        // Check if the step text mentions this ingredient (by any word in its name)
+        const words = name.split(/[\s,]+/).filter(w => w.length > 2);
+        const match = words.some(w => stepText.toLowerCase().includes(w));
+        if (match) {
+          cb.checked = true;
+          label.classList.add("justChecked");
+          setTimeout(() => label.classList.remove("justChecked"), 600);
+        }
+      });
+    }
+
     function updateModalStep() {
       clearTimer();
       const stepNo = currentStepIndex + 1;
@@ -7852,7 +7878,7 @@
 
       // Slide animation
       el.stepCard.classList.remove("slideForward", "slideBack");
-      void el.stepCard.offsetWidth; // force reflow to restart animation
+      void el.stepCard.offsetWidth;
       el.stepCard.classList.add(_stepNavDirection === "back" ? "slideBack" : "slideForward");
 
       el.prevStepBtn.disabled = currentStepIndex <= 0;
@@ -7861,6 +7887,9 @@
       timerSeconds = stepTimerSeconds(rawText);
       timerRemaining = timerSeconds;
       updateTimerUI();
+
+      // Auto-check ingredients mentioned in this step
+      autoCheckStepIngredients(rawText);
     }
 
     async function openRecipeModal(recipeId) {
@@ -8335,6 +8364,48 @@
       updateTimerUI();
     });
 
+    function launchConfetti() {
+      const canvas = document.createElement("canvas");
+      canvas.style.cssText = "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9999";
+      canvas.width  = window.innerWidth;
+      canvas.height = window.innerHeight;
+      document.body.appendChild(canvas);
+      const ctx = canvas.getContext("2d");
+      const colors = ["#f59e0b","#ef4444","#22c55e","#3b82f6","#a855f7","#ec4899","#fff"];
+      const pieces = Array.from({ length: 72 }, () => ({
+        x:   Math.random() * canvas.width,
+        y:   -10 - Math.random() * canvas.height * 0.3,
+        r:   4 + Math.random() * 5,
+        dx:  (Math.random() - 0.5) * 5,
+        dy:  3 + Math.random() * 4,
+        rot: Math.random() * Math.PI * 2,
+        drot: (Math.random() - 0.5) * 0.2,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        alpha: 1
+      }));
+      const start = performance.now();
+      function frame(now) {
+        const elapsed = now - start;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach(p => {
+          p.x   += p.dx;
+          p.y   += p.dy;
+          p.rot += p.drot;
+          if (elapsed > 1200) p.alpha = Math.max(0, p.alpha - 0.025);
+          ctx.save();
+          ctx.globalAlpha = p.alpha;
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.r, -p.r / 2, p.r * 2, p.r);
+          ctx.restore();
+        });
+        if (elapsed < 2200) requestAnimationFrame(frame);
+        else canvas.remove();
+      }
+      requestAnimationFrame(frame);
+    }
+
     el.nextStepBtn.addEventListener("click", (e) => {
       addRipple(el.nextStepBtn, e);
       if (currentStepIndex < modalSteps.length - 1) {
@@ -8343,17 +8414,20 @@
         updateModalStep();
         return;
       }
-      // Last step — bump streak, close, then show rating
+      // Last step — confetti, bump streak, close, then show rating
+      launchConfetti();
       if (activeRecipe) {
         bumpStreak();
         updateStreakBanner();
       }
-      closeRecipeModal();
-      if (activeRecipe) {
-        const id = activeRecipe.id;
-        const name = activeRecipe.name;
-        setTimeout(() => showRatingOverlay(id, name), 360);
-      }
+      setTimeout(() => {
+        closeRecipeModal();
+        if (activeRecipe) {
+          const id = activeRecipe.id;
+          const name = activeRecipe.name;
+          setTimeout(() => showRatingOverlay(id, name), 360);
+        }
+      }, 900);
     });
 
     el.prevStepBtn.addEventListener("click", (e) => {
