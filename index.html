@@ -5710,6 +5710,10 @@
               <span>🌍 Cuisine Explorer</span>
               <span id="exploreBadge" style="font-size:0.7rem;color:var(--accent);font-weight:800"></span>
             </button>
+            <a class="collectionsLink" href="/profile.html" style="text-decoration:none">
+              <span>👤 My Profile</span>
+              <span style="font-size:0.7rem;color:var(--accent);font-weight:700">→</span>
+            </a>
             <div class="trust">&#9889; Takes less than 5 seconds</div>
           </div>
         </div>
@@ -6105,6 +6109,7 @@
         <button class="moreBtn" id="moreWeekBtn" type="button"><span class="moreBtnIcon">📊</span>My Week</button>
         <button class="moreBtn" id="moreTasteBtn" type="button"><span class="moreBtnIcon">🧬</span>Taste DNA</button>
         <button class="moreBtn" id="moreSavedBtn" type="button"><span class="moreBtnIcon">📌</span>Saved <span id="savedCountBadge" style="font-size:0.7rem;opacity:0.7"></span></button>
+        <a class="moreBtn" href="/profile.html" style="text-decoration:none;display:flex;align-items:center;gap:8px"><span class="moreBtnIcon">👤</span>My Profile</a>
       </div>
       <div class="themePickerRow">
         <span class="themePickerLabel">Accent</span>
@@ -12966,13 +12971,34 @@
     const FOR_YOU_LIMIT = 12;
 
     function _getForYouSeedIds() {
-      const cookLog = JSON.parse(localStorage.getItem(COOK_LOG_KEY) || "[]");
-      const saved   = JSON.parse(localStorage.getItem("simmer_saved_v1") || "[]");
+      const cookLog = getCookLog();                // already parsed array
+      const saved   = getSavedRecipes();           // already parsed array of objects
       const ids = new Set([
         ...cookLog.map(e => String(e.id)),
-        ...saved.map(id => String(id)),
+        ...saved.map(r => String(r.id || r)),      // saved are slim objects with .id
       ]);
-      return [...ids].slice(0, 30); // cap seed count
+      return [...ids].filter(Boolean).slice(0, 30);
+    }
+
+    function _renderForYouCards(items, row) {
+      row.innerHTML = "";
+      items.forEach(r => {
+        const card = document.createElement("div");
+        card.className = "forYouCard";
+        card.tabIndex = 0;
+        const imgEl = r.image_url
+          ? `<img class="forYouCardImg" src="${escapeHtml(r.image_url)}" alt="${escapeHtml(r.name||"")}" loading="lazy" onerror="this.style.display='none'">`
+          : `<div class="forYouCardNoImg">🍽️</div>`;
+        card.innerHTML = `
+          ${imgEl}
+          <div class="forYouCardBody">
+            <p class="forYouCardName">${escapeHtml(r.name || "")}</p>
+            <p class="forYouCardMeta">⏱ ${r.time_minutes||"?"}m &middot; ${r.calories||"?"}kcal</p>
+          </div>`;
+        card.addEventListener("click", () => openRecipeModal(r.id));
+        card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") openRecipeModal(r.id); });
+        row.appendChild(card);
+      });
     }
 
     async function loadForYouStrip(force = false) {
@@ -12986,32 +13012,39 @@
       strip.style.display = "block";
       row.innerHTML = '<span style="font-size:0.75rem;color:var(--muted2);padding:6px 0">Loading…</span>';
 
+      // Derive top category from cook log for fallback
+      const logCats = getCookLog().map(e => e.category).filter(Boolean);
+      const topCat  = logCats.length
+        ? Object.entries(logCats.reduce((a,c) => { a[c]=(a[c]||0)+1; return a; }, {}))
+            .sort((a,b)=>b[1]-a[1])[0][0]
+        : "";
+
       try {
         const params = new URLSearchParams({ liked_ids: seedIds.join(","), limit: FOR_YOU_LIMIT });
         const resp   = await fetch(`${API_BASE_URL}/for-you?${params}`);
+        if (!resp.ok) throw new Error("non-ok");
         const items  = await resp.json();
-        if (!Array.isArray(items) || items.length === 0) { strip.style.display = "none"; return; }
-
-        row.innerHTML = "";
-        items.forEach(r => {
-          const card = document.createElement("div");
-          card.className = "forYouCard";
-          card.tabIndex = 0;
-          const imgEl = r.image_url
-            ? `<img class="forYouCardImg" src="${escapeHtml(r.image_url)}" alt="${escapeHtml(r.name||"")}" loading="lazy" onerror="this.style.display='none'">`
-            : `<div class="forYouCardNoImg">🍽️</div>`;
-          card.innerHTML = `
-            ${imgEl}
-            <div class="forYouCardBody">
-              <p class="forYouCardName">${escapeHtml(r.name || "")}</p>
-              <p class="forYouCardMeta">⏱ ${r.time_minutes||"?"}m &middot; ${r.calories||"?"}kcal</p>
-            </div>`;
-          card.addEventListener("click", () => openRecipeModal(r.id));
-          card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") openRecipeModal(r.id); });
-          row.appendChild(card);
-        });
+        if (!Array.isArray(items) || items.length === 0) throw new Error("empty");
+        _renderForYouCards(items, row);
       } catch {
-        strip.style.display = "none";
+        // Fallback: use /browse with user's top category so strip always shows
+        try {
+          const fbParams = new URLSearchParams({
+            limit: FOR_YOU_LIMIT,
+            sort: "popular",
+            ...(topCat ? { category: topCat } : {}),
+            ...(state.diet ? { diet: state.diet } : {}),
+          });
+          const fbResp  = await fetch(`${API_BASE_URL}/browse?${fbParams}`);
+          const fbItems = await fbResp.json();
+          if (Array.isArray(fbItems) && fbItems.length > 0) {
+            _renderForYouCards(fbItems, row);
+          } else {
+            strip.style.display = "none";
+          }
+        } catch {
+          strip.style.display = "none";
+        }
       }
     }
 
