@@ -11691,9 +11691,9 @@
     }
 
     async function sendChefMessage(text) {
-      const input = document.getElementById("chefChatInput");
+      const input   = document.getElementById("chefChatInput");
       const sendBtn = document.getElementById("chefChatSend");
-      const msg = (text || input?.value || "").trim();
+      const msg     = (text || input?.value || "").trim();
       if (!msg || chefChatBusy) return;
 
       if (input) input.value = "";
@@ -11701,41 +11701,41 @@
       chefChatBusy = true;
       if (sendBtn) sendBtn.disabled = true;
 
-      // Add user bubble
       chatHistory.push({ role: "user", text: msg });
-      // Add thinking bubble
-      const thinkId = Date.now();
-      chatHistory.push({ role: "ai", thinking: true, _id: thinkId });
+      chatHistory.push({ role: "ai", thinking: true });
       renderChatMessages();
 
       try {
-        const { params, query } = parseChefMessage(msg);
-        const ingredients = getIngredients();
-        const body = { ...params, mode: "normal", ingredients };
-        if (query) body.query = query;
-
-        const response = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
+        // ── Call Claude AI Chef ───────────────────────────────────────────
+        const aiResp = await fetchWithRetry(`${API_BASE_URL}/ai-chat`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body)
+          body: JSON.stringify({
+            message:     msg,
+            history:     chatHistory.slice(-10).filter(m => !m.thinking),
+            diet:        state.diet        || "",
+            category:    state.category    || "",
+            ingredients: getIngredients()  || [],
+          }),
         });
-        const data = await response.json();
-        const recipes = Array.isArray(data) ? data.slice(0, 3) : [];
+        const aiData = await aiResp.json();
+        chatHistory  = chatHistory.filter(m => !m.thinking);
 
-        // Remove thinking bubble, add real response
-        chatHistory = chatHistory.filter(m => !m.thinking);
+        const reply       = (aiData.reply       || "").trim();
+        const recipeQuery = (aiData.recipe_query || "").trim();
 
-        if (recipes.length === 0) {
-          chatHistory.push({ role: "ai", text: "Hmm, I couldn't find anything matching that right now. Try changing the mood or time filter and asking again! 🙏" });
+        if (recipeQuery) {
+          // Show text reply first, then fetch matching recipe cards
+          const searchResp  = await fetch(`${API_BASE_URL}/search?${new URLSearchParams({ q: recipeQuery, diet: state.diet || "", limit: 3 })}`);
+          const recipeItems = await searchResp.json();
+          const recipes     = Array.isArray(recipeItems) ? recipeItems.slice(0, 3) : [];
+          chatHistory.push({ role: "ai", text: reply || "Here are some ideas:", recipes });
         } else {
-          const lead = recipes.length === 1
-            ? `Here's something perfect for you:`
-            : `Here are ${recipes.length} great options I found:`;
-          chatHistory.push({ role: "ai", text: lead, recipes });
+          chatHistory.push({ role: "ai", text: reply || "I'm not sure — could you rephrase that?" });
         }
       } catch {
         chatHistory = chatHistory.filter(m => !m.thinking);
-        chatHistory.push({ role: "ai", text: "Oops, I ran into an issue. Check your connection and try again! 😅" });
+        chatHistory.push({ role: "ai", text: "Oops, couldn't reach the AI Chef right now. Try again in a moment! 😅" });
       } finally {
         chefChatBusy = false;
         if (sendBtn) sendBtn.disabled = false;
