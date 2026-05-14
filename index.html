@@ -196,6 +196,8 @@
       display: flex;
       flex-direction: column;
       gap: 0;
+      /* Extra space so the sticky .actions footer never covers scrollable content */
+      padding-bottom: 12px;
     }
 
     .label {
@@ -2982,7 +2984,7 @@
 
     .fridgeSearchBtn {
       width: 100%;
-      margin-top: 10px;
+      margin: 10px 0 0;
       padding: 11px 16px;
       border-radius: 14px;
       border: 2px solid var(--accent);
@@ -2992,13 +2994,14 @@
       font-size: 0.88rem;
       font-weight: 800;
       cursor: pointer;
+      display: block;
       transition: background 0.15s, transform 0.12s;
     }
     .fridgeSearchBtn:hover {
       background: rgba(200,105,14,0.16);
       transform: translateY(-1px);
     }
-    .fridgeSearchBtn.hidden { display: none; }
+    .fridgeSearchBtn.hidden { display: none !important; }
     [data-theme="dark"] .fridgeSearchBtn {
       background: rgba(200,105,14,0.12);
       border-color: var(--accent);
@@ -5782,10 +5785,11 @@
             </div>
           </div>
 
+          <button class="fridgeSearchBtn hidden" id="fridgeSearchBtn" type="button">
+            🧺 What can I make with these?
+          </button>
+
           <div class="actions">
-            <button class="fridgeSearchBtn hidden" id="fridgeSearchBtn" type="button">
-              🧺 What can I make with these?
-            </button>
             <button class="btn" id="decideBtn" type="button">&#127860; Decide for me <span style="display:block;font-size:0.7rem;font-weight:400;opacity:0.8;margin-top:2px">picks 1 dish based on your filters</span></button>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
               <button class="btn secondary" id="suggestBtn" type="button">Show options <span style="display:block;font-size:0.7rem;font-weight:400;opacity:0.8;margin-top:2px">shows 3 ideas</span></button>
@@ -8738,8 +8742,8 @@
         localStorage.setItem(LAST_MODE_KEY, mode);
         if (mode === "decide" && Array.isArray(data) && data.length > 0) trackInteraction("decide", data[0].id);
       } catch (error) {
-        el.statusText.innerHTML = "Server is warming up — tap <b>Suggest</b> to retry.";
-        renderEmpty("Tap Suggest to load recipes.");
+        el.statusText.innerHTML = "Server is warming up — tap <b>Suggest</b> or <b>🧺 What can I make</b> to retry.";
+        renderEmpty("Server waking up — tap any button to retry.");
       } finally {
         el.loading.style.display = "none";
         el.suggestBtn.disabled = false;
