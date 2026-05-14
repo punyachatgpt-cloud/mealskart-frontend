@@ -332,11 +332,7 @@
       flex-direction: column;
       gap: 12px;
       margin-top: 8px;
-      position: sticky;
-      bottom: 0;
-      padding-top: 24px;
-      background: linear-gradient(to top, var(--surfaceStrong) 80%, transparent);
-      z-index: 3;
+      padding-top: 8px;
     }
 
     .btn {
@@ -603,9 +599,7 @@
         overflow: visible;
       }
       .actions {
-        position: static;
         padding-top: 0;
-        background: transparent;
       }
       .microcopy { text-align: left; white-space: normal; }
       .results,
@@ -8753,9 +8747,9 @@
         localStorage.setItem(LAST_MODE_KEY, mode);
         if (mode === "decide" && Array.isArray(data) && data.length > 0) trackInteraction("decide", data[0].id);
       } catch (error) {
-        el.statusText.textContent = "Kitchen is warming up… retrying in 6s ☕";
+        el.statusText.textContent = "Kitchen is warming up… retrying in 25s ☕";
         renderEmpty("Waking up the kitchen — just a moment…");
-        // Auto-retry once after 6s to handle Render cold-start (~30s spin-up)
+        // Auto-retry once after 25s to handle Render cold-start (can take 30-90s)
         const retryMode = mode, retryQuery = queryOverride;
         setTimeout(async () => {
           try {
