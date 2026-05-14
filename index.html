@@ -12814,16 +12814,19 @@
           const imgHtml = r.image_url
             ? `<img class="browseCardImg" src="${escapeHtml(r.image_url)}" alt="" loading="lazy" onerror="this.src='';this.style.display='none'">`
             : `<div class="browseCardImg" style="display:flex;align-items:center;justify-content:center;font-size:2rem;background:var(--goldBg)">🍽️</div>`;
-          const isDark = document.documentElement.dataset.theme === "dark"
-                      || document.body.dataset.theme === "dark";
-          const nameColor = isDark ? "#F2E5CC" : "#1C1008";
-          const metaColor = isDark ? "#C4906A" : "#9B7553";
+          const isDark = document.documentElement.dataset.theme === "dark";
+          const cardBg   = isDark ? "#1e1208" : "#ffffff";
+          const nameClr  = isDark ? "#F2E5CC" : "#1C1008";
+          const metaClr  = isDark ? "#C4906A" : "#9B7553";
+          const dietBg   = r.diet === "veg" ? "#dcfce7" : "#fee2e2";
+          const dietClr  = r.diet === "veg" ? "#15803d" : "#dc2626";
+          card.style.cssText = `background:${cardBg};border-radius:16px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:transform .15s,box-shadow .15s;`;
           card.innerHTML = `
             ${imgHtml}
-            <div class="browseCardBody">
-              <div class="browseCardName" style="color:${nameColor}">${escapeHtml(r.name)}</div>
-              <div class="browseCardMeta" style="color:${metaColor}">⏱ ${r.time_minutes || "?"}m · ${r.calories || "?"}kcal</div>
-              <span class="browseCardDiet ${dietCls}">${dietLbl}</span>
+            <div style="padding:10px 10px 12px;">
+              <p style="margin:0 0 4px;font-size:0.84rem;font-weight:700;color:${nameClr};line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHtml(r.name || "")}</p>
+              <p style="margin:0 0 5px;font-size:0.72rem;color:${metaClr};">⏱ ${r.time_minutes || "?"}m · ${r.calories || "?"}kcal</p>
+              <span style="font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;background:${dietBg};color:${dietClr};">${dietLbl}</span>
             </div>`;
           card.addEventListener("click", () => { closeBrowseSheet(); openRecipeModal(r.id); });
           card.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { closeBrowseSheet(); openRecipeModal(r.id); } });
