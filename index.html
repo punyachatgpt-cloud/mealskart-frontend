@@ -472,6 +472,16 @@
       min-height: 20px;
       text-align: right;
     }
+    /* Screen-reader-only utility: visually hidden, still in accessibility tree */
+    .sr-only {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
 
     .spinner {
       display: none;
@@ -5934,11 +5944,11 @@
             <div class="decideHint" id="decideHint">&#11088; Your meal is decided. No thinking needed. Start cooking.</div>
           </div>
           <div>
-            <div class="spinner" id="loading">
-              <span class="spin"></span>
+            <div class="spinner" id="loading" role="status" aria-live="polite">
+              <span class="spin" aria-hidden="true"></span>
               <span>Finding the best meal for you...</span>
             </div>
-            <div class="statusText" id="statusText"></div>
+            <div class="statusText" id="statusText" aria-live="polite" aria-atomic="true"></div>
           </div>
         </div>
 
@@ -7666,8 +7676,13 @@
       removeDYM();
       const dym = document.createElement("div");
       dym.className = "didYouMean"; dym.id = "didYouMean";
-      dym.innerHTML = `<span>🔍</span> No results for "<span>${escapeHtml(q)}</span>"${closest ? `. Did you mean <span class="didYouMeanLink" id="dymLink">${escapeHtml(closest)}</span>?` : ". Try a different search."}`;
+      dym.innerHTML = `<span aria-hidden="true">🔍</span> No results for "<span>${escapeHtml(q)}</span>"${closest ? `. Did you mean <span class="didYouMeanLink" id="dymLink">${escapeHtml(closest)}</span>?` : ". Try a different search."}`;
       el.results.prepend(dym);
+      const polite = document.getElementById("a11yPolite");
+      if (polite) {
+        const msg = closest ? `No results for "${q}". Did you mean ${closest}?` : `No results for "${q}". Try a different search.`;
+        polite.textContent = ""; requestAnimationFrame(() => { polite.textContent = msg; });
+      }
       document.getElementById("dymLink")?.addEventListener("click", () => {
         if (el.searchInput) {
           el.searchInput.value = closest;
@@ -9011,6 +9026,8 @@
       if (term) {
         termEl.textContent = term;
         banner.classList.add("show");
+        const polite = document.getElementById("a11yPolite");
+        if (polite) { polite.textContent = ""; requestAnimationFrame(() => { polite.textContent = `Showing results for: ${term}`; }); }
       } else {
         banner.classList.remove("show");
         termEl.textContent = "";
@@ -12241,6 +12258,14 @@
         el.classList.remove("visible");
         setTimeout(() => el.remove(), 380);
       }, duration);
+      // Announce to screen reader (strip emoji so NVDA/VoiceOver don't narrate long emoji names)
+      const regionId = (type === "error" || type === "warn") ? "a11yAssertive" : "a11yPolite";
+      const region = document.getElementById(regionId);
+      if (region) {
+        const clean = msg.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "").replace(/\s+/g, " ").trim();
+        region.textContent = "";
+        requestAnimationFrame(() => { region.textContent = clean; });
+      }
     }
 
     // Wire toast to statusText mutations (non-invasive)
@@ -14170,5 +14195,8 @@
     })();
     // ─────────────────────────────────────────────────────────────────────────
   </script>
+  <!-- ARIA live regions — visually hidden, announced by screen readers -->
+  <div id="a11yPolite"    class="sr-only" aria-live="polite"    aria-atomic="true"></div>
+  <div id="a11yAssertive" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
 </body>
 </html>
