@@ -1852,7 +1852,7 @@
 
     .modalMetaGrid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
       gap: 8px;
       margin: 0 0 12px;
     }
@@ -2018,12 +2018,43 @@
     }
 
     .macroGrid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 6px;
-      margin: 0 0 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin: 0 0 14px;
     }
-
+    .macroRow {
+      display: grid;
+      grid-template-columns: 52px 1fr 34px;
+      align-items: center;
+      gap: 8px;
+    }
+    .macroLabel {
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .macroBarTrack {
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.08);
+      overflow: hidden;
+    }
+    .macroBarFill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.55s cubic-bezier(0.4,0,0.2,1);
+    }
+    .macroVal {
+      font-size: 0.74rem;
+      font-weight: 900;
+      color: var(--ink);
+      text-align: right;
+      white-space: nowrap;
+    }
+    /* Keep .macroItem in case legacy code references it */
     .macroItem {
       border-radius: 12px;
       padding: 7px 8px;
@@ -2033,7 +2064,6 @@
       color: rgba(11, 18, 32, 0.9);
       font-size: 0.85rem;
     }
-
     .macroItem span {
       display: block;
       color: var(--muted2);
@@ -2291,8 +2321,7 @@
     [data-theme="dark"] .simCardMeta { color: #9B7553; }
 
     @media (max-width: 480px) {
-      .modalMetaGrid { grid-template-columns: 1fr; }
-      .macroGrid { grid-template-columns: repeat(2, 1fr); }
+      .modalMetaGrid { grid-template-columns: repeat(2, 1fr); }
       .ingredientChecklist { grid-template-columns: 1fr; }
       .servingRow { align-items: flex-start; flex-direction: column; }
       .stepActions { grid-template-columns: 1fr; }
@@ -2568,6 +2597,13 @@
       background: rgba(251,191,36,0.18);
       color: #fbbf24;
     }
+    .cookedChip {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 0.67rem; font-weight: 800;
+      background: rgba(22,163,74,0.12); color: #15803d;
+      border-radius: 8px; padding: 2px 7px;
+    }
+    [data-theme="dark"] .cookedChip { background: rgba(22,163,74,0.18); color: #4ade80; }
     .cookedCount {
       font-weight: 700;
       font-size: 0.78rem;
@@ -8042,6 +8078,7 @@
                      : mode === "search"  ? items
                      :                      items.slice(0, 3);
       const recentCooked = getRecentCookedIds();
+      const cookedIds = new Set(getCookLog().map(e => String(e.id)));
       let visible = incoming;
       if (mode === "normal" && recentCooked.length > 0) {
         const filtered = incoming.filter((item) => !recentCooked.includes(String(item.id)));
@@ -8139,6 +8176,7 @@
                 <div class="socialRow">
                   <span class="ratingChip">&#9733; ${stats.rating}</span>
                   ${personalRating > 0 ? `<span class="myRatingChip" title="Your rating">${"★".repeat(personalRating)}${"☆".repeat(5 - personalRating)} You</span>` : ""}
+                  ${cookedIds.has(String(item.id)) ? `<span class="cookedChip">&#10003; Cooked</span>` : ""}
                   <span class="cookedCount"><span class="countNum" data-target="${stats.count}">0</span> cooked this week</span>
                 </div>
               </div>
@@ -8348,22 +8386,36 @@
         }
       }
 
+      const cookCount = getCookLog().filter(e => String(e.id) === String(activeRecipe.id)).length;
       el.modalMeta.innerHTML = `
         <div class="modalMetaItem"><span>⏱ Time</span>${time || "--"} min</div>
         <div class="modalMetaItem"><span>🔥 Calories</span>${calories || "--"} cal</div>
         <div class="modalMetaItem"><span>📊 Difficulty</span>${escapeHtml(difficulty)}</div>
+        ${cookCount > 0 ? `<div class="modalMetaItem" style="color:#15803d"><span style="color:#15803d">🍳 Cooked</span>${cookCount}×</div>` : ""}
       `;
 
       // Only show macros if at least one has a real value
       const macroVals = [nutrition.protein_g, nutrition.carbs_g, nutrition.fat_g, nutrition.fiber_g];
       const hasMacros = macroVals.some(v => Number(v) > 0);
-      el.macroGrid.style.display = hasMacros ? "grid" : "none";
-      el.macroGrid.innerHTML = `
-        <div class="macroItem"><span>Protein</span>${scaleMacro(nutrition.protein_g)}g</div>
-        <div class="macroItem"><span>Carbs</span>${scaleMacro(nutrition.carbs_g)}g</div>
-        <div class="macroItem"><span>Fat</span>${scaleMacro(nutrition.fat_g)}g</div>
-        <div class="macroItem"><span>Fiber</span>${scaleMacro(nutrition.fiber_g)}g</div>
-      `;
+      el.macroGrid.style.display = hasMacros ? "flex" : "none";
+      if (hasMacros) {
+        const mp = scaleMacro(nutrition.protein_g);
+        const mc = scaleMacro(nutrition.carbs_g);
+        const mf = scaleMacro(nutrition.fat_g);
+        const mfi = scaleMacro(nutrition.fiber_g);
+        const maxMacro = Math.max(mp, mc, mf, mfi, 1);
+        const macroRow = (label, val, color) =>
+          `<div class="macroRow">
+            <span class="macroLabel">${label}</span>
+            <div class="macroBarTrack"><div class="macroBarFill" style="width:${Math.round(val/maxMacro*100)}%;background:${color}"></div></div>
+            <span class="macroVal">${val}g</span>
+          </div>`;
+        el.macroGrid.innerHTML =
+          macroRow("Protein", mp,  "#f97316") +
+          macroRow("Carbs",   mc,  "#3b82f6") +
+          macroRow("Fat",     mf,  "#f59e0b") +
+          macroRow("Fiber",   mfi, "#22c55e");
+      }
       el.modalIngredients.innerHTML = ingredients.map((item) => {
         const normalized = normalizeIngredientName(item.name);
         const isChecked = available.size === 0 || available.has(normalized);
@@ -9342,6 +9394,23 @@
         "#shoppingOverlay:not(.hidden),#cookLogOverlay:not(.hidden),#collectionsOverlay:not(.hidden),#nutDashOverlay:not(.hidden),#cuisineOverlay:not(.hidden),#moreSheetOverlay:not(.hidden),#savedSheetOverlay:not(.hidden),#browseOverlay:not(.hidden),#quickfireOverlay:not(.hidden)"
       );
       if (activeSheet) { activeSheet.classList.add("hidden"); return; }
+    });
+
+    // Arrow-key navigation between recipe cards
+    el.results.addEventListener("keydown", (e) => {
+      const KEYS = ["ArrowRight","ArrowLeft","ArrowDown","ArrowUp","Home","End"];
+      if (!KEYS.includes(e.key)) return;
+      const cards = [...el.results.querySelectorAll(".foodCard")];
+      if (!cards.length) return;
+      const idx = cards.indexOf(document.activeElement);
+      if (idx === -1) return;
+      e.preventDefault();
+      let next = idx;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown")  next = Math.min(idx + 1, cards.length - 1);
+      if (e.key === "ArrowLeft"  || e.key === "ArrowUp")    next = Math.max(idx - 1, 0);
+      if (e.key === "Home") next = 0;
+      if (e.key === "End")  next = cards.length - 1;
+      cards[next]?.focus();
     });
 
     // Share & grocery export
