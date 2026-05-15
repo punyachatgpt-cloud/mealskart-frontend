@@ -5856,6 +5856,110 @@
       100% { transform: scale(1); }
     }
     .heartBtn.saved { animation: heartPop 0.35s cubic-bezier(0.34,1.5,0.64,1) both; }
+
+    /* ── Pantry Drawer ──────────────────────────────────────────────── */
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+    .pantryOverlay {
+      position: fixed; inset: 0; z-index: 1400;
+      background: rgba(15,10,5,0.46);
+      display: flex; align-items: flex-end;
+      transition: opacity 0.22s;
+    }
+    .pantryOverlay.hidden { display: none; }
+    .pantrySheet {
+      width: 100%; max-width: 520px; margin: 0 auto;
+      background: var(--bg1);
+      border-radius: 24px 24px 0 0;
+      padding: 20px 20px 32px;
+      box-shadow: 0 -12px 40px rgba(15,10,5,0.18);
+      animation: slideUp 0.28s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .pantryHeader {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px;
+    }
+    .pantryTitle { font-size: 1.1rem; font-weight: 800; color: var(--text1); }
+    .pantryCloseBtn {
+      background: none; border: none; cursor: pointer;
+      font-size: 1.1rem; color: var(--muted); padding: 4px 8px;
+      border-radius: 8px; line-height: 1;
+    }
+    .pantryCloseBtn:hover { background: var(--bg2); }
+    .pantryHint { font-size: 0.82rem; color: var(--muted); margin: 0 0 14px; }
+    .pantryInputRow { display: flex; gap: 8px; margin-bottom: 14px; }
+    .pantryInput {
+      flex: 1; border: 1.5px solid var(--border); border-radius: 12px;
+      padding: 9px 14px; font-size: 0.9rem; background: var(--bg2);
+      color: var(--text1); outline: none;
+    }
+    .pantryInput:focus { border-color: var(--accent); }
+    .pantryAddBtn {
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 12px;
+      padding: 9px 18px; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; white-space: nowrap;
+    }
+    .pantryAddBtn:hover { background: var(--accent2, #b85c0a); }
+    .pantryChips { display: flex; flex-wrap: wrap; gap: 8px; min-height: 32px; }
+    .pantryChip {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: rgba(200,105,14,0.1); color: var(--accent);
+      border: 1px solid rgba(200,105,14,0.22);
+      border-radius: 20px; padding: 4px 10px 4px 12px;
+      font-size: 0.82rem; font-weight: 600;
+    }
+    .pantryChip button {
+      background: none; border: none; cursor: pointer;
+      font-size: 0.9rem; color: var(--muted); padding: 0;
+      line-height: 1; display: flex; align-items: center;
+    }
+    .pantryChip button:hover { color: var(--text1); }
+    .pantryClearRow { margin-top: 16px; text-align: right; }
+    .pantryClearBtn {
+      background: none; border: none; cursor: pointer;
+      font-size: 0.8rem; color: var(--muted); text-decoration: underline;
+    }
+    .pantryClearBtn:hover { color: #dc2626; }
+
+    /* Pantry match badge on cards */
+    .pantryMatchBadge {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 0.67rem; font-weight: 800;
+      border-radius: 8px; padding: 2px 7px;
+    }
+    .pantryMatchBadge.pmGreen { background: rgba(22,163,74,0.12); color: #15803d; }
+    .pantryMatchBadge.pmAmber { background: rgba(234,179,8,0.14); color: #a16207; }
+    [data-theme="dark"] .pantryMatchBadge.pmGreen { background: rgba(22,163,74,0.2); color: #4ade80; }
+    [data-theme="dark"] .pantryMatchBadge.pmAmber { background: rgba(234,179,8,0.2); color: #fbbf24; }
+
+    /* Pantry button in utility links area */
+    .pantryToggleBtn {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--bg2); border: 1.5px solid var(--border);
+      border-radius: 20px; padding: 6px 14px;
+      font-size: 0.82rem; font-weight: 600; color: var(--text2);
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      transition: border-color 0.15s, color 0.15s;
+      width: 100%;
+    }
+    .pantryToggleBtn:hover, .pantryToggleBtn.active {
+      border-color: var(--accent); color: var(--accent);
+    }
+    .pantryBadgeCount {
+      background: var(--accent); color: #fff;
+      border-radius: 20px; padding: 1px 6px;
+      font-size: 0.7rem; font-weight: 800;
+      min-width: 16px; text-align: center;
+    }
+
+    /* In-modal ingredient have/need */
+    .ingredientCheck.pantryHave .ingredientCheckLabel { color: #15803d; }
+    .ingredientCheck.pantryNeed .ingredientCheckLabel { color: #b45309; }
+    .pantryHaveIcon { color: #15803d; font-size: 0.8rem; margin-left: 2px; }
+    .pantryNeedIcon { color: #b45309; font-size: 0.8rem; margin-left: 2px; }
   </style>
 </head>
 <body>
@@ -6100,6 +6204,9 @@
 
           <!-- Utility links — not sticky, scroll normally -->
           <div class="utilityLinks">
+            <button class="pantryToggleBtn" id="pantryToggleBtn" type="button">
+              🥫 Pantry<span class="pantryBadgeCount" id="pantryBadgeCount" style="display:none">0</span>
+            </button>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
               <button class="collectionsLink" id="collectionsBtn" type="button">
                 <span>📚 Collections</span>
@@ -8263,6 +8370,7 @@
                      :                      items.slice(0, 3);
       const recentCooked = getRecentCookedIds();
       const cookedIds = new Set(getCookLog().map(e => String(e.id)));
+      const pantryActive = getPantryStore().length > 0;
       let visible = incoming;
       if (mode === "normal" && recentCooked.length > 0) {
         const filtered = incoming.filter((item) => !recentCooked.includes(String(item.id)));
@@ -8360,6 +8468,14 @@
                 <div class="socialRow">
                   <span class="ratingChip">&#9733; ${stats.rating}</span>
                   ${personalRating > 0 ? `<span class="myRatingChip" title="Your rating">${"★".repeat(personalRating)}${"☆".repeat(5 - personalRating)} You</span>` : ""}
+                  ${(() => {
+                    if (!pantryActive) return "";
+                    const ms = pantryMatchScore(item);
+                    if (!ms || ms.total === 0) return "";
+                    const cls = ms.pct >= 0.8 ? "pmGreen" : ms.pct >= 0.4 ? "pmAmber" : "";
+                    if (!cls) return "";
+                    return `<span class="pantryMatchBadge ${cls}">🥫 ${ms.have}/${ms.total}</span>`;
+                  })()}
                   ${cookedIds.has(String(item.id)) ? `<span class="cookedChip">&#10003; Cooked</span>` : ""}
                   <span class="cookedCount"><span class="countNum" data-target="${stats.count}">0</span> cooked this week</span>
                 </div>
@@ -8509,6 +8625,32 @@
       return String(value || "").trim().toLowerCase();
     }
 
+    // ── Pantry Mode: storage helpers ────────────────────────────────────────
+    const PANTRY_KEY_V1 = "simmer-pantry-v1";
+    function getPantryStore() {
+      try { return JSON.parse(localStorage.getItem(PANTRY_KEY_V1) || "[]"); } catch { return []; }
+    }
+    function savePantryStore(arr) {
+      localStorage.setItem(PANTRY_KEY_V1, JSON.stringify(arr));
+    }
+
+    // ── Pantry Mode: match scoring ───────────────────────────────────────────
+    function pantryMatchScore(recipe) {
+      const pantry = getPantryStore();
+      if (!pantry.length) return null;
+      const pantryNorm = pantry.map(normalizeIngredientName);
+      const ingredients = (
+        Array.isArray(recipe.ingredients_with_quantities) && recipe.ingredients_with_quantities.length
+          ? recipe.ingredients_with_quantities.map(i => i.name || "")
+          : Array.isArray(recipe.ingredients) ? recipe.ingredients : []
+      ).map(normalizeIngredientName).filter(Boolean);
+      if (!ingredients.length) return null;
+      const have = ingredients.filter(ing =>
+        pantryNorm.some(p => ing.includes(p) || p.includes(ing))
+      ).length;
+      return { have, total: ingredients.length, pct: have / ingredients.length };
+    }
+
     function formatQuantity(value) {
       const n = Number(value);
       if (!Number.isFinite(n)) return "";
@@ -8540,6 +8682,8 @@
         ? activeRecipe.ingredients_with_quantities
         : (Array.isArray(activeRecipe.ingredients) ? activeRecipe.ingredients.map((name) => ({ name, quantity: null, unit: "" })) : []);
       const available = new Set(getIngredients().map(normalizeIngredientName));
+      const pantryNorm = new Set(getPantryStore().map(normalizeIngredientName));
+      const pantryActive2 = pantryNorm.size > 0;
       const missing = ingredients
         .map((item) => normalizeIngredientName(item.name))
         .filter((name) => name && available.size > 0 && !available.has(name));
@@ -8603,10 +8747,11 @@
       el.modalIngredients.innerHTML = ingredients.map((item) => {
         const normalized = normalizeIngredientName(item.name);
         const isChecked = available.size === 0 || available.has(normalized);
+        const inPantry = pantryActive2 && [...pantryNorm].some(p => normalized.includes(p) || p.includes(normalized));
         return `
-          <label class="ingredientCheck">
+          <label class="ingredientCheck${pantryActive2 ? (inPantry ? " pantryHave" : " pantryNeed") : ""}">
             <input type="checkbox" ${isChecked ? "checked" : ""} />
-            <span>${escapeHtml(scaledIngredientText(item))}</span>
+            <span class="ingredientCheckLabel">${escapeHtml(scaledIngredientText(item))}</span>${pantryActive2 ? (inPantry ? `<span class="pantryHaveIcon" title="You have this">✓</span>` : `<span class="pantryNeedIcon" title="Need to buy">○</span>`) : ""}
           </label>
         `;
       }).join("");
@@ -9569,6 +9714,8 @@
     // Global Escape key — closes the frontmost open dialog
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape") return;
+      const pantryOverlay = document.getElementById("pantryOverlay");
+      if (pantryOverlay && !pantryOverlay.classList.contains("hidden")) { closePantryDrawer(); return; }
       if (el.recipeModal.classList.contains("open")) { closeRecipeModal(); return; }
       const mep = document.getElementById("miseEnPlaceOverlay");
       if (mep && !mep.classList.contains("hidden")) { closeMiseEnPlace(); el.recipeModal.classList.add("open"); return; }
@@ -14394,6 +14541,95 @@
     // ── end phase 10 ───────────────────────────────
 
     // ══════════════════════════════════════════════
+    // PANTRY MODE — Drawer Logic
+    // ══════════════════════════════════════════════
+    function renderPantryChips() {
+      const pantry = getPantryStore();
+      const container = document.getElementById("pantryChips");
+      if (!container) return;
+      if (pantry.length === 0) {
+        container.innerHTML = `<span style="font-size:0.82rem;color:var(--muted)">No ingredients yet.</span>`;
+      } else {
+        container.innerHTML = pantry.map((item, i) =>
+          `<span class="pantryChip">${escapeHtml(titleCase(item))}
+            <button type="button" aria-label="Remove ${escapeHtml(item)}" data-idx="${i}">✕</button>
+          </span>`
+        ).join("");
+        container.querySelectorAll("button[data-idx]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const arr = getPantryStore();
+            arr.splice(Number(btn.dataset.idx), 1);
+            savePantryStore(arr);
+            renderPantryChips();
+            updatePantryBtn();
+          });
+        });
+      }
+    }
+
+    function updatePantryBtn() {
+      const count = getPantryStore().length;
+      const btn   = document.getElementById("pantryToggleBtn");
+      const badge = document.getElementById("pantryBadgeCount");
+      if (btn)   btn.classList.toggle("active", count > 0);
+      if (badge) { badge.textContent = count; badge.style.display = count > 0 ? "inline-flex" : "none"; }
+    }
+
+    function openPantryDrawer() {
+      const overlay = document.getElementById("pantryOverlay");
+      if (!overlay) return;
+      overlay.classList.remove("hidden");
+      renderPantryChips();
+      updatePantryBtn();
+      setTimeout(() => document.getElementById("pantryInput")?.focus(), 100);
+    }
+
+    function closePantryDrawer() {
+      document.getElementById("pantryOverlay")?.classList.add("hidden");
+    }
+
+    function addPantryItem(raw) {
+      const trimmed = raw.trim().toLowerCase();
+      if (!trimmed) return;
+      const arr = getPantryStore();
+      // Split on comma — allow bulk entry like "onion, tomato, chicken"
+      const newItems = trimmed.split(",").map(s => s.trim()).filter(s => s && !arr.includes(s));
+      if (!newItems.length) return;
+      savePantryStore([...arr, ...newItems]);
+      renderPantryChips();
+      updatePantryBtn();
+    }
+
+    // Wire up pantry button
+    document.getElementById("pantryToggleBtn")?.addEventListener("click", openPantryDrawer);
+    document.getElementById("pantryCloseBtn")?.addEventListener("click", closePantryDrawer);
+    document.getElementById("pantryOverlay")?.addEventListener("click", e => {
+      if (e.target === document.getElementById("pantryOverlay")) closePantryDrawer();
+    });
+
+    const _pantryInput = document.getElementById("pantryInput");
+    const _pantryAddBtn = document.getElementById("pantryAddBtn");
+    _pantryAddBtn?.addEventListener("click", () => {
+      addPantryItem(_pantryInput.value);
+      _pantryInput.value = "";
+      _pantryInput.focus();
+    });
+    _pantryInput?.addEventListener("keydown", e => {
+      if (e.key === "Enter") { addPantryItem(_pantryInput.value); _pantryInput.value = ""; }
+    });
+
+    document.getElementById("pantryClearBtn")?.addEventListener("click", () => {
+      if (!getPantryStore().length) return;
+      savePantryStore([]);
+      renderPantryChips();
+      updatePantryBtn();
+    });
+
+    // Init badge count on load
+    updatePantryBtn();
+    // ── end Pantry Mode ────────────────────────────
+
+    // ══════════════════════════════════════════════
     // PHASE 12 — PWA INSTALL PROMPT
     // ══════════════════════════════════════════════
     const PWA_SESSION_KEY = "simmer_pwa_sessions_v1";
@@ -14630,6 +14866,25 @@
     })();
     // ─────────────────────────────────────────────────────────────────────────
   </script>
+  <!-- Pantry Drawer -->
+  <div class="pantryOverlay hidden" id="pantryOverlay" role="dialog" aria-modal="true" aria-label="My Pantry">
+    <div class="pantrySheet">
+      <div class="pantryHeader">
+        <span class="pantryTitle">🥫 My Pantry</span>
+        <button class="pantryCloseBtn" id="pantryCloseBtn" type="button" aria-label="Close pantry">✕</button>
+      </div>
+      <p class="pantryHint">Add ingredients you have at home. Cards will show how well each recipe matches.</p>
+      <div class="pantryInputRow">
+        <input class="pantryInput" id="pantryInput" type="text" placeholder="e.g. onion, tomato, chicken…" autocomplete="off" />
+        <button class="pantryAddBtn" id="pantryAddBtn" type="button">Add</button>
+      </div>
+      <div class="pantryChips" id="pantryChips"></div>
+      <div class="pantryClearRow">
+        <button class="pantryClearBtn" id="pantryClearBtn" type="button">Clear all</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ARIA live regions — visually hidden, announced by screen readers -->
   <div id="a11yPolite"    class="sr-only" aria-live="polite"    aria-atomic="true"></div>
   <div id="a11yAssertive" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
