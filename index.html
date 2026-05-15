@@ -956,6 +956,7 @@
     .browseCardNoImg {
       width: 100%; height: 130px; display: flex; align-items: center; justify-content: center;
       font-size: 2.4rem; flex-shrink: 0; background: #f5e8d4;
+      font-family: 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif;
     }
     [data-theme="dark"] .browseCardNoImg { background: rgba(120,60,10,0.3); }
     .browseCardBody {
@@ -2454,7 +2455,7 @@
       font-size: 0.86rem; font-weight: 600; color: var(--ink);
     }
     .searchDropItem:hover { background: rgba(200,105,14,0.09); }
-    .searchDropIcon { color: var(--muted); font-size: 0.88rem; flex-shrink: 0; min-width: 16px; text-align: center; }
+    .searchDropIcon { color: var(--muted); font-size: 0.88rem; flex-shrink: 0; min-width: 16px; text-align: center; font-family: 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif; }
     .searchDropText { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .searchDropThumb { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
     .searchDropCat { font-size: 0.68rem; font-weight: 700; color: var(--muted2); background: var(--bg2); border-radius: 6px; padding: 2px 6px; white-space: nowrap; text-transform: capitalize; flex-shrink: 0; }
@@ -2473,7 +2474,7 @@
       padding: 5px 12px; border-radius: 999px;
       font-size: 0.76rem; font-weight: 800; cursor: pointer;
       border: 1.5px solid var(--border); background: none;
-      color: var(--muted); font-family: inherit;
+      color: var(--muted); font-family: 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',inherit;
       transition: all 0.13s;
     }
     .searchQuickChip:hover, .searchQuickChip.active {
@@ -4797,7 +4798,7 @@
       border-radius: 9px;
       border: none;
       background: none;
-      font-family: inherit;
+      font-family: 'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',inherit;
       font-size: 0.82rem;
       font-weight: 600;
       color: var(--ink);
@@ -7421,11 +7422,11 @@
     const QUICK_FILTERS = [
       { label: "⚡ Quick (<20 min)", mood: "quick", time: 20 },
       { label: "🥗 Healthy",         mood: "healthy" },
-      { label: "🫂 Comfort",         mood: "comfort" },
+      { label: "🥘 Comfort",         mood: "comfort" },
       { label: "🌱 Veg",             diet: "veg" },
       { label: "🍗 Non-veg",         diet: "non-veg" },
-      { label: "🇮🇳 North Indian",   category: "north indian" },
-      { label: "🌶️ South Indian",    category: "south indian" },
+      { label: "🍛 North Indian",    category: "north indian" },
+      { label: "🌶 South Indian",    category: "south indian" },
     ];
 
     function getSearchHistory() {
@@ -7508,7 +7509,7 @@
         }).join("");
         sections.push(`
           <div class="searchDropSection">
-            <div class="searchDropSectionTitle">🔍 Live matches</div>
+            <div class="searchDropSectionTitle">Live matches</div>
             ${items}
           </div>`);
       }
@@ -7532,7 +7533,7 @@
       if (cardMatches.length > 0 && apiSuggestions.length === 0) {
         const items = cardMatches.map(s => `
           <div class="searchDropItem" data-search="${escapeHtml(s)}">
-            <span class="searchDropIcon">🍽️</span>
+            <span class="searchDropIcon">🍴</span>
             <span class="searchDropText">${escapeHtml(s)}</span>
           </div>`).join("");
         if (sections.length) sections.push('<div class="searchDropDivider"></div>');
@@ -13226,7 +13227,7 @@
           const dietLbl = r.diet === "veg" ? "🌱 Veg" : "🍗 Non-veg";
           const imgEl = r.image_url
             ? `<img class="browseCardImg" src="${escapeHtml(r.image_url)}" alt="${escapeHtml(r.name||"")}" loading="lazy" onerror="this.style.display='none'">`
-            : `<div class="browseCardNoImg">🍽️</div>`;
+            : `<div class="browseCardNoImg">🍴</div>`;
           card.innerHTML = `
             ${imgEl}
             <div class="browseCardBody">
