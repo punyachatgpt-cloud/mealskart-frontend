@@ -11885,17 +11885,26 @@
       showCookModeAIBubble(question, null);
       const step = modalSteps[currentStepIndex] || "";
       try {
-        const resp = await fetchWithRetry(`${API_BASE_URL}/ai-chat`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            message: question,
-            history: [{ role: "system", text: `The user is currently cooking "${activeRecipe?.name || "a recipe"}". They are on step ${currentStepIndex + 1} of ${modalSteps.length}: "${step}". Answer briefly and practically.` }],
-            diet: state.diet || "",
-            ingredients: getIngredients() || [],
-          }),
-        });
-        const data = await resp.json();
+        const _cookPayload = {
+          message: question,
+          history: [{ role: "system", text: `The user is currently cooking "${activeRecipe?.name || "a recipe"}". They are on step ${currentStepIndex + 1} of ${modalSteps.length}: "${step}". Answer briefly and practically.` }],
+          diet: state.diet || "",
+          ingredients: getIngredients() || [],
+        };
+        let data;
+        for (let _attempt = 0; _attempt < 2; _attempt++) {
+          const resp = await fetchWithRetry(`${API_BASE_URL}/ai-chat`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(_cookPayload),
+          });
+          data = await resp.json();
+          if (_attempt === 0 && (data.reply || "").includes("kitchen is a little busy")) {
+            await new Promise(r => setTimeout(r, 12000));
+            continue;
+          }
+          break;
+        }
         showCookModeAIBubble(question, (data.reply || "").trim() || "I'm not sure — try rephrasing.");
       } catch {
         showCookModeAIBubble(question, "Couldn't reach the AI right now.");
@@ -12976,19 +12985,29 @@
       renderChatMessages();
 
       try {
-        // ── Call Claude AI Chef ───────────────────────────────────────────
-        const aiResp = await fetchWithRetry(`${API_BASE_URL}/ai-chat`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            message:     msg,
-            history:     chatHistory.slice(-10).filter(m => !m.thinking),
-            diet:        state.diet        || "",
-            category:    state.category    || "",
-            ingredients: getIngredients()  || [],
-          }),
-        });
-        const aiData = await aiResp.json();
+        // ── Call Claude AI Chef (auto-retry once on rate-limit) ───────────
+        const _chefPayload = {
+          message:     msg,
+          history:     chatHistory.slice(-10).filter(m => !m.thinking),
+          diet:        state.diet        || "",
+          category:    state.category    || "",
+          ingredients: getIngredients()  || [],
+        };
+        let aiData;
+        for (let _attempt = 0; _attempt < 2; _attempt++) {
+          const aiResp = await fetchWithRetry(`${API_BASE_URL}/ai-chat`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(_chefPayload),
+          });
+          aiData = await aiResp.json();
+          if (_attempt === 0 && (aiData.reply || "").includes("kitchen is a little busy")) {
+            // Rate-limited — wait 12s then retry silently
+            await new Promise(r => setTimeout(r, 12000));
+            continue;
+          }
+          break;
+        }
         chatHistory  = chatHistory.filter(m => !m.thinking);
 
         const reply       = (aiData.reply       || "").trim();
