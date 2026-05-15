@@ -2153,6 +2153,35 @@
       border-color: rgba(249, 115, 22, 0.16);
     }
 
+    /* AI substitution button + reply */
+    .aiSubBtn {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 10px;
+      background: none; border: 1.5px solid rgba(200,105,14,0.30);
+      border-radius: 20px; padding: 5px 13px;
+      font-size: 0.8rem; font-weight: 700; color: var(--accent);
+      cursor: pointer; transition: background 0.15s, border-color 0.15s;
+    }
+    .aiSubBtn:hover { background: rgba(200,105,14,0.08); border-color: var(--accent); }
+    .aiSubBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .aiSubLoading {
+      margin-top: 10px; font-size: 0.8rem; color: var(--muted);
+      display: flex; align-items: center; gap: 7px;
+    }
+    .aiSubLoading::before {
+      content: ""; display: inline-block;
+      width: 12px; height: 12px; border-radius: 50%;
+      border: 2px solid var(--accent); border-top-color: transparent;
+      animation: spin 0.7s linear infinite; flex-shrink: 0;
+    }
+    .aiSubReply {
+      margin-top: 10px; font-size: 0.83rem; line-height: 1.55;
+      color: var(--text2); border-top: 1px solid rgba(200,105,14,0.16);
+      padding-top: 9px;
+    }
+    .aiSubReply strong { color: var(--text1); }
+    [data-theme="dark"] .aiSubReply { border-top-color: rgba(200,105,14,0.22); }
+
     .substitutionLine {
       color: rgba(11, 18, 32, 0.84);
       font-weight: 850;
@@ -6939,6 +6968,7 @@
     let activeRecipe = null;
     let currentStepIndex = 0;
     let servingMultiplier = 1;
+    let _subAICache = null;  // { recipeId, key, reply } — cleared on modal open
     let timerSeconds = 0;
     let timerRemaining = 0;
     let timerId = null;
@@ -8859,9 +8889,24 @@
       }
 
       el.missingBox.style.display = missing.length ? "block" : "none";
-      el.missingBox.innerHTML = missing.length
-        ? `<p class="modalSectionTitle">Missing from your ingredients</p><div class="ingredientList">${missing.map((name) => `<span class="ingredientChip">${escapeHtml(titleCase(name))}</span>`).join("")}</div>`
-        : "";
+      if (missing.length) {
+        const cacheKey = missing.slice().sort().join(",");
+        const cached   = _subAICache?.key === cacheKey ? _subAICache.reply : null;
+        el.missingBox.innerHTML =
+          `<p class="modalSectionTitle">Missing from your ingredients</p>
+           <div class="ingredientList">${missing.map(n => `<span class="ingredientChip">${escapeHtml(titleCase(n))}</span>`).join("")}</div>
+           ${cached
+             ? `<div class="aiSubReply">${cached}</div>`
+             : `<button class="aiSubBtn" id="aiSubBtn" type="button">💡 Ask AI for substitutions</button>`
+           }`;
+        if (!cached) {
+          el.missingBox.querySelector("#aiSubBtn")?.addEventListener("click", () => {
+            askMissingSubstitutions(missing, cacheKey);
+          });
+        }
+      } else {
+        el.missingBox.innerHTML = "";
+      }
 
       const substitutionLines = Object.entries(substitutions)
         .filter(([name]) => missing.length === 0 || missing.includes(normalizeIngredientName(name)))
@@ -8875,6 +8920,69 @@
       el.substitutionBox.innerHTML = substitutionLines
         ? `<p class="modalSectionTitle">Smart substitutions</p>${substitutionLines}`
         : "";
+    }
+
+    // ── AI Substitutions for missing ingredients ────────────────────────
+    async function askMissingSubstitutions(missing, cacheKey) {
+      if (!el.missingBox) return;
+
+      // Show spinner
+      const btn = el.missingBox.querySelector("#aiSubBtn");
+      if (btn) {
+        btn.replaceWith(Object.assign(document.createElement("div"), {
+          className: "aiSubLoading",
+          textContent: "Getting substitutions…",
+          id: "aiSubLoading"
+        }));
+      }
+
+      const recipeName = activeRecipe?.name || "this recipe";
+      const missingList = missing.map(titleCase).join(", ");
+
+      try {
+        const resp = await fetchWithRetry(`${API_BASE_URL}/ai-chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: `I'm making ${recipeName} but I don't have: ${missingList}. Give me a short, practical substitution for each missing ingredient. Use bullet points. Be brief.`,
+            history: [],
+            diet: state.diet || "",
+            ingredients: getIngredients() || [],
+          }),
+        });
+        const data = await resp.json();
+        const raw = (data.reply || "").trim();
+
+        if (!raw) throw new Error("empty");
+
+        // Format: convert markdown bullets to HTML
+        const html = raw
+          .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+          .replace(/^\s*[-•*]\s+/gm, "• ")
+          .split("\n")
+          .filter(l => l.trim())
+          .map(l => `<div>${escapeHtml(l).replace(/&amp;\*\*/g,"**")}</div>`)
+          .join("");
+
+        // Safer: just preserve line breaks with escaping
+        const safeHtml = raw.split("\n").filter(l => l.trim())
+          .map(l => `<div>${escapeHtml(l)}</div>`).join("");
+
+        _subAICache = { recipeId: activeRecipe?.id, key: cacheKey, reply: safeHtml };
+
+        const loading = el.missingBox.querySelector("#aiSubLoading");
+        if (loading) {
+          loading.outerHTML = `<div class="aiSubReply">${safeHtml}</div>`;
+        }
+      } catch {
+        const loading = el.missingBox.querySelector("#aiSubLoading");
+        if (loading) {
+          loading.outerHTML = `<button class="aiSubBtn" id="aiSubBtn" type="button">💡 Try again</button>`;
+          el.missingBox.querySelector("#aiSubBtn")?.addEventListener("click", () => {
+            askMissingSubstitutions(missing, cacheKey);
+          });
+        }
+      }
     }
 
     function clearTimer() {
@@ -9155,6 +9263,7 @@
         const recipe = await response.json();
         activeRecipe = recipe;
         servingMultiplier = 1;
+        _subAICache = null;  // clear AI sub cache for new recipe
         el.modalDishName.textContent = recipe.name || "Recipe";
         renderRecipeModalDetails();
         modalSteps = Array.isArray(recipe.steps) ? recipe.steps : [];
@@ -13939,6 +14048,7 @@
       // Load full saved recipe into modal without an API call
       activeRecipe   = recipe;
       servingMultiplier = 1;
+      _subAICache = null;
       el.servingCount.textContent = "1x";
       el.modalDishName.textContent = recipe.name || "Recipe";
       renderRecipeModalDetails();
