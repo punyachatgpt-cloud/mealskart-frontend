@@ -7164,18 +7164,18 @@
       mousse:     "photo-1565299624946-b28f40a0ae38",
     };
 
-    function dishImageUrl(name) {
+    function dishImageUrl(name, w = 900) {
       const lower = String(name || "").toLowerCase();
       const words = lower.replace(/[^a-z\s]/g, "").split(/\s+/);
       for (const word of words) {
         if (DISH_IMAGE_MAP[word]) {
-          return `https://images.unsplash.com/${DISH_IMAGE_MAP[word]}?auto=format&fit=crop&w=900&q=82`;
+          return `https://images.unsplash.com/${DISH_IMAGE_MAP[word]}?auto=format&fit=crop&w=${w}&q=82`;
         }
       }
       // check partial matches for compound words
       for (const [key, id] of Object.entries(DISH_IMAGE_MAP)) {
         if (lower.includes(key)) {
-          return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=900&q=82`;
+          return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=82`;
         }
       }
       // deterministic fallback from original pool
@@ -7189,7 +7189,7 @@
         "photo-1631515243349-e0cb75fb8d3a",
         "photo-1540189549336-e6e99c3679fe"
       ];
-      return `https://images.unsplash.com/${fallback[Math.abs(hashText(name)) % fallback.length]}?auto=format&fit=crop&w=900&q=82`;
+      return `https://images.unsplash.com/${fallback[Math.abs(hashText(name)) % fallback.length]}?auto=format&fit=crop&w=${w}&q=82`;
     }
 
     // ── Social proof (deterministic, seed from id+name) ──────────────────
@@ -7513,11 +7513,11 @@
       if (apiSuggestions.length > 0 && q) {
         const items = apiSuggestions.map(s => {
           const thumb = (s.image_url && s.image_url.startsWith("http"))
-            ? s.image_url : dishImageUrl(s.name);
+            ? s.image_url : dishImageUrl(s.name, 80);
           return `
           <div class="searchDropItem" data-search="${escapeHtml(s.name)}">
             <img class="searchDropThumb" src="${thumb}" alt="" loading="lazy"
-              onerror="this.src='${dishImageUrl(s.name)}'">
+              onerror="this.src='${dishImageUrl(s.name, 80)}'">
             <span class="searchDropText">${escapeHtml(s.name)}</span>
             ${s.category ? `<span class="searchDropCat">${escapeHtml(s.category.replace(/-/g," "))}</span>` : ""}
           </div>`;
@@ -8626,6 +8626,27 @@
       if (_stepLang !== "en") applyStepTranslation();
     }
 
+    // ── Accessibility: focus management & trap ─────────────────────────────
+    let _modalReturnFocus = null;
+    let _modalFocusTrapOff = null;
+
+    function createFocusTrap(el) {
+      const FOCUSABLE = 'button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+      function handler(e) {
+        if (e.key !== "Tab") return;
+        const nodes = [...el.querySelectorAll(FOCUSABLE)].filter(n => n.offsetParent !== null || n === document.activeElement);
+        if (!nodes.length) return;
+        const first = nodes[0], last = nodes[nodes.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      }
+      el.addEventListener("keydown", handler);
+      return () => el.removeEventListener("keydown", handler);
+    }
+
     async function openRecipeModal(recipeId) {
       if (!recipeId) return;
       try {
@@ -8641,7 +8662,14 @@
         modalSteps = Array.isArray(recipe.steps) ? recipe.steps : [];
         currentStepIndex = 0;
         updateModalStep();
+        _modalReturnFocus = document.activeElement;
         el.recipeModal.classList.add("open");
+        // Move focus into modal and trap it
+        requestAnimationFrame(() => {
+          el.closeModalBtn?.focus();
+          if (_modalFocusTrapOff) _modalFocusTrapOff();
+          _modalFocusTrapOff = createFocusTrap(document.querySelector(".modal"));
+        });
         loadSimilarRecipes(recipe);
         // Wire Cook Mode entry button each time modal opens
         const cmBtn = document.getElementById("cookModeEntryBtn");
@@ -8657,8 +8685,14 @@
 
     function closeRecipeModal() {
       clearTimer();
+      if (_modalFocusTrapOff) { _modalFocusTrapOff(); _modalFocusTrapOff = null; }
       el.recipeModal.classList.remove("open");
       renderCookAgain();
+      // Return focus to whichever card opened the modal
+      if (_modalReturnFocus && typeof _modalReturnFocus.focus === "function") {
+        _modalReturnFocus.focus();
+      }
+      _modalReturnFocus = null;
     }
 
     async function loadSimilarRecipes(recipe) {
@@ -9277,6 +9311,20 @@
     el.closeModalBtn.addEventListener("click", closeRecipeModal);
     el.recipeModal.addEventListener("click", (event) => {
       if (event.target === el.recipeModal) closeRecipeModal();
+    });
+
+    // Global Escape key — closes the frontmost open dialog
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      if (el.recipeModal.classList.contains("open")) { closeRecipeModal(); return; }
+      const cookMode = document.getElementById("cookModeOverlay");
+      if (cookMode && !cookMode.classList.contains("hidden")) { closeCookMode(); return; }
+      const chefChat = document.getElementById("chefChatOverlay");
+      if (chefChat && !chefChat.classList.contains("hidden")) { closeChefChat(); return; }
+      const activeSheet = document.querySelector(
+        "#shoppingOverlay:not(.hidden),#cookLogOverlay:not(.hidden),#collectionsOverlay:not(.hidden),#nutDashOverlay:not(.hidden),#cuisineOverlay:not(.hidden),#moreSheetOverlay:not(.hidden),#savedSheetOverlay:not(.hidden),#browseOverlay:not(.hidden),#quickfireOverlay:not(.hidden)"
+      );
+      if (activeSheet) { activeSheet.classList.add("hidden"); return; }
     });
 
     // Share & grocery export
