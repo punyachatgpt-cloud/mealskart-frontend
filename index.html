@@ -1334,10 +1334,6 @@
       color: var(--ink);
     }
 
-    .foodTop .foodName {
-      margin-top: 12px;
-    }
-
     .heartBtn {
       width: 38px;
       height: 38px;
@@ -2516,7 +2512,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      margin: 2px 0 0;
+      margin: 8px 0 0;
     }
     .ratingChip {
       display: inline-flex;
@@ -8088,7 +8084,6 @@
             <div class="foodTop">
               <div>
                 <div class="badgeRow">${badges}</div>
-                <h3 class="foodName">${escapeHtml(item.name)}</h3>
                 <div class="socialRow">
                   <span class="ratingChip">&#9733; ${stats.rating}</span>
                   ${personalRating > 0 ? `<span class="myRatingChip" title="Your rating">${"★".repeat(personalRating)}${"☆".repeat(5 - personalRating)} You</span>` : ""}
