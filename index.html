@@ -2116,6 +2116,29 @@
       animation: ingredientFlash 0.55s ease-out both;
     }
 
+    /* ── Your Notes box (past rating + note surfaced in modal) ────── */
+    .myNotesBox {
+      background: rgba(251,191,36,0.07);
+      border: 1px solid rgba(251,191,36,0.22);
+      border-radius: 14px;
+      padding: 11px 14px;
+      margin: 0 0 16px;
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .myNotesStar { color: #f59e0b; font-size: 0.9rem; white-space: nowrap; letter-spacing: 1px; flex-shrink: 0; }
+    .myNotesBody { flex: 1; min-width: 0; }
+    .myNotesLabel { font-size: 0.7rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--muted); margin-bottom: 3px; }
+    .myNotesText { font-size: 0.84rem; color: var(--text2); font-style: italic; }
+    .myNotesTags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+    .myNotesTag { font-size: 0.7rem; font-weight: 700; background: rgba(251,191,36,0.14);
+      color: #a16207; border-radius: 8px; padding: 2px 7px; }
+    .myNotesEditBtn { background: none; border: none; cursor: pointer; font-size: 0.78rem;
+      color: var(--muted); text-decoration: underline; padding: 0; flex-shrink: 0; align-self: flex-start; }
+    .myNotesEditBtn:hover { color: var(--accent); }
+    [data-theme="dark"] .myNotesBox { background: rgba(251,191,36,0.06); border-color: rgba(251,191,36,0.16); }
+    [data-theme="dark"] .myNotesTag { background: rgba(251,191,36,0.12); color: #fbbf24; }
+
     .missingBox,
     .substitutionBox {
       border-radius: 16px;
@@ -5943,12 +5966,23 @@
       line-height: 1; display: flex; align-items: center;
     }
     .pantryChip button:hover { color: var(--text1); }
-    .pantryClearRow { margin-top: 16px; text-align: right; }
+    .pantryClearRow { margin-top: 12px; text-align: right; }
     .pantryClearBtn {
       background: none; border: none; cursor: pointer;
       font-size: 0.8rem; color: var(--muted); text-decoration: underline;
     }
     .pantryClearBtn:hover { color: #dc2626; }
+    .pantryCookBtn {
+      width: 100%; margin-top: 14px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 14px;
+      padding: 12px 18px; font-size: 0.92rem; font-weight: 800;
+      cursor: pointer; transition: opacity 0.15s, transform 0.12s;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .pantryCookBtn:hover  { opacity: 0.88; }
+    .pantryCookBtn:active { transform: scale(0.97); }
+    .pantryCookBtn:disabled { opacity: 0.45; cursor: not-allowed; }
 
     /* Pantry match badge on cards */
     .pantryMatchBadge {
@@ -6335,6 +6369,7 @@
         </div>
       </div>
       <div class="macroGrid" id="macroGrid"></div>
+      <div class="myNotesBox" id="myNotesBox" style="display:none"></div>
       <p class="modalSectionTitle">Ingredient checklist</p>
       <div class="ingredientChecklist" id="modalIngredients"></div>
       <div class="missingBox" id="missingBox"></div>
@@ -6868,6 +6903,7 @@
       modalMeta: document.getElementById("modalMeta"),
       modalIngredients: document.getElementById("modalIngredients"),
       macroGrid: document.getElementById("macroGrid"),
+      myNotesBox: document.getElementById("myNotesBox"),
       missingBox: document.getElementById("missingBox"),
       substitutionBox: document.getElementById("substitutionBox"),
       servingMinusBtn: document.getElementById("servingMinusBtn"),
@@ -8789,6 +8825,38 @@
           </label>
         `;
       }).join("");
+
+      // ── Your Notes (past rating + note) ──────────────────────────────
+      if (el.myNotesBox) {
+        try {
+          const allRatings = JSON.parse(localStorage.getItem("foodai_ratings") || "{}");
+          const saved = allRatings[String(activeRecipe.id)];
+          if (saved && (saved.stars || saved.note || (saved.tags && saved.tags.length))) {
+            const starStr = saved.stars
+              ? "★".repeat(saved.stars) + "☆".repeat(5 - saved.stars)
+              : "";
+            const tagsHTML = (saved.tags || []).length
+              ? `<div class="myNotesTags">${saved.tags.map(t => `<span class="myNotesTag">${escapeHtml(t)}</span>`).join("")}</div>`
+              : "";
+            el.myNotesBox.innerHTML = `
+              ${starStr ? `<span class="myNotesStar">${starStr}</span>` : ""}
+              <div class="myNotesBody">
+                <div class="myNotesLabel">Your notes</div>
+                ${saved.note ? `<div class="myNotesText">"${escapeHtml(saved.note)}"</div>` : ""}
+                ${tagsHTML}
+              </div>
+              <button class="myNotesEditBtn" type="button" aria-label="Edit your notes">Edit ✎</button>
+            `;
+            el.myNotesBox.style.display = "flex";
+            el.myNotesBox.querySelector(".myNotesEditBtn")?.addEventListener("click", () => {
+              showRatingOverlay(activeRecipe.id, activeRecipe.name);
+            });
+          } else {
+            el.myNotesBox.style.display = "none";
+            el.myNotesBox.innerHTML = "";
+          }
+        } catch { el.myNotesBox.style.display = "none"; }
+      }
 
       el.missingBox.style.display = missing.length ? "block" : "none";
       el.missingBox.innerHTML = missing.length
@@ -14704,6 +14772,44 @@
 
     // Init badge count on load
     updatePantryBtn();
+
+    // ── "What can I make?" — search recipes from pantry contents ──
+    async function searchFromPantry() {
+      const pantry = getPantryStore();
+      if (!pantry.length) {
+        showToast("Add some ingredients to your pantry first!", "warn");
+        return;
+      }
+      closePantryDrawer();
+
+      // Scroll results into view on mobile
+      el.results?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+
+      renderLoadingCards("search");
+      try {
+        const resp = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mode: "fridge",
+            ingredients: pantry,
+            diet: state.diet || "any",
+            mood: "any",
+            time_available: 999,
+          }),
+        });
+        const data = await resp.json();
+        if (Array.isArray(data) && data.length) {
+          renderResults(data, "fridge");
+        } else {
+          renderEmpty("No matches found — try adding more pantry items.");
+        }
+      } catch {
+        renderError("Couldn't reach the kitchen.", searchFromPantry);
+      }
+    }
+
+    document.getElementById("pantryCookBtn")?.addEventListener("click", searchFromPantry);
     // ── end Pantry Mode ────────────────────────────
 
     // ══════════════════════════════════════════════
@@ -14956,6 +15062,9 @@
         <button class="pantryAddBtn" id="pantryAddBtn" type="button">Add</button>
       </div>
       <div class="pantryChips" id="pantryChips"></div>
+      <button class="pantryCookBtn" id="pantryCookBtn" type="button">
+        🔍 What can I make?
+      </button>
       <div class="pantryClearRow">
         <button class="pantryClearBtn" id="pantryClearBtn" type="button">Clear all</button>
       </div>
