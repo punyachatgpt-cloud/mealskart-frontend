@@ -4752,6 +4752,32 @@
     .cookModeNavBtn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
     /* Voice indicator */
+    /* ── Cook Mode Done Screen ──────────────────────────────────────── */
+    .cookModeDoneScreen {
+      flex: 1;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 10px;
+      text-align: center; padding: 24px;
+      animation: fadeIn 0.45s ease both;
+    }
+    .cookModeDoneScreen.hidden { display: none; }
+    .cookModeDoneEmoji {
+      font-size: 4.5rem; line-height: 1;
+      animation: donePopIn 0.65s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .cookModeDoneName {
+      font-size: 1.65rem; font-weight: 900; color: #fff;
+      line-height: 1.2; max-width: 300px;
+    }
+    .cookModeDoneSubtitle {
+      font-size: 1rem; color: rgba(255,255,255,0.72);
+      margin-bottom: 12px;
+    }
+    @keyframes donePopIn {
+      from { transform: scale(0.35) rotate(-8deg); opacity: 0; }
+      to   { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
     .cookModeVoice {
       position: absolute; bottom: 24px; left: 50%;
       transform: translateX(-50%);
@@ -6496,6 +6522,14 @@
         <button class="cookModeNavBtn secondary" id="cookModePrevBtn" type="button">← Previous</button>
         <button class="cookModeNavBtn primary" id="cookModeNextBtn" type="button">Next Step →</button>
       </div>
+    </div>
+
+    <!-- Done celebration screen — revealed on last step -->
+    <div class="cookModeDoneScreen hidden" id="cookModeDoneScreen">
+      <div class="cookModeDoneEmoji">🎉</div>
+      <div class="cookModeDoneName" id="cookModeDoneName"></div>
+      <div class="cookModeDoneSubtitle">is ready to serve!</div>
+      <button class="cookModeNavBtn primary" id="cookModeDoneRateBtn" type="button">⭐ Rate &amp; Finish</button>
     </div>
 
     <div class="cookModeTimersBar" id="cookModeTimersBar"></div>
@@ -11532,6 +11566,13 @@
       if (dishEl) dishEl.textContent = activeRecipe?.name || "Recipe";
 
       overlay.classList.remove("hidden");
+
+      // Reset done screen so we always start with normal cook UI
+      const cookMain   = document.querySelector(".cookModeMain");
+      const doneScreen = document.getElementById("cookModeDoneScreen");
+      if (cookMain)   cookMain.style.display = "";
+      if (doneScreen) doneScreen.classList.add("hidden");
+
       updateCookModeUI();
 
       // Start voice (fresh instance each time)
@@ -11556,6 +11597,12 @@
         try { cookModeVoiceRecog.stop(); } catch (e) {}
         cookModeVoiceRecog = null;
       }
+      // Always restore normal cook-mode UI so re-entry is clean
+      const cookMain   = document.querySelector(".cookModeMain");
+      const doneScreen = document.getElementById("cookModeDoneScreen");
+      if (cookMain)   cookMain.style.display = "";
+      if (doneScreen) doneScreen.classList.add("hidden");
+
       const overlay = document.getElementById("cookModeOverlay");
       if (overlay) overlay.classList.add("hidden");
       // ② Restore the recipe modal and sync step
@@ -11698,15 +11745,45 @@
           updateCookModeUI();
           updateModalStep();
         } else {
-          // Last step done — exit cook mode, close modal, show rating
-          closeCookMode();
+          // Last step done — celebrate, then rate
+          const recipeId   = activeRecipe?.id;
+          const recipeName = activeRecipe?.name || "";
+
+          // 1. Confetti + streak
+          launchConfetti();
+          if (activeRecipe) { bumpStreak(); updateStreakBanner(); }
+
+          // 2. Swap cookModeMain for the done screen
+          const cookMain   = document.querySelector(".cookModeMain");
+          const doneScreen = document.getElementById("cookModeDoneScreen");
+          const doneNameEl = document.getElementById("cookModeDoneName");
+          if (cookMain)   cookMain.style.display   = "none";
+          if (doneNameEl) doneNameEl.textContent    = recipeName;
+          if (doneScreen) doneScreen.classList.remove("hidden");
+
+          // 3. "Rate & Finish" button (one-shot)
+          const rateBtn = document.getElementById("cookModeDoneRateBtn");
+          if (rateBtn) {
+            rateBtn.onclick = () => {
+              closeCookMode();
+              setTimeout(() => {
+                closeRecipeModal();
+                if (recipeId) showRatingOverlay(recipeId, recipeName);
+              }, 350);
+            };
+          }
+
+          // 4. Auto-advance after 5 s if user doesn't tap
           setTimeout(() => {
-            closeRecipeModal();
-            setTimeout(() => {
-              const ratingEl = document.querySelector(".ratingOverlay");
-              if (ratingEl) ratingEl.classList.add("open");
-            }, 350);
-          }, 300);
+            const overlay = document.getElementById("cookModeOverlay");
+            if (overlay && !overlay.classList.contains("hidden")) {
+              closeCookMode();
+              setTimeout(() => {
+                closeRecipeModal();
+                if (recipeId) showRatingOverlay(recipeId, recipeName);
+              }, 350);
+            }
+          }, 5000);
         }
       });
 
