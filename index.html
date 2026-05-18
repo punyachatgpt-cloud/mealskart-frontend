@@ -420,6 +420,32 @@
       to { transform: scale(12); opacity: 0; }
     }
 
+    /* ── Surprise Me button ── */
+    .surpriseMeBtn {
+      width: 100%; padding: 11px 16px;
+      background: none;
+      border: 1.5px dashed var(--border);
+      border-radius: 14px;
+      font-family: inherit; font-size: 0.88rem; font-weight: 800;
+      color: var(--ink-lo); cursor: pointer;
+      transition: border-color 0.18s, color 0.18s, background 0.18s;
+      line-height: 1.2; text-align: center;
+    }
+    .surpriseMeBtn:hover {
+      border-color: var(--accent); color: var(--accent);
+      background: var(--accentGlow);
+    }
+    .surpriseMeBtn:active { transform: scale(0.98); }
+    .surpriseMeBtn:disabled { opacity: 0.5; cursor: default; }
+    @keyframes diceSpin {
+      0%   { transform: rotate(0deg)   scale(1); }
+      25%  { transform: rotate(-20deg) scale(1.3); }
+      50%  { transform: rotate(15deg)  scale(1.1); }
+      75%  { transform: rotate(-10deg) scale(1.2); }
+      100% { transform: rotate(0deg)   scale(1); }
+    }
+    .surpriseDice.spinning { animation: diceSpin 0.55s ease both; display: inline-block; }
+
     .trust {
       margin: 6px 0 0;
       color: var(--ink-faint);
@@ -6318,6 +6344,10 @@
               <button class="planDurBtn" data-dur="5" type="button">5</button>
               <button class="planDurBtn" data-dur="7" type="button">7</button>
             </div>
+            <button class="surpriseMeBtn" id="surpriseMeBtn" type="button">
+              <span class="surpriseDice" id="surpriseDice">🎲</span> Surprise me
+              <span style="display:block;font-size:0.68rem;font-weight:400;opacity:0.75;margin-top:1px">random recipe · matches your pantry</span>
+            </button>
             <div class="trust">&#9889; Takes less than 5 seconds</div>
           </div>
 
@@ -15237,6 +15267,69 @@
     loadPreferences();
     applyPreferencesToUI();
     updateMicrocopy();
+    // ══════════════════════════════════════════════
+    // SURPRISE ME
+    // ══════════════════════════════════════════════
+    function initSurpriseMe() {
+      const btn = document.getElementById("surpriseMeBtn");
+      if (!btn) return;
+      btn.addEventListener("click", async () => {
+        if (btn.disabled) return;
+        btn.disabled = true;
+
+        // Spin the dice emoji
+        const dice = document.getElementById("surpriseDice");
+        if (dice) {
+          dice.classList.remove("spinning");
+          void dice.offsetWidth; // reflow to restart animation
+          dice.classList.add("spinning");
+        }
+
+        try {
+          // Fetch a broad pool filtered by user's diet + time pref
+          const params = new URLSearchParams({
+            q: "",
+            diet: state.diet || "",
+            limit: 60
+          });
+          if (state.time_available && state.time_available < 60) {
+            params.set("time_available", String(state.time_available));
+          }
+          const resp = await fetchWithRetry(`${API_BASE_URL}/search?${params}`);
+          const pool = await resp.json();
+          if (!Array.isArray(pool) || pool.length === 0) {
+            showToast("No recipes found — try changing your filters", "info", 2000);
+            return;
+          }
+
+          // If pantry active, prefer recipes with higher pantry match
+          const pantry = getPantryStore();
+          let candidates = pool;
+          if (pantry.length > 0) {
+            const scored = pool.map(r => ({ r, score: pantryMatchScore(r)?.pct || 0 }));
+            const good = scored.filter(x => x.score >= 0.4);
+            if (good.length > 0) candidates = good.map(x => x.r);
+          }
+
+          // Exclude recently cooked recipes (last 5)
+          const recentIds = new Set(getRecentCookedIds().map(String));
+          const fresh = candidates.filter(r => !recentIds.has(String(r.id)));
+          const finalPool = fresh.length > 0 ? fresh : candidates;
+
+          // Pick random
+          const pick = finalPool[Math.floor(Math.random() * finalPool.length)];
+
+          // Brief delay so the dice animation plays fully before modal opens
+          setTimeout(() => openModal(pick), 400);
+        } catch {
+          showToast("Couldn't fetch a recipe — try again", "info", 2000);
+        } finally {
+          setTimeout(() => { btn.disabled = false; }, 600);
+        }
+      });
+    }
+    // ── end Surprise Me ───────────────────────────
+
     updatePreferenceHint();
     updateStreakBanner();
     renderCookAgain();
@@ -15255,6 +15348,7 @@
     document.getElementById("goalBtn")?.addEventListener("click", openGoalSetup);
     document.getElementById("exploreBtn")?.addEventListener("click", openCuisineExplorer);
     initShoppingList();
+    initSurpriseMe();
     initChefChat();
     initFabIdlePulse();
     initCookLog();
