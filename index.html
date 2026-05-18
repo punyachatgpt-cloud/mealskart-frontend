@@ -3544,6 +3544,29 @@
       line-height: 1.2;
     }
 
+    /* Pantry step chips */
+    .obPantryChips {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-bottom: 10px;
+      max-height: 200px; overflow-y: auto;
+    }
+    .obPantryChip {
+      padding: 7px 14px; border-radius: 999px;
+      border: 1.5px solid var(--border);
+      background: var(--bg1); color: var(--ink);
+      font-family: inherit; font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    }
+    .obPantryChip:hover { border-color: var(--accent); color: var(--accent); }
+    .obPantryChip.selected {
+      background: var(--accent); border-color: var(--accent);
+      color: #fff;
+    }
+    .obPantryHint {
+      font-size: 0.76rem; font-weight: 600; color: var(--muted2);
+      margin: 0 0 18px; text-align: center;
+    }
+
     .obActions {
       display: flex;
       align-items: center;
@@ -11211,6 +11234,21 @@
           { emoji: "🍳", label: "Comfortable",    value: "healthy", time: 30 },
           { emoji: "⭐", label: "I'm the chef",   value: "comfort", time: 45 }
         ]
+      },
+      {
+        emoji: "🥫",
+        title: "What's in your kitchen?",
+        subtitle: "Tap everything you usually have. We'll show recipes you can actually make.",
+        key: "pantry",
+        type: "pantry",
+        pantryItems: [
+          "Rice", "Onion", "Garlic", "Ginger", "Tomato", "Potato",
+          "Oil", "Salt", "Cumin", "Turmeric", "Chilli powder",
+          "Garam masala", "Coriander powder", "Mustard seeds",
+          "Eggs", "Butter", "Milk", "Flour", "Sugar",
+          "Chicken", "Paneer", "Dal", "Chickpeas",
+          "Lemon", "Green chilli", "Coriander leaves"
+        ]
       }
     ];
 
@@ -11221,41 +11259,73 @@
       const card = document.getElementById("onboardCard");
       const step = ONBOARD_STEPS[obStep];
       const totalDots = ONBOARD_STEPS.length;
+      const isLast = obStep === ONBOARD_STEPS.length - 1;
 
       const dotsHTML = Array.from({ length: totalDots }, (_, i) =>
         `<div class="obDot ${i < obStep ? "done" : i === obStep ? "active" : ""}"></div>`
       ).join("");
+
+      const isPantryStep = step.type === "pantry";
+      const selectedPantry = new Set(obAnswers.pantry || []);
+
+      const choicesHTML = isPantryStep
+        ? `<div class="obPantryChips" id="obPantryChips">
+            ${step.pantryItems.map(item => `
+              <button class="obPantryChip ${selectedPantry.has(item) ? "selected" : ""}"
+                data-item="${escapeHtml(item)}" type="button">${escapeHtml(item)}</button>
+            `).join("")}
+          </div>
+          <p class="obPantryHint" id="obPantryHint">${selectedPantry.size > 0 ? `${selectedPantry.size} selected` : "Tap to select · skip if unsure"}</p>`
+        : `<div class="obChoices" id="obChoices">
+            ${step.choices.map(c => `
+              <button class="obChoice ${obAnswers[step.key] === c.value ? "selected" : ""}"
+                data-value="${c.value}" data-time="${c.time || ""}" type="button">
+                <span class="obChoiceEmoji">${c.emoji}</span>
+                <span class="obChoiceLabel">${c.label}</span>
+              </button>
+            `).join("")}
+          </div>`;
 
       card.innerHTML = `
         <div class="obDots">${dotsHTML}</div>
         <span class="obEmoji">${step.emoji}</span>
         <h2 class="obTitle">${step.title}</h2>
         <p class="obSubtitle">${step.subtitle}</p>
-        <div class="obChoices" id="obChoices">
-          ${step.choices.map(c => `
-            <button class="obChoice ${obAnswers[step.key] === c.value ? "selected" : ""}"
-              data-value="${c.value}" data-time="${c.time || ""}" type="button">
-              <span class="obChoiceEmoji">${c.emoji}</span>
-              <span class="obChoiceLabel">${c.label}</span>
-            </button>
-          `).join("")}
-        </div>
+        ${choicesHTML}
         <div class="obActions">
-          <button class="obSkip" id="obSkipBtn" type="button">Skip for now</button>
+          <button class="obSkip" id="obSkipBtn" type="button">${isPantryStep ? "Skip" : "Skip for now"}</button>
           <button class="obNext" id="obNextBtn" type="button">
-            ${obStep < ONBOARD_STEPS.length - 1 ? "Continue →" : "Let's cook! 🔥"}
+            ${isLast ? "Let's cook! 🔥" : "Continue →"}
           </button>
         </div>
       `;
 
-      card.querySelectorAll(".obChoice").forEach(btn => {
-        btn.addEventListener("click", () => {
-          card.querySelectorAll(".obChoice").forEach(b => b.classList.remove("selected"));
-          btn.classList.add("selected");
-          obAnswers[step.key] = btn.dataset.value;
-          if (btn.dataset.time) obAnswers["time_available"] = Number(btn.dataset.time);
+      if (isPantryStep) {
+        card.querySelectorAll(".obPantryChip").forEach(chip => {
+          chip.addEventListener("click", () => {
+            const item = chip.dataset.item;
+            if (selectedPantry.has(item)) {
+              selectedPantry.delete(item);
+              chip.classList.remove("selected");
+            } else {
+              selectedPantry.add(item);
+              chip.classList.add("selected");
+            }
+            obAnswers.pantry = [...selectedPantry];
+            const hint = document.getElementById("obPantryHint");
+            if (hint) hint.textContent = selectedPantry.size > 0 ? `${selectedPantry.size} selected` : "Tap to select · skip if unsure";
+          });
         });
-      });
+      } else {
+        card.querySelectorAll(".obChoice").forEach(btn => {
+          btn.addEventListener("click", () => {
+            card.querySelectorAll(".obChoice").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+            obAnswers[step.key] = btn.dataset.value;
+            if (btn.dataset.time) obAnswers["time_available"] = Number(btn.dataset.time);
+          });
+        });
+      }
 
       document.getElementById("obNextBtn").addEventListener("click", () => {
         if (obStep < ONBOARD_STEPS.length - 1) {
@@ -11266,18 +11336,27 @@
         }
       });
 
-      document.getElementById("obSkipBtn").addEventListener("click", closeOnboarding);
+      document.getElementById("obSkipBtn").addEventListener("click", () => {
+        if (obStep < ONBOARD_STEPS.length - 1) {
+          obStep++;
+          animateObTransition();
+        } else {
+          closeOnboarding();
+        }
+      });
     }
 
     function renderOnboardSuccess() {
       const card = document.getElementById("onboardCard");
       const dietLabel = { veg: "vegetarian", "non-veg": "non-veg" }[obAnswers.diet] || "personalised";
+      const pantryCount = Array.isArray(obAnswers.pantry) ? obAnswers.pantry.length : 0;
       card.innerHTML = `
         <span class="obSuccessEmoji">🎉</span>
         <h2 class="obSuccessTitle">You're all set!</h2>
         <p class="obSuccessText">
           Your Simmer is tuned to your taste.<br>
           Showing <strong>${dietLabel}</strong> recipes you'll actually want to cook.
+          ${pantryCount > 0 ? `<br><span style="color:var(--accent);font-weight:700">🥫 ${pantryCount} pantry items saved</span> — we'll highlight what you can make right now.` : ""}
         </p>
         <button class="obNext" id="obDoneBtn" type="button" style="width:100%;padding:16px">
           Start cooking 🔥
@@ -11308,6 +11387,14 @@
       if (obAnswers.category)       { state.category = obAnswers.category; }
       if (obAnswers.skill)          { state.mood     = obAnswers.skill; }
       if (obAnswers.time_available) { state.time_available = obAnswers.time_available; }
+      // Save pantry picks from onboarding
+      if (Array.isArray(obAnswers.pantry) && obAnswers.pantry.length > 0) {
+        const existing = getPantryStore();
+        const existingNorm = new Set(existing.map(normalizeIngredientName));
+        const toAdd = obAnswers.pantry.filter(item => !existingNorm.has(normalizeIngredientName(item)));
+        if (toAdd.length > 0) savePantryStore([...existing, ...toAdd]);
+        if (typeof updatePantryBtn === "function") updatePantryBtn();
+      }
       savePreferences();
       applyPreferencesToUI();
       updateMicrocopy();
