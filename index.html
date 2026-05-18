@@ -2513,6 +2513,37 @@
     }
     .uniSearchBanner.show { display: flex; }
     .uniSearchBanner strong { color: var(--accent); font-weight: 700; }
+
+    /* ── Search filter bar ── */
+    .searchFilterBar {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      padding: 8px 0 4px;
+    }
+    .searchFilterBar.hidden { display: none; }
+    .sfGroup {
+      display: flex; align-items: center; gap: 4px;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: 999px; padding: 3px 4px 3px 10px;
+    }
+    .sfLabel {
+      font-size: 0.72rem; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+    }
+    .sfChip {
+      padding: 4px 10px; border-radius: 999px; border: none;
+      background: transparent; color: var(--ink-lo);
+      font-family: inherit; font-size: 0.76rem; font-weight: 700;
+      cursor: pointer; transition: all 0.14s; white-space: nowrap;
+    }
+    .sfChip:hover { background: var(--accentGlow); color: var(--accent); }
+    .sfChip.active {
+      background: var(--accent); color: #fff;
+    }
+    .sfCount {
+      font-size: 0.72rem; font-weight: 700; color: var(--muted2);
+      margin-left: 4px; white-space: nowrap; align-self: center;
+    }
+    [data-theme="dark"] .sfGroup { background: rgba(255,255,255,0.04); }
     .uniSearchClearBtn {
       margin-left: auto;
       background: none;
@@ -6414,6 +6445,8 @@
           <span>🔍 Showing results for: <strong id="uniSearchTerm"></strong></span>
           <button class="uniSearchClearBtn" id="uniSearchClearBtn" type="button">✕ Clear search</button>
         </div>
+        <!-- Search filter bar — shown in search mode -->
+        <div class="searchFilterBar hidden" id="searchFilterBar"></div>
         <!-- For You strip — shown when user has cook/save history -->
         <div class="forYouStrip" id="forYouStrip" style="display:none">
           <div class="forYouHead">
@@ -9478,6 +9511,100 @@
     let _searchQuery      = "";   // active query (used by load-more)
     const SEARCH_PAGE     = 12;   // cards per batch
 
+    // ── Search filters (client-side, applied to _searchAllResults) ────────────
+    const _sf = { time: null, cuisine: null, cal: null };
+
+    const SF_TIME = [
+      { label: "≤15 min",  max: 15  },
+      { label: "≤30 min",  max: 30  },
+      { label: "≤45 min",  max: 45  },
+    ];
+    const SF_CAL = [
+      { label: "<300 cal",  max: 299 },
+      { label: "300–500",   min: 300, max: 500 },
+      { label: ">500 cal",  min: 501 },
+    ];
+    const SF_CUISINE = [
+      "North Indian", "South Indian", "Continental",
+      "Chinese", "Italian", "Mexican", "Street Food"
+    ];
+
+    function _applySearchFilters() {
+      let items = _searchAllResults;
+      if (_sf.time != null)    items = items.filter(r => (r.time_minutes || 999) <= _sf.time);
+      if (_sf.cal != null) {
+        const { min = 0, max = Infinity } = _sf.cal;
+        items = items.filter(r => { const c = Number(r.calories) || 0; return c >= min && c <= max; });
+      }
+      if (_sf.cuisine != null) {
+        const cu = _sf.cuisine.toLowerCase();
+        items = items.filter(r =>
+          (r.category || "").toLowerCase().includes(cu) ||
+          (r.tags || []).some(t => t.toLowerCase().includes(cu))
+        );
+      }
+      _searchShownCount = Math.min(SEARCH_PAGE, items.length);
+      renderResults(items.slice(0, _searchShownCount), "search");
+      document.getElementById("searchLoadMoreWrap")?.remove();
+      // Update count badge
+      const countEl = document.getElementById("sfCount");
+      if (countEl) countEl.textContent = `${items.length} recipe${items.length !== 1 ? "s" : ""}`;
+    }
+
+    function renderSearchFilterBar() {
+      const bar = document.getElementById("searchFilterBar");
+      if (!bar) return;
+      bar.classList.remove("hidden");
+
+      bar.innerHTML = `
+        <div class="sfGroup">
+          <span class="sfLabel">⏱</span>
+          <button class="sfChip ${_sf.time == null ? "active" : ""}" data-sf-time="">Any</button>
+          ${SF_TIME.map(t => `<button class="sfChip ${_sf.time === t.max ? "active" : ""}" data-sf-time="${t.max}">${t.label}</button>`).join("")}
+        </div>
+        <div class="sfGroup">
+          <span class="sfLabel">🍽</span>
+          <button class="sfChip ${_sf.cuisine == null ? "active" : ""}" data-sf-cuisine="">Any</button>
+          ${SF_CUISINE.map(c => `<button class="sfChip ${_sf.cuisine === c ? "active" : ""}" data-sf-cuisine="${c}">${c}</button>`).join("")}
+        </div>
+        <div class="sfGroup">
+          <span class="sfLabel">🔥</span>
+          <button class="sfChip ${_sf.cal == null ? "active" : ""}" data-sf-cal="">Any</button>
+          ${SF_CAL.map((c, i) => `<button class="sfChip ${_sf.cal === i ? "active" : ""}" data-sf-cal="${i}">${c.label}</button>`).join("")}
+        </div>
+        <span class="sfCount" id="sfCount">${_searchAllResults.length} recipes</span>
+      `;
+
+      bar.querySelectorAll("[data-sf-time]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          _sf.time = btn.dataset.sfTime === "" ? null : Number(btn.dataset.sfTime);
+          _applySearchFilters();
+          renderSearchFilterBar();
+        });
+      });
+      bar.querySelectorAll("[data-sf-cuisine]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          _sf.cuisine = btn.dataset.sfCuisine === "" ? null : btn.dataset.sfCuisine;
+          _applySearchFilters();
+          renderSearchFilterBar();
+        });
+      });
+      bar.querySelectorAll("[data-sf-cal]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          _sf.cal = btn.dataset.sfCal === "" ? null : Number(btn.dataset.sfCal);
+          _applySearchFilters();
+          renderSearchFilterBar();
+        });
+      });
+    }
+
+    function hideSearchFilterBar() {
+      const bar = document.getElementById("searchFilterBar");
+      if (bar) bar.classList.add("hidden");
+      _sf.time = null; _sf.cuisine = null; _sf.cal = null;
+    }
+    // ── end search filters ────────────────────────────────────────────────────
+
     function _enrichSearchItem(item, whyLabel) {
       return {
         ...item,
@@ -9534,10 +9661,11 @@
       searchAbort = new AbortController();
       const signal = searchAbort.signal;
 
-      // Reset pagination state for new query
+      // Reset pagination state and filters for new query
       _searchAllResults = [];
       _searchShownCount = 0;
       _searchQuery      = q;
+      _sf.time = null; _sf.cuisine = null; _sf.cal = null;
       document.getElementById("searchLoadMoreWrap")?.remove();
 
       const emptyState = document.getElementById("emptyState");
@@ -9571,6 +9699,7 @@
 
         renderResults(_searchAllResults.slice(0, _searchShownCount), "search");
         _renderSearchFooter();
+        renderSearchFilterBar();
 
         // Scroll the results into view so user sees them immediately
         document.getElementById("uniSearchBanner")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -9764,6 +9893,7 @@
       }
       document.getElementById("searchClearBtn")?.classList.remove("visible");
       setUniSearchBanner("");
+      hideSearchFilterBar();
       removeDYM();
       closeSearchDropdown();
       getSuggestions("normal");
