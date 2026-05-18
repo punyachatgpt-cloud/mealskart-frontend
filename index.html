@@ -6136,6 +6136,16 @@
     .ingredientCheck.pantryNeed .ingredientCheckLabel { color: #b45309; }
     .pantryHaveIcon { color: #15803d; font-size: 0.8rem; margin-left: 2px; }
     .pantryNeedIcon { color: #b45309; font-size: 0.8rem; margin-left: 2px; }
+
+    /* Scale multiplier badge — shown on ingredient list when recipe lacks qty data */
+    .scaleMultiBadge {
+      display: inline-flex; align-items: center; justify-content: center;
+      margin: 8px 0 0; padding: 4px 10px; border-radius: 999px;
+      background: rgba(200,105,14,0.12); color: var(--accent);
+      font-size: 0.78rem; font-weight: 700; letter-spacing: 0.03em;
+      border: 1px solid rgba(200,105,14,0.25);
+    }
+    .scaleMultiBadge::before { content: "⚖️ "; }
   </style>
 </head>
 <body>
@@ -6700,7 +6710,7 @@
 
     <div class="cookModeVoice" id="cookModeVoice">
       <span class="cookModeVoiceDot"></span>
-      <span id="cookModeVoiceLabel">Say "next" or "previous"</span>
+      <span id="cookModeVoiceLabel">Say "Hey Simmer, next"</span>
     </div>
   </div>
 
@@ -6865,6 +6875,14 @@
   </div>
 
   <script>
+    // ── App identity — change name/keyword here to rebrand ────────────────────
+    const APP_CONFIG = Object.freeze({
+      name:         "Simmer",
+      shortName:    "Simmer",
+      voiceKeyword: "hey simmer",   // spoken trigger for Cook Mode voice commands
+      accentColor:  "#C8690E",
+    });
+
     const API_BASE_URL = "/api";
 
     const PREFERENCES_KEY = "foodai_preferences";
@@ -8949,9 +8967,11 @@
       // Update "Add to List" button label based on pantry state
       updateAddToListBtn(activeRecipe, missing);
 
-      el.servingCount.textContent = `${servingMultiplier}x`;
+      const _baseServings = Number(activeRecipe.servings) || 1;
+      const _curServings  = _baseServings * servingMultiplier;
+      el.servingCount.textContent = `${_curServings} serving${_curServings !== 1 ? "s" : ""}`;
       el.servingMinusBtn.disabled = servingMultiplier <= 1;
-      el.servingPlusBtn.disabled = servingMultiplier >= 4;
+      el.servingPlusBtn.disabled  = servingMultiplier >= 8;
 
       // Hero image
       const modalSection = el.recipeModal.querySelector(".modal");
@@ -9002,6 +9022,9 @@
           macroRow("Fat",     mf,  "#f59e0b") +
           macroRow("Fiber",   mfi, "#22c55e");
       }
+      const hasQtyData = Array.isArray(activeRecipe.ingredients_with_quantities) && activeRecipe.ingredients_with_quantities.length > 0;
+      const scaleBadge = (!hasQtyData && servingMultiplier > 1)
+        ? `<span class="scaleMultiBadge">×${servingMultiplier}</span>` : "";
       el.modalIngredients.innerHTML = ingredients.map((item) => {
         const normalized = normalizeIngredientName(item.name);
         const isChecked = available.size === 0 || available.has(normalized);
@@ -9012,7 +9035,7 @@
             <span class="ingredientCheckLabel">${escapeHtml(scaledIngredientText(item))}</span>${pantryActive2 ? (inPantry ? `<span class="pantryHaveIcon" title="You have this">✓</span>` : `<span class="pantryNeedIcon" title="Need to buy">○</span>`) : ""}
           </label>
         `;
-      }).join("");
+      }).join("") + scaleBadge;
 
       // ── Your Notes (past rating + note) ──────────────────────────────
       if (el.myNotesBox) {
@@ -11861,6 +11884,15 @@
     let cookModeTimerRemaining = 0;
     let cookModeTimerTotal = 0;
     let cookModeVoiceRecog = null;
+    let _cookModeWakeLock  = null;   // Screen Wake Lock sentinel
+
+    async function _acquireWakeLock() {
+      if (!("wakeLock" in navigator)) return;
+      try { _cookModeWakeLock = await navigator.wakeLock.request("screen"); } catch (_e) {}
+    }
+    function _releaseWakeLock() {
+      if (_cookModeWakeLock) { _cookModeWakeLock.release().catch(() => {}); _cookModeWakeLock = null; }
+    }
 
     function buildStepRingSVG(current, total) {
       const r = 68, cx = 80, cy = 80, size = 160;
@@ -12048,23 +12080,30 @@
         recog.onresult = (event) => {
           const last = event.results[event.results.length - 1];
           if (!last.isFinal) return;
-          const cmd = last[0].transcript.trim().toLowerCase();
-          const voiceEl = document.getElementById("cookModeVoice");
+          const raw = last[0].transcript.trim();
+          const cmd = raw.toLowerCase();
           const lblEl = document.getElementById("cookModeVoiceLabel");
-          if (lblEl) lblEl.textContent = `"${last[0].transcript.trim()}"`;
-          setTimeout(() => { if (lblEl) lblEl.textContent = 'Say "next" or "previous"'; }, 2000);
+          const kw    = APP_CONFIG.voiceKeyword;   // "hey simmer"
 
-          if (cmd.includes("next") || cmd.includes("forward")) {
+          // Accept commands spoken after the keyword OR bare commands (more forgiving UX)
+          const afterKw = cmd.includes(kw) ? cmd.slice(cmd.indexOf(kw) + kw.length).trim() : cmd;
+
+          if (lblEl) {
+            lblEl.textContent = `"${raw}"`;
+            setTimeout(() => { if (lblEl) lblEl.textContent = `Say "${kw} next"`; }, 2200);
+          }
+
+          if (afterKw.includes("next") || afterKw.includes("forward")) {
             if (currentStepIndex < modalSteps.length - 1) { currentStepIndex++; updateCookModeUI(); }
-          } else if (cmd.includes("previous") || cmd.includes("back") || cmd.includes("prev")) {
+          } else if (afterKw.includes("previous") || afterKw.includes("back") || afterKw.includes("prev")) {
             if (currentStepIndex > 0) { currentStepIndex--; updateCookModeUI(); }
-          } else if (cmd.includes("timer") || cmd.includes("start")) {
+          } else if (afterKw.includes("start") || afterKw.includes("timer")) {
             startCookModeTimer();
-          } else if (cmd.includes("stop") || cmd.includes("pause")) {
+          } else if (afterKw.includes("stop") || afterKw.includes("pause")) {
             clearCookModeTimer();
-          } else {
-            // Not a navigation command — ask the AI chef with recipe context
-            askCookModeAI(last[0].transcript.trim());
+          } else if (cmd.includes(kw)) {
+            // Keyword spoken but unrecognised command — ask the AI chef
+            askCookModeAI(afterKw || raw);
           }
         };
         recog.onerror = () => {};
@@ -12085,6 +12124,7 @@
       if (dishEl) dishEl.textContent = activeRecipe?.name || "Recipe";
 
       overlay.classList.remove("hidden");
+      _acquireWakeLock();   // keep screen on while cooking
 
       // Reset done screen so we always start with normal cook UI
       const cookMain   = document.querySelector(".cookModeMain");
@@ -12108,6 +12148,7 @@
     }
 
     function closeCookMode() {
+      _releaseWakeLock();   // allow screen to sleep again
       clearCookModeTimer();
       parallelTimers.forEach(t => clearInterval(t.intervalId));
       parallelTimers = [];
@@ -14446,7 +14487,8 @@
       activeRecipe   = recipe;
       servingMultiplier = 1;
       _subAICache = null;
-      el.servingCount.textContent = "1x";
+      const _initBase = Number(recipe?.servings) || 1;
+      el.servingCount.textContent = `${_initBase} serving${_initBase !== 1 ? "s" : ""}`;
       el.modalDishName.textContent = recipe.name || "Recipe";
       renderRecipeModalDetails();
       if (Array.isArray(recipe.steps) && recipe.steps.length) {
