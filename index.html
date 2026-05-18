@@ -4939,6 +4939,191 @@
       animation: livePulse 1.2s ease-in-out infinite;
     }
 
+    /* ════════════════════════════════════════════════════
+       COOK GENIE — floating interactive assistant
+       ════════════════════════════════════════════════════ */
+
+    .genieWrap {
+      position: absolute;
+      z-index: 20;
+      pointer-events: auto;
+      transition: left 4.5s cubic-bezier(0.45,0.05,0.55,0.95),
+                  top  4.5s cubic-bezier(0.45,0.05,0.55,0.95),
+                  opacity 0.5s;
+      will-change: left, top;
+      display: none;
+    }
+
+    /* The glowing orb */
+    .genieOrb {
+      width: 58px; height: 58px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 38% 36%,
+        #FFD97D 0%, #E8A020 45%, #C8690E 100%);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      position: relative;
+      animation: genieFloat 3.2s ease-in-out infinite,
+                 genieGlow  2.4s ease-in-out infinite alternate;
+      box-shadow: 0 0 0 0 rgba(200,105,14,0);
+      transition: transform 0.18s;
+      user-select: none; -webkit-user-select: none;
+    }
+    .genieOrb:hover  { transform: scale(1.10); }
+    .genieOrb:active { transform: scale(0.94); }
+
+    @keyframes genieFloat {
+      0%,100% { transform: translateY(0px)   scale(1);    }
+      50%      { transform: translateY(-9px)  scale(1.03); }
+    }
+    @keyframes genieGlow {
+      from { box-shadow: 0 0 18px rgba(200,105,14,0.50), 0 0 36px rgba(200,105,14,0.18); }
+      to   { box-shadow: 0 0 28px rgba(200,105,14,0.75), 0 0 56px rgba(200,105,14,0.30); }
+    }
+
+    /* Emoji face */
+    .genieEmoji {
+      font-size: 1.7rem;
+      line-height: 1;
+      position: relative; z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Speaking indicator */
+    .genieOrb .genieSpeakRing {
+      position: absolute; inset: -5px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,220,80,0.0);
+      transition: border-color 0.3s, inset 0.3s;
+    }
+    .genieOrb.speaking .genieSpeakRing {
+      border-color: rgba(255,220,80,0.65);
+      inset: -6px;
+      animation: speakPulse 0.8s ease-in-out infinite alternate;
+    }
+    @keyframes speakPulse {
+      from { opacity: 0.5; transform: scale(1);    }
+      to   { opacity: 1;   transform: scale(1.06); }
+    }
+
+    /* Thinking spinner */
+    .genieOrb.thinking::after {
+      content: "";
+      position: absolute; inset: -8px;
+      border-radius: 50%;
+      border: 2.5px solid transparent;
+      border-top-color: #FFD97D;
+      animation: genieThink 0.7s linear infinite;
+    }
+    @keyframes genieThink {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Celebration bounce */
+    .genieOrb.celebrate {
+      animation: genieCelebrate 0.5s cubic-bezier(0.34,1.56,0.64,1) 3 both;
+    }
+    @keyframes genieCelebrate {
+      0%   { transform: translateY(0)    scale(1);    }
+      40%  { transform: translateY(-20px) scale(1.15); }
+      100% { transform: translateY(0)    scale(1);    }
+    }
+
+    /* Orbiting sparkle particles */
+    .genieSparkles {
+      position: absolute; inset: 0;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .genieSpark {
+      position: absolute;
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: #FFD97D;
+      top: 50%; left: 50%;
+      transform-origin: 0 0;
+    }
+    .genieSpark:nth-child(1) { animation: sparkOrbit 3.6s linear infinite; }
+    .genieSpark:nth-child(2) { animation: sparkOrbit 3.6s linear infinite -1.2s; opacity: 0.7; }
+    .genieSpark:nth-child(3) { animation: sparkOrbit 3.6s linear infinite -2.4s; opacity: 0.5; }
+    @keyframes sparkOrbit {
+      from { transform: rotate(0deg)   translate(32px) scale(1);   opacity: 0.8; }
+      50%  {                                                         opacity: 0.3; }
+      to   { transform: rotate(360deg) translate(32px) scale(0.7); opacity: 0.8; }
+    }
+
+    /* Speech bubble */
+    .genieBubble {
+      position: absolute;
+      bottom: 72px;
+      left: 50%;
+      transform: translateX(-50%);
+      min-width: 210px; max-width: 290px;
+      background: rgba(14,8,3,0.93);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(200,105,14,0.38);
+      border-radius: 20px;
+      padding: 13px 15px 11px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(200,105,14,0.08);
+      animation: bubblePop 0.28s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes bubblePop {
+      from { opacity: 0; transform: translateX(-50%) scale(0.82) translateY(6px); }
+      to   { opacity: 1; transform: translateX(-50%) scale(1)    translateY(0);   }
+    }
+    /* Bubble tail */
+    .genieBubble::after {
+      content: "";
+      position: absolute;
+      bottom: -7px; left: 50%;
+      transform: translateX(-50%);
+      border-left: 7px solid transparent;
+      border-right: 7px solid transparent;
+      border-top: 7px solid rgba(200,105,14,0.38);
+    }
+    .genieBubble.hidden { display: none; }
+
+    .genieBubbleText {
+      color: rgba(255,255,255,0.93);
+      font-size: 0.83rem; line-height: 1.52;
+      font-weight: 500;
+    }
+
+    .genieBubbleOpts {
+      display: flex; flex-wrap: wrap; gap: 5px;
+      margin-top: 9px;
+    }
+    .genieBubbleOpts.hidden { display: none; }
+
+    .genieOptBtn {
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: rgba(200,105,14,0.18);
+      border: 1px solid rgba(200,105,14,0.38);
+      color: #E8A020;
+      font-family: inherit; font-size: 0.74rem; font-weight: 800;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.12s;
+      white-space: nowrap;
+    }
+    .genieOptBtn:hover  { background: rgba(200,105,14,0.32); }
+    .genieOptBtn:active { transform: scale(0.93); }
+
+    /* TTS mute toggle pill (top-right of Cook Mode) */
+    .genieMuteBtn {
+      position: absolute; top: 18px; right: 160px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 999px;
+      color: rgba(255,255,255,0.55);
+      font-size: 0.78rem; font-weight: 700;
+      padding: 5px 12px; cursor: pointer;
+      transition: all 0.18s; z-index: 3;
+    }
+    .genieMuteBtn:hover { background: rgba(255,255,255,0.13); color: #fff; }
+    .genieMuteBtn.muted { color: rgba(255,80,80,0.8); border-color: rgba(255,80,80,0.3); }
+
     /* ── Cook Mode: blurred food background ───────────────────────── */
     .cookModeBg {
       position: absolute; inset: 0;
@@ -6800,6 +6985,26 @@
       <button class="cookModeAIDismiss" id="cookModeAIDismiss" type="button" aria-label="Dismiss">✕</button>
     </div>
     <button class="cookModeAskBtn" id="cookModeAskBtn" type="button" aria-label="Ask the AI chef">💬</button>
+
+    <!-- Cook Genie floating assistant -->
+    <div class="genieWrap" id="genieWrap">
+      <div class="genieOrb" id="genieOrb" role="button" aria-label="Cook Genie" tabindex="0">
+        <span class="genieEmoji">🧞</span>
+        <span class="genieSpeakRing"></span>
+        <div class="genieSparkles">
+          <span class="genieSpark"></span>
+          <span class="genieSpark"></span>
+          <span class="genieSpark"></span>
+        </div>
+      </div>
+      <div class="genieBubble hidden" id="genieBubble">
+        <div class="genieBubbleText" id="genieBubbleText">Hi!</div>
+        <div class="genieBubbleOpts hidden" id="genieBubbleOpts"></div>
+      </div>
+    </div>
+
+    <!-- TTS mute toggle -->
+    <button class="genieMuteBtn" id="genieMuteBtn" type="button">🔊 Voice</button>
 
     <div class="cookModeVoice" id="cookModeVoice">
       <span class="cookModeVoiceDot"></span>
@@ -12040,6 +12245,352 @@
       `;
     }
 
+    // ══════════════════════════════════════════════
+    // COOK GENIE — floating AI cooking companion
+    // ══════════════════════════════════════════════
+
+    const _genie = {
+      active:        false,
+      ttsEnabled:    true,          // user can mute
+      driftTimer:    null,
+      engageTimer:   null,
+      bubbleTimer:   null,
+      noiseCtx:      null,
+      noiseSource:   null,
+      noiseGain:     null,
+      noisePlaying:  false,
+      synth:         window.speechSynthesis || null,
+      gesturesWired: false,
+    };
+
+    // ── Position ──────────────────────────────────────────────────────────────
+    function _genieMoveTo(x, y) {
+      const w = document.getElementById("genieWrap");
+      if (w) { w.style.left = x + "px"; w.style.top = y + "px"; }
+    }
+
+    function _genieDriftOnce() {
+      const overlay = document.getElementById("cookModeOverlay");
+      if (!overlay) return;
+      const W = overlay.offsetWidth  || window.innerWidth;
+      const H = overlay.offsetHeight || window.innerHeight;
+      // Safe zones: avoid center strip (step card) and top/bottom UI bars
+      const zones = [
+        [W * 0.04, W * 0.22, H * 0.12, H * 0.38],   // top-left
+        [W * 0.72, W * 0.88, H * 0.12, H * 0.38],   // top-right
+        [W * 0.04, W * 0.18, H * 0.55, H * 0.78],   // mid-left
+        [W * 0.75, W * 0.88, H * 0.55, H * 0.78],   // mid-right
+      ];
+      const z = zones[Math.floor(Math.random() * zones.length)];
+      const x = z[0] + Math.random() * (z[1] - z[0]);
+      const y = z[2] + Math.random() * (z[3] - z[2]);
+      _genieMoveTo(x, y);
+    }
+
+    function _genieStartDrift() {
+      _genieDriftOnce();
+      _genie.driftTimer = setInterval(_genieDriftOnce, 6000 + Math.random() * 3000);
+    }
+
+    function _genieStopDrift() {
+      clearInterval(_genie.driftTimer);
+      _genie.driftTimer = null;
+    }
+
+    // ── TTS ───────────────────────────────────────────────────────────────────
+    function _genieTTS(text) {
+      if (!_genie.ttsEnabled || !_genie.synth) return;
+      _genie.synth.cancel();
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.rate  = 1.08;
+      utt.pitch = 1.05;
+      utt.volume = 0.9;
+      // Prefer a warm English voice when available
+      const voices = _genie.synth.getVoices();
+      const warm = voices.find(v => /samantha|karen|moira|fiona|daniel|google uk/i.test(v.name))
+                || voices.find(v => v.lang.startsWith("en"));
+      if (warm) utt.voice = warm;
+      const orb = document.getElementById("genieOrb");
+      if (orb) orb.classList.add("speaking");
+      utt.onend = () => { if (orb) orb.classList.remove("speaking"); };
+      utt.onerror = () => { if (orb) orb.classList.remove("speaking"); };
+      _genie.synth.speak(utt);
+    }
+
+    function _genieStopTTS() {
+      if (_genie.synth) _genie.synth.cancel();
+      document.getElementById("genieOrb")?.classList.remove("speaking");
+    }
+
+    // ── Bubble ────────────────────────────────────────────────────────────────
+    function genieSay(text, opts = [], autoDismissSecs = 0) {
+      const bubble  = document.getElementById("genieBubble");
+      const textEl  = document.getElementById("genieBubbleText");
+      const optsEl  = document.getElementById("genieBubbleOpts");
+      if (!bubble || !textEl || !optsEl) return;
+
+      textEl.textContent = text;
+
+      if (opts.length) {
+        optsEl.innerHTML = opts.map(o =>
+          `<button class="genieOptBtn" data-gaction="${o.a}">${o.l}</button>`
+        ).join("");
+        optsEl.classList.remove("hidden");
+      } else {
+        optsEl.innerHTML = "";
+        optsEl.classList.add("hidden");
+      }
+
+      // Re-trigger animation
+      bubble.classList.remove("hidden");
+      bubble.style.animation = "none";
+      void bubble.offsetWidth;
+      bubble.style.animation = "";
+
+      if (_genie.bubbleTimer) clearTimeout(_genie.bubbleTimer);
+      const secs = autoDismissSecs || (opts.length ? 0 : 11);
+      if (secs) _genie.bubbleTimer = setTimeout(genieHideBubble, secs * 1000);
+
+      _genieTTS(text);
+    }
+
+    function genieHideBubble() {
+      document.getElementById("genieBubble")?.classList.add("hidden");
+      clearTimeout(_genie.bubbleTimer);
+      _genieStopTTS();
+    }
+
+    // ── Option handler ────────────────────────────────────────────────────────
+    async function _genieHandleAction(action) {
+      genieHideBubble();
+      const recipeName = activeRecipe?.name || "this dish";
+
+      if (action === "dismiss") return;
+
+      if (action === "noise") { _genieToggleNoise(); return; }
+
+      if (action === "readstep") {
+        const rawText = modalSteps[currentStepIndex] || "";
+        const stepText = rawText.replace(/^step\s*\d+[\s.:–-]*/i, "").trim() || rawText;
+        genieSay(stepText, [], 16);
+        return;
+      }
+
+      // AI-powered responses
+      const prompts = {
+        story: `In 2-3 casual, fun sentences, tell me the origin story of "${recipeName}". Be warm and engaging.`,
+        fact:  `Give me one surprising fun food fact about "${recipeName}" or its main ingredients. 1-2 sentences, casual tone.`,
+        tips:  `Give me 2 quick practical cooking tips for making "${recipeName}" better. Very brief, casual, actionable.`,
+        sub:   `What's the most interesting ingredient in "${recipeName}" and what can I substitute it with if I don't have it? 2 sentences.`,
+      };
+
+      if (!prompts[action]) return;
+
+      // Show thinking state
+      const orb = document.getElementById("genieOrb");
+      if (orb) { orb.classList.add("thinking"); orb.classList.remove("speaking"); }
+      genieSay("Hmm, let me think… 🤔", [], 30);
+
+      try {
+        const resp = await fetch(`${API_BASE_URL}/ai-chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: prompts[action],
+            history: [],
+            diet: (typeof state !== "undefined" && state.diet) || "",
+            ingredients: [],
+          }),
+        });
+        const data  = await resp.json();
+        const reply = (data.reply || "").trim() || "My magic seems to have fizzled! Try again. ✨";
+        if (orb) orb.classList.remove("thinking");
+        genieSay(reply, [
+          { a: "fact",    l: "💡 Another fact" },
+          { a: "dismiss", l: "✕ Thanks"        },
+        ], 20);
+      } catch {
+        if (orb) orb.classList.remove("thinking");
+        genieSay("My spell book is offline right now! Try again. ✨", [], 6);
+      }
+    }
+
+    // ── Brown noise ───────────────────────────────────────────────────────────
+    function _genieToggleNoise() {
+      if (_genie.noisePlaying) {
+        try { _genie.noiseSource?.stop(); } catch {}
+        _genie.noisePlaying = false;
+        genieSay("Ambient sound off. 🔇", [], 4);
+        return;
+      }
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!_genie.noiseCtx) _genie.noiseCtx = new AC();
+        const ctx  = _genie.noiseCtx;
+        const rate = ctx.sampleRate;
+        const buf  = ctx.createBuffer(1, rate * 6, rate);
+        const data = buf.getChannelData(0);
+        let last = 0;
+        for (let i = 0; i < data.length; i++) {
+          const w = Math.random() * 2 - 1;
+          last = (last + 0.02 * w) / 1.02;
+          data[i] = last * 3.5;
+        }
+        const src  = ctx.createBufferSource();
+        src.buffer = buf; src.loop = true;
+        const gain = ctx.createGain(); gain.gain.value = 0.14;
+        src.connect(gain); gain.connect(ctx.destination);
+        src.start();
+        _genie.noiseSource = src;
+        _genie.noiseGain   = gain;
+        _genie.noisePlaying = true;
+        genieSay("Relaxing kitchen sounds on 🌊 Tap me to turn off.", [], 5);
+      } catch {
+        genieSay("Couldn't start audio — try tapping again! 🎵", [], 5);
+      }
+    }
+
+    function _genieStopNoise() {
+      if (_genie.noisePlaying) {
+        try { _genie.noiseSource?.stop(); } catch {}
+        _genie.noisePlaying = false;
+      }
+    }
+
+    // ── Timer engagement ──────────────────────────────────────────────────────
+    function genieOnTimerStart(seconds) {
+      clearTimeout(_genie.engageTimer);
+      if (seconds < 30) return; // not worth engaging for short timers
+      const mins = Math.ceil(seconds / 60);
+      // Wait 10s then offer entertainment
+      _genie.engageTimer = setTimeout(() => {
+        if (!_genie.active) return;
+        // Drift genie to more visible position first
+        const overlay = document.getElementById("cookModeOverlay");
+        const W = (overlay?.offsetWidth  || window.innerWidth);
+        const H = (overlay?.offsetHeight || window.innerHeight);
+        _genieMoveTo(W * 0.5 - 29, H * 0.18);
+        setTimeout(() => {
+          genieSay(
+            `While this cooks for ${mins} min${mins > 1 ? "s" : ""}… want some company? 🧞`,
+            [
+              { a: "story",   l: "📖 Origin story"  },
+              { a: "fact",    l: "💡 Fun fact"       },
+              { a: "tips",    l: "🎯 Pro tips"       },
+              { a: "noise",   l: "🌊 Ambient sound"  },
+              { a: "dismiss", l: "✕ No thanks"       },
+            ]
+          );
+        }, 600);
+      }, 10000);
+    }
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────────
+    function genieOpen() {
+      _genie.active = true;
+
+      const wrap = document.getElementById("genieWrap");
+      if (wrap) { wrap.style.display = "block"; wrap.style.opacity = "0"; }
+
+      // Start drifting
+      _genieStartDrift();
+
+      // Fade in
+      setTimeout(() => { if (wrap) wrap.style.opacity = "1"; }, 80);
+
+      // Welcome message after a brief pause
+      setTimeout(() => {
+        if (!_genie.active) return;
+        const name = activeRecipe?.name || "this dish";
+        genieSay(
+          `I'm your Cook Genie! 🧞 I'll guide you through ${name}. Tap me anytime for tips or stories!`,
+          [], 9
+        );
+      }, 1800);
+
+      // Wire event handlers (once per session)
+      if (!_genie.gesturesWired) {
+        _genie.gesturesWired = true;
+
+        // Tap orb
+        document.getElementById("genieOrb")?.addEventListener("click", () => {
+          const bubble = document.getElementById("genieBubble");
+          if (bubble && !bubble.classList.contains("hidden")) {
+            genieHideBubble();
+          } else {
+            genieSay(
+              `What can I do for you? 🧞`,
+              [
+                { a: "readstep", l: "🔊 Read step"      },
+                { a: "fact",     l: "💡 Fun fact"        },
+                { a: "tips",     l: "🎯 Cooking tip"     },
+                { a: "story",    l: "📖 Origin story"    },
+                { a: "noise",    l: "🌊 Ambient sound"   },
+                { a: "sub",      l: "🔄 Substitutions"   },
+                { a: "dismiss",  l: "✕ Close"            },
+              ]
+            );
+          }
+        });
+
+        // Option buttons (event delegation on bubble opts)
+        document.getElementById("genieBubbleOpts")?.addEventListener("click", e => {
+          const btn = e.target.closest(".genieOptBtn");
+          if (btn) _genieHandleAction(btn.dataset.gaction);
+        });
+
+        // Mute toggle
+        document.getElementById("genieMuteBtn")?.addEventListener("click", () => {
+          _genie.ttsEnabled = !_genie.ttsEnabled;
+          const btn = document.getElementById("genieMuteBtn");
+          if (btn) {
+            btn.textContent = _genie.ttsEnabled ? "🔊 Voice" : "🔇 Muted";
+            btn.classList.toggle("muted", !_genie.ttsEnabled);
+          }
+          if (!_genie.ttsEnabled) _genieStopTTS();
+        });
+      }
+    }
+
+    function genieClose() {
+      _genie.active = false;
+      _genie.gesturesWired = false;
+      _genieStopDrift();
+      _genieStopTTS();
+      _genieStopNoise();
+      genieHideBubble();
+      clearTimeout(_genie.engageTimer);
+      const wrap = document.getElementById("genieWrap");
+      if (wrap) { wrap.style.opacity = "0"; setTimeout(() => { wrap.style.display = "none"; }, 500); }
+      // Reset orb state
+      const orb = document.getElementById("genieOrb");
+      if (orb) orb.classList.remove("speaking", "thinking", "celebrate");
+    }
+
+    // Called when step changes (hook into updateCookModeUI)
+    function genieOnStepChange(stepText, stepNo, total) {
+      clearTimeout(_genie.engageTimer);
+      _genieDriftOnce(); // move to new position
+      // Small delay so drift animation starts before TTS
+      setTimeout(() => {
+        if (!_genie.active) return;
+        if (stepNo === total) {
+          // Last step — celebrate
+          const orb = document.getElementById("genieOrb");
+          if (orb) {
+            orb.classList.remove("speaking", "thinking");
+            orb.classList.add("celebrate");
+            setTimeout(() => orb.classList.remove("celebrate"), 1600);
+          }
+          setTimeout(() => {
+            genieSay(`Amazing! Last step — ${activeRecipe?.name || "your dish"} is almost ready! 🎉`, [], 8);
+          }, 400);
+        } else {
+          _genieTTS(`Step ${stepNo}. ${stepText}`);
+        }
+      }, 500);
+    }
+
     // ── Step type detection ────────────────────────────────────────────────────
     function detectStepType(text) {
       const t = (text || "").toLowerCase();
@@ -12147,6 +12698,9 @@
       // Step dots
       renderCookModeStepDots();
 
+      // Genie narrates and reacts
+      if (_genie.active) genieOnStepChange(stepText, stepNo, total);
+
       // Timer section
       const timerSec = stepTimerSeconds(rawText);
       const timerWrap = document.getElementById("cookModeTimerWrap");
@@ -12238,6 +12792,8 @@
       if (cookModeTimerRemaining <= 0) {
         cookModeTimerRemaining = cookModeTimerTotal;
       }
+      // Tell genie a timer started — it will engage after 10s if long enough
+      if (_genie.active) genieOnTimerStart(cookModeTimerTotal);
       cookModeTimerId = setInterval(() => {
         cookModeTimerRemaining = Math.max(0, cookModeTimerRemaining - 1);
         updateCookModeTimerRing();
@@ -12321,6 +12877,9 @@
       // Attach swipe + tap-card gestures (once per open)
       initCookModeGestures();
 
+      // Launch the Cook Genie
+      genieOpen();
+
       // Reset done screen so we always start with normal cook UI
       const cookMain   = document.querySelector(".cookModeMain");
       const doneScreen = document.getElementById("cookModeDoneScreen");
@@ -12344,6 +12903,7 @@
 
     function closeCookMode() {
       _releaseWakeLock();   // allow screen to sleep again
+      genieClose();
       clearCookModeTimer();
       parallelTimers.forEach(t => clearInterval(t.intervalId));
       parallelTimers = [];
