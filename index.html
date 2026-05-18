@@ -1599,6 +1599,13 @@
       white-space: nowrap;
     }
     .planShareBtn:hover { border-color: var(--accent); color: var(--accent); }
+    .planAddShoppingBtn {
+      background: var(--accent); border: none; border-radius: 12px;
+      padding: 7px 13px; font-family: inherit; font-size: 0.78rem; font-weight: 800;
+      color: #fff; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    }
+    .planAddShoppingBtn:hover { opacity: 0.88; }
+    .planAddShoppingBtn:disabled { opacity: 0.6; cursor: default; }
 
     /* ── Nutrition week bar ── */
     .planNutriBar {
@@ -8243,8 +8250,25 @@
     let activePlan = null;
     let planDays = 3;
 
-    function savePlan(plan) { try { localStorage.setItem(PLAN_KEY, JSON.stringify(plan)); syncToCloud(); } catch {} }
-    function loadSavedPlan() { try { return JSON.parse(localStorage.getItem(PLAN_KEY) || "null"); } catch { return null; } }
+    function savePlan(plan) {
+      try {
+        const entry = { plan, savedAt: Date.now() };
+        localStorage.setItem(PLAN_KEY, JSON.stringify(entry));
+        syncToCloud();
+      } catch {}
+    }
+    function loadSavedPlan() {
+      try {
+        const raw = localStorage.getItem(PLAN_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        // Support both old format (plain plan) and new format ({plan, savedAt})
+        const entry = parsed?.plan ? parsed : { plan: parsed, savedAt: 0 };
+        const age = Date.now() - (entry.savedAt || 0);
+        if (age > 7 * 24 * 60 * 60 * 1000) return null; // expired after 7 days
+        return entry.plan;
+      } catch { return null; }
+    }
 
     function getDayName(dayIndex) {
       const today = new Date();
@@ -8359,7 +8383,10 @@
             </div>
             <div class="planHeroRight">
               ${totalCal > 0 ? `<div class="planNutriBadge"><strong>${totalCal}</strong><span>Total cal</span></div>` : ""}
-              <button class="planShareBtn" id="planShareBtn">📤 Share plan</button>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="planShareBtn" id="planRefreshBtn">↺ Refresh</button>
+                <button class="planShareBtn" id="planShareBtn">📤 Share plan</button>
+              </div>
             </div>
           </div>
 
@@ -8382,7 +8409,10 @@
           <div class="groceryBox">
             <div class="planGroceryHead">
               <h4>🛒 Weekly Grocery List</h4>
-              <span class="planGrocerySub">${groceries.length} items · auto-generated from your plan</span>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span class="planGrocerySub">${groceries.length} items · auto-generated from your plan</span>
+                <button class="planAddShoppingBtn" id="planAddShoppingBtn" type="button">🛒 Add all to Shopping List</button>
+              </div>
             </div>
             <div id="groceryListContainer"></div>
           </div>` : ""}
@@ -8438,6 +8468,45 @@
             const btn = document.getElementById("planShareBtn");
             if (btn) { btn.textContent = "✅ Copied!"; setTimeout(() => { btn.textContent = "📤 Share plan"; }, 2200); }
           }).catch(() => {});
+        }
+      });
+
+      // Refresh plan button — clears saved plan and fetches fresh
+      document.getElementById("planRefreshBtn")?.addEventListener("click", () => {
+        try { localStorage.removeItem(PLAN_KEY); } catch {}
+        activePlan = null;
+        getMealPlan();
+      });
+
+      // Add grocery list to persistent shopping list
+      document.getElementById("planAddShoppingBtn")?.addEventListener("click", () => {
+        const btn = document.getElementById("planAddShoppingBtn");
+        if (!groceries.length) return;
+        // Convert plan grocery items to fake recipe-style objects and bulk-add
+        const existing = getShoppingList();
+        const existingNames = new Set(existing.map(i => i.name.toLowerCase()));
+        const newItems = [];
+        for (const g of groceries) {
+          const name = titleCase(g.name || String(g));
+          if (!name || existingNames.has(name.toLowerCase())) continue;
+          newItems.push({
+            id: `sl_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            name,
+            qty: "",
+            aisle: detectAisle(name),
+            recipeName: "Meal Plan",
+            recipeId: "plan",
+            checked: false,
+            addedAt: Date.now()
+          });
+          existingNames.add(name.toLowerCase());
+        }
+        saveShoppingList([...existing, ...newItems]);
+        updateShoppingBadge();
+        if (btn) {
+          btn.textContent = `✓ ${newItems.length} item${newItems.length !== 1 ? "s" : ""} added!`;
+          btn.disabled = true;
+          setTimeout(() => { btn.textContent = "🛒 Add all to Shopping List"; btn.disabled = false; }, 2500);
         }
       });
     }
@@ -9770,6 +9839,12 @@
       // Toggle duration row visibility
       const durRow = document.getElementById("planDurationRow");
       if (durRow) durRow.style.display = durRow.style.display === "none" ? "flex" : "none";
+      // Restore saved plan if available (< 7 days old) to avoid re-fetching
+      const saved = loadSavedPlan();
+      if (saved) {
+        renderMealPlan(saved);
+        return;
+      }
       if (!(await checkLimit("meal_plan"))) return;
       getMealPlan();
     });
@@ -10008,6 +10083,8 @@
     if (el.planBtnMobile) {
       el.planBtnMobile.addEventListener("click", (e) => {
         addRipple(el.planBtnMobile, e);
+        const saved = loadSavedPlan();
+        if (saved) { renderMealPlan(saved); return; }
         getMealPlan();
       });
     }
