@@ -4826,12 +4826,12 @@
 
     /* Step text */
     .cookModeStepText {
-      font-size: clamp(1.05rem, 3.5vw, 1.3rem);
-      font-weight: 600; line-height: 1.6;
-      color: rgba(255,255,255,0.90);
+      font-size: clamp(1.12rem, 3.8vw, 1.38rem);
+      font-weight: 600; line-height: 1.68;
+      color: rgba(255,255,255,0.93);
       text-align: center;
-      max-width: 46ch;
-      animation: cmStepIn 0.4s cubic-bezier(0.2,0.9,0.2,1) both;
+      max-width: 42ch;
+      margin: 0;
     }
     @keyframes cmStepIn {
       from { opacity: 0; transform: translateY(16px); }
@@ -4938,6 +4938,88 @@
       background: #22c55e;
       animation: livePulse 1.2s ease-in-out infinite;
     }
+
+    /* ── Cook Mode: blurred food background ───────────────────────── */
+    .cookModeBg {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      filter: blur(48px) brightness(0.18) saturate(1.6);
+      transform: scale(1.12);
+      z-index: 0;
+      transition: opacity 0.6s;
+    }
+
+    /* ── Ambient glow changes colour per step type ─────────────────── */
+    .cookModeOverlay::before { transition: background 0.9s ease; }
+    .cookModeOverlay.cmTypeCook::before   { background: radial-gradient(circle, rgba(239,68,68,0.22) 0%, transparent 70%); }
+    .cookModeOverlay.cmTypePrep::before   { background: radial-gradient(circle, rgba(34,197,94,0.14) 0%, transparent 70%); }
+    .cookModeOverlay.cmTypeRest::before   { background: radial-gradient(circle, rgba(99,102,241,0.16) 0%, transparent 70%); }
+    .cookModeOverlay.cmTypeFinish::before { background: radial-gradient(circle, rgba(200,105,14,0.22) 0%, transparent 70%); }
+
+    /* ── Step type badge ───────────────────────────────────────────── */
+    .cmStepTypeBadge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 13px; border-radius: 999px;
+      font-size: 0.68rem; font-weight: 800;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.65);
+      flex-shrink: 0;
+    }
+
+    /* ── Glassmorphism step card ───────────────────────────────────── */
+    .cookModeStepCard {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(24px) saturate(1.4);
+      -webkit-backdrop-filter: blur(24px) saturate(1.4);
+      border: 1px solid rgba(255,255,255,0.11);
+      border-radius: 28px;
+      padding: 28px 26px 22px;
+      width: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 10px;
+      cursor: pointer;
+      transition: background 0.25s, border-color 0.25s, transform 0.18s;
+      user-select: none; -webkit-user-select: none;
+      position: relative;
+    }
+    .cookModeStepCard:active { background: rgba(255,255,255,0.10); transform: scale(0.985); }
+    .cmTapHint {
+      font-size: 0.62rem; color: rgba(255,255,255,0.18);
+      letter-spacing: 0.10em; text-transform: uppercase;
+      font-weight: 700; pointer-events: none;
+    }
+
+    /* ── Step dots strip ───────────────────────────────────────────── */
+    .cookModeStepDots {
+      display: flex; gap: 7px; align-items: center; justify-content: center;
+      flex-wrap: wrap; max-width: 300px;
+    }
+    .cmDot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(255,255,255,0.18);
+      transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+      flex-shrink: 0;
+    }
+    .cmDot.cmDotActive {
+      width: 26px; border-radius: 4px;
+      background: #E8A020;
+      box-shadow: 0 0 12px rgba(232,160,32,0.55);
+    }
+    .cmDot.cmDotDone { background: rgba(200,105,14,0.50); }
+
+    /* ── Directional slide animations ──────────────────────────────── */
+    @keyframes cmSlideInFwd {
+      from { opacity: 0; transform: translateX(42px) scale(0.97); }
+      to   { opacity: 1; transform: translateX(0)    scale(1);    }
+    }
+    @keyframes cmSlideInBwd {
+      from { opacity: 0; transform: translateX(-42px) scale(0.97); }
+      to   { opacity: 1; transform: translateX(0)     scale(1);    }
+    }
+    .cmAnimFwd { animation: cmSlideInFwd 0.36s cubic-bezier(0.2,0.9,0.2,1) both !important; }
+    .cmAnimBwd { animation: cmSlideInBwd 0.36s cubic-bezier(0.2,0.9,0.2,1) both !important; }
 
     /* ═══ MISE EN PLACE OVERLAY ═══ */
     .miseEnPlaceOverlay {
@@ -6666,6 +6748,9 @@
 
   <!-- Cook Mode 2.0 full-screen overlay -->
   <div class="cookModeOverlay hidden" id="cookModeOverlay" role="dialog" aria-modal="true" aria-label="Cook Mode">
+    <!-- Blurred food background -->
+    <div class="cookModeBg" id="cookModeBg"></div>
+
     <div class="cookModeTop">
       <div class="cookModeDishName" id="cookModeDishName"></div>
       <button class="cookModeCloseBtn" id="cookModeCloseBtn" type="button">✕ Exit Cook Mode</button>
@@ -6676,7 +6761,12 @@
         <!-- SVG injected by JS -->
       </div>
 
-      <p class="cookModeStepText" id="cookModeStepText">Loading...</p>
+      <!-- Glassmorphism step card (tap to advance) -->
+      <div class="cookModeStepCard" id="cookModeStepCard">
+        <span class="cmStepTypeBadge" id="cmStepTypeBadge">🔪 Prep</span>
+        <p class="cookModeStepText" id="cookModeStepText">Loading...</p>
+        <span class="cmTapHint">tap card · swipe · or say "hey simmer next"</span>
+      </div>
 
       <div class="cookModeTimerWrap" id="cookModeTimerWrap" style="display:none">
         <div class="cookModeTimerRingWrap" id="cookModeTimerRingWrap">
@@ -6684,6 +6774,9 @@
         </div>
         <button class="cookModeTimerBtn" id="cookModeTimerBtn" type="button">▶ Start Timer</button>
       </div>
+
+      <!-- Step dots -->
+      <div class="cookModeStepDots" id="cookModeStepDots"></div>
 
       <div class="cookModeNav">
         <button class="cookModeNavBtn secondary" id="cookModePrevBtn" type="button">← Previous</button>
@@ -11947,30 +12040,120 @@
       `;
     }
 
-    function updateCookModeUI() {
+    // ── Step type detection ────────────────────────────────────────────────────
+    function detectStepType(text) {
+      const t = (text || "").toLowerCase();
+      if (t.match(/\b(serve|plate|garnish|enjoy|dish up|ready to|it's done|is done)\b/)) return "finish";
+      if (t.match(/\b(fry|sauté|saute|cook|boil|simmer|roast|bake|grill|heat|toast|sear|smoke|steam|braise|stir.?fry)\b/)) return "cook";
+      if (t.match(/\b(wait|rest|stand|cool|chill|marinate|soak|refrigerate|freeze|set aside|let it)\b/)) return "rest";
+      return "prep";
+    }
+
+    const _cmStepTypeConfig = {
+      prep:   { emoji: "🔪", label: "Prep",    cls: "cmTypePrep"   },
+      cook:   { emoji: "🔥", label: "Cook",    cls: "cmTypeCook"   },
+      rest:   { emoji: "⏳", label: "Rest",    cls: "cmTypeRest"   },
+      finish: { emoji: "✨", label: "Serve",   cls: "cmTypeFinish" },
+    };
+
+    function renderCookModeStepDots() {
+      const dotsEl = document.getElementById("cookModeStepDots");
+      if (!dotsEl || !modalSteps.length) return;
+      dotsEl.innerHTML = modalSteps.map((_, i) => {
+        const cls = i < currentStepIndex ? "cmDot cmDotDone"
+                  : i === currentStepIndex ? "cmDot cmDotActive"
+                  : "cmDot";
+        return `<span class="${cls}" data-step="${i}"></span>`;
+      }).join("");
+      // Tap a dot to jump to that step
+      dotsEl.querySelectorAll(".cmDot").forEach(dot => {
+        dot.addEventListener("click", (e) => {
+          const target = Number(e.currentTarget.dataset.step);
+          if (target === currentStepIndex) return;
+          const dir = target > currentStepIndex ? "forward" : "backward";
+          currentStepIndex = target;
+          updateCookModeUI(dir);
+        });
+      });
+    }
+
+    let _cmSwipeStartX = 0, _cmSwipeStartY = 0;
+    function initCookModeGestures() {
+      const overlay = document.getElementById("cookModeOverlay");
+      if (!overlay) return;
+
+      // Touch swipe left/right
+      overlay.addEventListener("touchstart", e => {
+        _cmSwipeStartX = e.touches[0].clientX;
+        _cmSwipeStartY = e.touches[0].clientY;
+      }, { passive: true });
+      overlay.addEventListener("touchend", e => {
+        const dx = e.changedTouches[0].clientX - _cmSwipeStartX;
+        const dy = Math.abs(e.changedTouches[0].clientY - _cmSwipeStartY);
+        if (Math.abs(dx) < 55 || dy > 70) return; // too short or vertical scroll
+        if (dx < 0 && currentStepIndex < modalSteps.length - 1) {
+          currentStepIndex++; updateCookModeUI("forward");
+        } else if (dx > 0 && currentStepIndex > 0) {
+          currentStepIndex--; updateCookModeUI("backward");
+        }
+      }, { passive: true });
+
+      // Tap the step card to advance
+      const card = document.getElementById("cookModeStepCard");
+      if (card) {
+        card.addEventListener("click", () => {
+          if (currentStepIndex < modalSteps.length - 1) {
+            currentStepIndex++; updateCookModeUI("forward");
+          }
+        });
+      }
+    }
+
+    function updateCookModeUI(direction = "forward") {
       const stepNo = currentStepIndex + 1;
       const total  = modalSteps.length;
+      const rawText = modalSteps[currentStepIndex] || "No step found.";
+
+      // Strip leading "step N" prefix the recipe text often includes
+      const stepText = rawText.replace(/^step\s*\d+[\s.:–-]*/i, "").trim() || rawText;
 
       // Ring
       const ringWrap = document.getElementById("cookModeRingWrap");
       if (ringWrap) ringWrap.innerHTML = buildStepRingSVG(stepNo, total);
 
-      // Step text (re-animate on change)
-      const stepEl = document.getElementById("cookModeStepText");
-      if (stepEl) {
-        stepEl.style.animation = "none";
-        stepEl.offsetHeight; // reflow
-        stepEl.style.animation = "";
-        stepEl.textContent = modalSteps[currentStepIndex] || "No step found.";
+      // Detect step type → ambient glow + badge
+      const type    = detectStepType(stepText);
+      const typeCfg = _cmStepTypeConfig[type];
+      const overlay = document.getElementById("cookModeOverlay");
+      if (overlay) {
+        overlay.classList.remove("cmTypePrep", "cmTypeCook", "cmTypeRest", "cmTypeFinish");
+        overlay.classList.add(typeCfg.cls);
+      }
+      const badgeEl = document.getElementById("cmStepTypeBadge");
+      if (badgeEl) badgeEl.textContent = `${typeCfg.emoji} ${typeCfg.label}`;
+
+      // Step card: slide animation by direction
+      const card = document.getElementById("cookModeStepCard");
+      if (card) {
+        card.classList.remove("cmAnimFwd", "cmAnimBwd");
+        void card.offsetWidth; // reflow
+        card.classList.add(direction === "backward" ? "cmAnimBwd" : "cmAnimFwd");
       }
 
+      // Step text
+      const stepEl = document.getElementById("cookModeStepText");
+      if (stepEl) stepEl.textContent = stepText;
+
+      // Step dots
+      renderCookModeStepDots();
+
       // Timer section
-      const timerSec = stepTimerSeconds(modalSteps[currentStepIndex] || "");
+      const timerSec = stepTimerSeconds(rawText);
       const timerWrap = document.getElementById("cookModeTimerWrap");
       if (timerWrap) {
         if (timerSec > 0) {
           timerWrap.style.display = "flex";
-          promoteTimerToParallel(); // save any running timer before resetting
+          promoteTimerToParallel();
           cookModeTimerTotal = timerSec;
           cookModeTimerRemaining = timerSec;
           clearCookModeTimer();
@@ -12094,9 +12277,9 @@
           }
 
           if (afterKw.includes("next") || afterKw.includes("forward")) {
-            if (currentStepIndex < modalSteps.length - 1) { currentStepIndex++; updateCookModeUI(); }
+            if (currentStepIndex < modalSteps.length - 1) { currentStepIndex++; updateCookModeUI("forward"); }
           } else if (afterKw.includes("previous") || afterKw.includes("back") || afterKw.includes("prev")) {
-            if (currentStepIndex > 0) { currentStepIndex--; updateCookModeUI(); }
+            if (currentStepIndex > 0) { currentStepIndex--; updateCookModeUI("backward"); }
           } else if (afterKw.includes("start") || afterKw.includes("timer")) {
             startCookModeTimer();
           } else if (afterKw.includes("stop") || afterKw.includes("pause")) {
@@ -12125,6 +12308,18 @@
 
       overlay.classList.remove("hidden");
       _acquireWakeLock();   // keep screen on while cooking
+
+      // Set blurred food background from recipe image
+      const bgEl = document.getElementById("cookModeBg");
+      if (bgEl && activeRecipe?.image_url) {
+        bgEl.style.backgroundImage = `url('${activeRecipe.image_url}')`;
+        bgEl.style.opacity = "1";
+      } else if (bgEl) {
+        bgEl.style.opacity = "0";
+      }
+
+      // Attach swipe + tap-card gestures (once per open)
+      initCookModeGestures();
 
       // Reset done screen so we always start with normal cook UI
       const cookMain   = document.querySelector(".cookModeMain");
@@ -12311,7 +12506,7 @@
         clearCookModeTimer();
         if (currentStepIndex < modalSteps.length - 1) {
           currentStepIndex++;
-          updateCookModeUI();
+          updateCookModeUI("forward");
           updateModalStep();
         } else {
           // Last step done — celebrate, then rate
@@ -12360,7 +12555,7 @@
         clearCookModeTimer();
         if (currentStepIndex > 0) {
           currentStepIndex--;
-          updateCookModeUI();
+          updateCookModeUI("backward");
           updateModalStep();
         }
       });
