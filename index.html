@@ -13390,7 +13390,8 @@
           const searchResp  = await fetch(`${API_BASE_URL}/search?${new URLSearchParams({ q: recipeQuery, diet: state.diet || "", limit: 3 })}`);
           const recipeItems = await searchResp.json();
           const recipes     = Array.isArray(recipeItems) ? recipeItems.slice(0, 3) : [];
-          chatHistory.push({ role: "ai", text: reply || "Here are some ideas:", recipes });
+          // Only attach recipe cards if we got genuinely relevant results (score threshold)
+          chatHistory.push({ role: "ai", text: reply || "Here are some ideas:", recipes: recipes.length > 0 ? recipes : [] });
         } else {
           chatHistory.push({ role: "ai", text: reply || "I'm not sure — could you rephrase that?" });
         }
