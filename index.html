@@ -5112,7 +5112,7 @@
 
     /* TTS mute toggle pill (top-right of Cook Mode) */
     .genieMuteBtn {
-      position: absolute; top: 18px; right: 160px;
+      position: absolute; top: 18px; right: 220px;
       background: rgba(255,255,255,0.07);
       border: 1px solid rgba(255,255,255,0.14);
       border-radius: 999px;
@@ -5123,6 +5123,46 @@
     }
     .genieMuteBtn:hover { background: rgba(255,255,255,0.13); color: #fff; }
     .genieMuteBtn.muted { color: rgba(255,80,80,0.8); border-color: rgba(255,80,80,0.3); }
+
+    /* Language picker */
+    .genieLangWrap {
+      position: absolute; top: 14px; right: 160px; z-index: 30;
+    }
+    .genieLangBtn {
+      display: flex; align-items: center; gap: 4px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 999px;
+      color: rgba(255,255,255,0.7);
+      font-family: inherit; font-size: 0.78rem; font-weight: 700;
+      padding: 5px 11px; cursor: pointer;
+      transition: all 0.18s;
+    }
+    .genieLangBtn:hover { background: rgba(255,255,255,0.13); color: #fff; }
+    .genieLangDropdown {
+      position: absolute; top: calc(100% + 6px); right: 0;
+      background: rgba(14,8,3,0.96);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(200,105,14,0.35);
+      border-radius: 16px; padding: 6px;
+      min-width: 180px; max-height: 320px;
+      overflow-y: auto;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+      animation: bubblePop 0.22s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    .genieLangDropdown.hidden { display: none; }
+    .genieLangOpt {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 10px; border-radius: 10px;
+      color: rgba(255,255,255,0.75);
+      font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; transition: background 0.14s;
+      white-space: nowrap;
+    }
+    .genieLangOpt:hover { background: rgba(200,105,14,0.18); color: #fff; }
+    .genieLangOpt.active { color: #E8A020; background: rgba(200,105,14,0.14); }
+    .genieLangOpt .langFlag { font-size: 1rem; flex-shrink: 0; }
 
     /* ── Cook Mode: blurred food background ───────────────────────── */
     .cookModeBg {
@@ -7005,6 +7045,16 @@
 
     <!-- TTS mute toggle -->
     <button class="genieMuteBtn" id="genieMuteBtn" type="button">🔊 Voice</button>
+
+    <!-- Language / voice picker -->
+    <div class="genieLangWrap" id="genieLangWrap">
+      <button class="genieLangBtn" id="genieLangBtn" type="button" aria-haspopup="true" aria-expanded="false">
+        <span id="genieLangFlag">🇺🇸</span>
+        <span id="genieLangLabel">EN</span>
+        <span style="font-size:0.55rem;opacity:0.6">▼</span>
+      </button>
+      <div class="genieLangDropdown hidden" id="genieLangDropdown" role="listbox"></div>
+    </div>
 
     <div class="cookModeVoice" id="cookModeVoice">
       <span class="cookModeVoiceDot"></span>
@@ -12250,18 +12300,46 @@
     // ══════════════════════════════════════════════
 
     const _genie = {
-      active:        false,
-      ttsEnabled:    true,          // user can mute
-      driftTimer:    null,
-      engageTimer:   null,
-      bubbleTimer:   null,
-      noiseCtx:      null,
-      noiseSource:   null,
-      noiseGain:     null,
-      noisePlaying:  false,
-      synth:         window.speechSynthesis || null,
-      gesturesWired: false,
+      active:           false,
+      ttsEnabled:       true,
+      lang:             "en",
+      driftTimer:       null,
+      engageTimer:      null,
+      bubbleTimer:      null,
+      noiseCtx:         null,
+      noiseSource:      null,
+      noiseGain:        null,
+      noisePlaying:     false,
+      gesturesWired:    false,
+      currentAudio:     null,
+      translationCache: {},
     };
+
+    // Language menu — code, flag emoji, display label
+    const _GENIE_LANGS = [
+      { code: "en",    flag: "🇺🇸", label: "English (US)"  },
+      { code: "en-gb", flag: "🇬🇧", label: "English (UK)"  },
+      { code: "en-in", flag: "🇮🇳", label: "English (IN)"  },
+      { code: "hi",    flag: "🇮🇳", label: "हिन्दी"         },
+      { code: "ta",    flag: "🇮🇳", label: "தமிழ்"          },
+      { code: "te",    flag: "🇮🇳", label: "తెలుగు"         },
+      { code: "bn",    flag: "🇮🇳", label: "বাংলা"          },
+      { code: "mr",    flag: "🇮🇳", label: "मराठी"          },
+      { code: "gu",    flag: "🇮🇳", label: "ગુજરાતી"        },
+      { code: "kn",    flag: "🇮🇳", label: "ಕನ್ನಡ"          },
+      { code: "ml",    flag: "🇮🇳", label: "മലയാളം"         },
+      { code: "pa",    flag: "🇮🇳", label: "ਪੰਜਾਬੀ"         },
+      { code: "es",    flag: "🇪🇸", label: "Español"        },
+      { code: "fr",    flag: "🇫🇷", label: "Français"       },
+      { code: "de",    flag: "🇩🇪", label: "Deutsch"        },
+      { code: "ar",    flag: "🇸🇦", label: "العربية"        },
+      { code: "ja",    flag: "🇯🇵", label: "日本語"          },
+      { code: "ko",    flag: "🇰🇷", label: "한국어"          },
+      { code: "zh",    flag: "🇨🇳", label: "中文"            },
+      { code: "pt",    flag: "🇧🇷", label: "Português"      },
+      { code: "ru",    flag: "🇷🇺", label: "Русский"        },
+      { code: "it",    flag: "🇮🇹", label: "Italiano"       },
+    ];
 
     // ── Position ──────────────────────────────────────────────────────────────
     function _genieMoveTo(x, y) {
@@ -12297,29 +12375,89 @@
       _genie.driftTimer = null;
     }
 
-    // ── TTS ───────────────────────────────────────────────────────────────────
-    function _genieTTS(text) {
-      if (!_genie.ttsEnabled || !_genie.synth) return;
-      _genie.synth.cancel();
-      const utt = new SpeechSynthesisUtterance(text);
-      utt.rate  = 1.08;
-      utt.pitch = 1.05;
-      utt.volume = 0.9;
-      // Prefer a warm English voice when available
-      const voices = _genie.synth.getVoices();
-      const warm = voices.find(v => /samantha|karen|moira|fiona|daniel|google uk/i.test(v.name))
-                || voices.find(v => v.lang.startsWith("en"));
-      if (warm) utt.voice = warm;
+    // ── TTS — uses backend /tts (Google neural voices) ───────────────────────
+    async function _genieTTS(text) {
+      if (!_genie.ttsEnabled || !text?.trim()) return;
+      _genieStopTTS();   // cancel any in-progress audio
+
       const orb = document.getElementById("genieOrb");
+      try {
+        const params = new URLSearchParams({ text: text.slice(0, 400), lang: _genie.lang });
+        const audio  = new Audio(`${API_BASE_URL}/tts?${params}`);
+        audio.volume = 0.92;
+        _genie.currentAudio = audio;
+        if (orb) orb.classList.add("speaking");
+        audio.onended = audio.onerror = () => {
+          if (orb) orb.classList.remove("speaking");
+          if (_genie.currentAudio === audio) _genie.currentAudio = null;
+        };
+        await audio.play();
+      } catch {
+        // Fallback: Web Speech API if backend unavailable
+        _genieTTSFallback(text);
+      }
+    }
+
+    function _genieTTSFallback(text) {
+      const synth = window.speechSynthesis;
+      if (!synth) return;
+      synth.cancel();
+      const utt   = new SpeechSynthesisUtterance(text);
+      // Map our codes to BCP-47
+      const bcp47 = { "en": "en-US", "en-gb": "en-GB", "en-in": "en-IN",
+                      "en-au": "en-AU", "hi": "hi-IN", "ta": "ta-IN",
+                      "te": "te-IN", "bn": "bn-IN", "mr": "mr-IN" };
+      utt.lang    = bcp47[_genie.lang] || _genie.lang;
+      utt.rate    = 1.05;
+      utt.pitch   = 1.05;
+      const orb   = document.getElementById("genieOrb");
       if (orb) orb.classList.add("speaking");
-      utt.onend = () => { if (orb) orb.classList.remove("speaking"); };
-      utt.onerror = () => { if (orb) orb.classList.remove("speaking"); };
-      _genie.synth.speak(utt);
+      utt.onend = utt.onerror = () => orb?.classList.remove("speaking");
+      synth.speak(utt);
     }
 
     function _genieStopTTS() {
-      if (_genie.synth) _genie.synth.cancel();
+      if (_genie.currentAudio) {
+        _genie.currentAudio.pause();
+        _genie.currentAudio.src = "";
+        _genie.currentAudio = null;
+      }
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
       document.getElementById("genieOrb")?.classList.remove("speaking");
+    }
+
+    // ── Translation + narration ───────────────────────────────────────────────
+    async function _genieNarrate(stepText, stepNo, total) {
+      if (!_genie.ttsEnabled) return;
+      const isEnglish = _genie.lang.startsWith("en");
+      if (isEnglish) {
+        _genieTTS(`Step ${stepNo} of ${total}. ${stepText}`);
+        return;
+      }
+      // Non-English: translate via AI then speak
+      const cacheKey = `${_genie.lang}|${stepText.slice(0, 60)}`;
+      if (_genie.translationCache[cacheKey]) {
+        _genieTTS(_genie.translationCache[cacheKey]);
+        return;
+      }
+      const lang = _GENIE_LANGS.find(l => l.code === _genie.lang);
+      const langName = lang?.label || _genie.lang;
+      try {
+        const resp = await fetch(`${API_BASE_URL}/ai-chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: `Translate ONLY this cooking instruction to ${langName}. Reply with ONLY the translated text, nothing else: "${stepText}"`,
+            history: [], diet: "", ingredients: [],
+          }),
+        });
+        const data = await resp.json();
+        const translated = (data.reply || stepText).trim();
+        _genie.translationCache[cacheKey] = translated;
+        _genieTTS(translated);
+      } catch {
+        _genieTTS(`Step ${stepNo}. ${stepText}`);  // fallback: speak English
+      }
     }
 
     // ── Bubble ────────────────────────────────────────────────────────────────
@@ -12376,12 +12514,14 @@
         return;
       }
 
-      // AI-powered responses
+      // AI-powered responses — include language instruction so AI replies in chosen language
+      const langCfg  = _GENIE_LANGS.find(l => l.code === _genie.lang);
+      const inLang   = _genie.lang.startsWith("en") ? "" : ` Respond in ${langCfg?.label || _genie.lang}.`;
       const prompts = {
-        story: `In 2-3 casual, fun sentences, tell me the origin story of "${recipeName}". Be warm and engaging.`,
-        fact:  `Give me one surprising fun food fact about "${recipeName}" or its main ingredients. 1-2 sentences, casual tone.`,
-        tips:  `Give me 2 quick practical cooking tips for making "${recipeName}" better. Very brief, casual, actionable.`,
-        sub:   `What's the most interesting ingredient in "${recipeName}" and what can I substitute it with if I don't have it? 2 sentences.`,
+        story: `In 2-3 casual, fun sentences, tell me the origin story of "${recipeName}". Be warm and engaging.${inLang}`,
+        fact:  `Give me one surprising fun food fact about "${recipeName}" or its main ingredients. 1-2 sentences, casual tone.${inLang}`,
+        tips:  `Give me 2 quick practical cooking tips for making "${recipeName}" better. Very brief, casual, actionable.${inLang}`,
+        sub:   `What's the most interesting ingredient in "${recipeName}" and what can I substitute it with? 2 sentences.${inLang}`,
       };
 
       if (!prompts[action]) return;
@@ -12549,12 +12689,65 @@
           }
           if (!_genie.ttsEnabled) _genieStopTTS();
         });
+
+        // Language picker
+        const langBtn  = document.getElementById("genieLangBtn");
+        const langDrop = document.getElementById("genieLangDropdown");
+        if (langBtn && langDrop) {
+          // Populate dropdown
+          langDrop.innerHTML = _GENIE_LANGS.map(l =>
+            `<div class="genieLangOpt${l.code === _genie.lang ? " active" : ""}" data-lcode="${l.code}">
+               <span class="langFlag">${l.flag}</span>${l.label}
+             </div>`
+          ).join("");
+
+          // Toggle open/close
+          langBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const open = langDrop.classList.toggle("hidden");
+            langBtn.setAttribute("aria-expanded", String(!open));
+          });
+          // Close on outside click
+          document.addEventListener("click", () => langDrop.classList.add("hidden"), { passive: true });
+
+          // Pick language
+          langDrop.addEventListener("click", (e) => {
+            const opt = e.target.closest(".genieLangOpt");
+            if (!opt) return;
+            const code = opt.dataset.lcode;
+            _genie.lang = code;
+            _genie.translationCache = {};  // clear cache on language change
+            const cfg = _GENIE_LANGS.find(l => l.code === code);
+            document.getElementById("genieLangFlag").textContent  = cfg?.flag  || "🌐";
+            document.getElementById("genieLangLabel").textContent = code.toUpperCase().slice(0,5);
+            langDrop.querySelectorAll(".genieLangOpt").forEach(o => o.classList.toggle("active", o.dataset.lcode === code));
+            langDrop.classList.add("hidden");
+            // Confirm switch with a spoken greeting in new language
+            const greetings = {
+              hi: "नमस्ते! मैं अब हिन्दी में बात करूँगा।",
+              ta: "வணக்கம்! நான் இப்போது தமிழில் பேசுகிறேன்.",
+              te: "నమస్కారం! నేను ఇప్పుడు తెలుగులో మాట్లాడతాను.",
+              bn: "নমস্কার! আমি এখন বাংলায় কথা বলব।",
+              mr: "नमस्कार! मी आता मराठीत बोलेन.",
+              es: "¡Hola! Ahora hablaré en español.",
+              fr: "Bonjour! Je parlerai maintenant en français.",
+              de: "Hallo! Ich spreche jetzt Deutsch.",
+              ar: "مرحباً! سأتحدث الآن بالعربية.",
+              ja: "こんにちは！日本語でお話しします。",
+              ko: "안녕하세요! 이제 한국어로 말씀드리겠습니다.",
+              zh: "你好！我现在用中文说话。",
+            };
+            const greeting = greetings[code] || `Switched to ${cfg?.label || code}!`;
+            genieSay(greeting, [], 5);
+          });
+        }
       }
     }
 
     function genieClose() {
       _genie.active = false;
       _genie.gesturesWired = false;
+      _genie.translationCache = {};
       _genieStopDrift();
       _genieStopTTS();
       _genieStopNoise();
@@ -12586,7 +12779,7 @@
             genieSay(`Amazing! Last step — ${activeRecipe?.name || "your dish"} is almost ready! 🎉`, [], 8);
           }, 400);
         } else {
-          _genieTTS(`Step ${stepNo}. ${stepText}`);
+          _genieNarrate(stepText, stepNo, total);
         }
       }, 500);
     }
