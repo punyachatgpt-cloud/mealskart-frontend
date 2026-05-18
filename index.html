@@ -8791,6 +8791,9 @@
         ? activeRecipe.substitutions
         : {};
 
+      // Update "Add to List" button label based on pantry state
+      updateAddToListBtn(activeRecipe, missing);
+
       el.servingCount.textContent = `${servingMultiplier}x`;
       el.servingMinusBtn.disabled = servingMultiplier <= 1;
       el.servingPlusBtn.disabled = servingMultiplier >= 4;
@@ -12544,7 +12547,8 @@
       }
     }
 
-    function addRecipeToShoppingList(recipe) {
+    function addRecipeToShoppingList(recipe, onlyMissingSet) {
+      // onlyMissingSet: optional Set of normalised ingredient names to restrict to
       if (!recipe) return 0;
       const existing = getShoppingList();
       const existingNames = new Set(existing.map(i => i.name.toLowerCase()));
@@ -12559,6 +12563,8 @@
         const name = titleCase(ing?.name || String(ing || "")).trim();
         if (!name) continue;
         if (existingNames.has(name.toLowerCase())) continue; // skip dupes
+        // If caller wants only missing, skip pantry items
+        if (onlyMissingSet && !onlyMissingSet.has(normalizeIngredientName(name))) continue;
         const qty = ing?.quantity ? `${ing.quantity}${ing.unit ? " " + ing.unit : ""}` : "";
         newItems.push({
           id: `sl_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
@@ -12575,6 +12581,23 @@
       }
       saveShoppingList([...existing, ...newItems]);
       return added;
+    }
+
+    // Call this from renderRecipeModalDetails after computing missing[]
+    function updateAddToListBtn(recipe, missingNames) {
+      const btn = document.getElementById("addToListBtn");
+      if (!btn || btn.classList.contains("added")) return;
+      const pantryOn = getPantryStore().length > 0;
+      if (pantryOn && missingNames && missingNames.length > 0) {
+        btn.textContent = `🛒 Add missing (${missingNames.length}) to List`;
+        btn.dataset.mode = "missing";
+      } else {
+        const total = Array.isArray(recipe?.ingredients_with_quantities) && recipe.ingredients_with_quantities.length
+          ? recipe.ingredients_with_quantities.length
+          : (Array.isArray(recipe?.ingredients) ? recipe.ingredients.length : 0);
+        btn.textContent = total > 0 ? `🛒 Add all (${total}) to List` : "🛒 Add to List";
+        btn.dataset.mode = "all";
+      }
     }
 
     function toggleShoppingItem(id) {
@@ -12725,24 +12748,34 @@
       document.getElementById("shoppingListBtn")?.addEventListener("click", openShoppingSheet);
       updateShoppingBadge();
 
-      // "Add to List" inside recipe modal
+      // "Add to List" inside recipe modal — smart: missing-only when pantry active
       document.getElementById("addToListBtn")?.addEventListener("click", () => {
         if (!activeRecipe) return;
         const btn = document.getElementById("addToListBtn");
-        const count = addRecipeToShoppingList(activeRecipe);
+        const pantryOn = getPantryStore().length > 0;
+        let onlyMissing = null;
+        if (pantryOn && btn.dataset.mode === "missing") {
+          // Build missing set from current ingredient state
+          const available = new Set(getIngredients().map(normalizeIngredientName));
+          const allIngNames = Array.isArray(activeRecipe.ingredients_with_quantities) && activeRecipe.ingredients_with_quantities.length
+            ? activeRecipe.ingredients_with_quantities.map(i => normalizeIngredientName(i.name))
+            : (Array.isArray(activeRecipe.ingredients) ? activeRecipe.ingredients.map(normalizeIngredientName) : []);
+          onlyMissing = new Set(allIngNames.filter(n => n && available.size > 0 && !available.has(n)));
+        }
+        const count = addRecipeToShoppingList(activeRecipe, onlyMissing || undefined);
         if (count > 0) {
-          btn.textContent = `✓ ${count} items added!`;
+          btn.textContent = `✓ ${count} item${count !== 1 ? "s" : ""} added!`;
           btn.classList.add("added");
           setTimeout(() => {
-            btn.textContent = "🛒 Add to List";
             btn.classList.remove("added");
+            updateAddToListBtn(activeRecipe, null);
           }, 2500);
         } else {
           btn.textContent = "✓ Already in list";
           btn.classList.add("added");
           setTimeout(() => {
-            btn.textContent = "🛒 Add to List";
             btn.classList.remove("added");
+            updateAddToListBtn(activeRecipe, null);
           }, 2000);
         }
         updateShoppingBadge();
