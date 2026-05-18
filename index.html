@@ -10612,6 +10612,8 @@
       }
       saveCollections(c);
       updateCollectionsCount();
+      // Also persist the full recipe so tapping it in the sheet can open the modal
+      if (typeof saveRecipeFull === "function") saveRecipeFull(recipe);
     }
     function removeFromCollection(collName, recipeId) {
       const c = getCollections();
@@ -10736,9 +10738,9 @@
             </div>
             <div class="miniRecipeList">
               ${cols[name].map(r => `
-                <div class="miniRecipeCard">
+                <div class="miniRecipeCard" data-recipe-id="${r.id}" style="cursor:pointer" title="Open recipe">
                   <div class="miniRecipeImg" style="background-image:url('${dishImageUrl(r.name)}')"></div>
-                  <div>
+                  <div style="flex:1;min-width:0">
                     <div class="miniRecipeName">${escapeHtml(r.name)}</div>
                     <div class="miniRecipeMeta">⏱ ${clampInt(r.time_minutes,0)} min · 🔥 ${clampInt(r.calories,0)||"~"} cal</div>
                   </div>
@@ -10749,6 +10751,19 @@
           </div>
         `).join("")}
       `;
+
+      // Tap a recipe card → look up full recipe and open modal
+      sheet.querySelectorAll(".miniRecipeCard[data-recipe-id]").forEach(card => {
+        card.addEventListener("click", e => {
+          if (e.target.closest(".miniRecipeRemove")) return; // let remove button handle itself
+          const id = card.dataset.recipeId;
+          const full = getSavedRecipes().find(r => String(r.id) === String(id));
+          if (full) {
+            closeCollectionsSheet();
+            setTimeout(() => openModal(full), 230); // wait for sheet close animation
+          }
+        });
+      });
 
       sheet.querySelectorAll(".miniRecipeRemove").forEach(btn => {
         btn.addEventListener("click", () => {
@@ -14168,8 +14183,13 @@
     function updateSaveRecipeBtn() {
       const btn = document.getElementById("saveRecipeBtn");
       if (!btn || !activeRecipe) return;
-      const saved = isSavedRecipe(activeRecipe.id);
-      btn.textContent = saved ? "✅ Saved" : "📌 Save recipe";
+      const cols = getRecipeCollections(activeRecipe.id);
+      const saved = isSavedRecipe(activeRecipe.id) || cols.length > 0;
+      if (cols.length > 0) {
+        btn.textContent = `🔖 In ${cols[0]}${cols.length > 1 ? ` +${cols.length - 1}` : ""}`;
+      } else {
+        btn.textContent = saved ? "✅ Saved" : "📌 Save to collection";
+      }
       btn.classList.toggle("saved", saved);
     }
 
@@ -14499,18 +14519,16 @@
     // ── end For You Strip ─────────────────────────────────────────────────────
 
     function initPhase6() {
-      // Save button in recipe modal
-      document.getElementById("saveRecipeBtn")?.addEventListener("click", () => {
+      // Save button in recipe modal — opens collection picker so user picks a folder
+      const saveRecipeBtn = document.getElementById("saveRecipeBtn");
+      saveRecipeBtn?.addEventListener("click", () => {
         if (!activeRecipe) return;
-        if (isSavedRecipe(activeRecipe.id)) {
-          unsaveRecipe(activeRecipe.id);
-          showToast("Removed from saved recipes", "info", 1800);
+        // If already saved show quick unsave; otherwise open collection picker
+        if (isSavedRecipe(activeRecipe.id) && getRecipeCollections(activeRecipe.id).length > 0) {
+          showCollectionPicker(saveRecipeBtn, activeRecipe);
         } else {
-          saveRecipeFull(activeRecipe);
-          const isLoggedIn = !!localStorage.getItem("simmer_token");
-          showToast(isLoggedIn ? "📌 Recipe saved to your account!" : "📌 Recipe saved offline!", "success", 2200);
+          showCollectionPicker(saveRecipeBtn, activeRecipe);
         }
-        updateSaveRecipeBtn();
       });
 
       // Patch renderRecipeModalDetails to update save button state
