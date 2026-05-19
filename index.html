@@ -5031,27 +5031,40 @@
       background: radial-gradient(circle at 38% 36%, #FFD97D 0%, #E8A020 46%, #C8690E 100%);
       display: flex; align-items: center; justify-content: center;
       position: relative; cursor: pointer;
-      animation: genieBarFloat 3.6s ease-in-out infinite;
-      box-shadow: 0 0 20px rgba(200,105,14,0.45);
+      box-shadow: 0 0 18px rgba(200,105,14,0.42);
       transition: box-shadow 0.3s, transform 0.18s;
       user-select: none; -webkit-user-select: none;
     }
-    .genieAvatar:hover  { transform: scale(1.10); box-shadow: 0 0 28px rgba(200,105,14,0.65); }
+    .genieAvatar:hover  { transform: scale(1.08); box-shadow: 0 0 26px rgba(200,105,14,0.65); }
     .genieAvatar:active { transform: scale(0.93); }
     .genieAvatarEmoji { font-size: 1.4rem; line-height: 1; position: relative; z-index: 2; }
     .genieAvatarRing {
       position: absolute; inset: -4px; border-radius: 50%;
       border: 2px solid rgba(255,210,60,0);
-      transition: border-color 0.3s;
+      transition: border-color 0.35s;
     }
-    .genieAvatar.speaking { animation: genieBarFloat 3.6s ease-in-out infinite, genieAvatarGlow 0.75s ease-in-out infinite alternate; }
-    .genieAvatar.speaking .genieAvatarRing { border-color: rgba(255,210,60,0.60); animation: speakPulse 0.75s ease-in-out infinite alternate; }
-    .genieAvatar.thinking { animation: genieBarFloat 3.6s ease-in-out infinite; filter: brightness(1.3); }
-    .genieAvatar.celebrate { animation: genieCelebrate 0.5s cubic-bezier(0.34,1.56,0.64,1) 3 both; }
-
-    @keyframes genieBarFloat {
-      0%,100% { transform: translateY(0);   }
-      50%      { transform: translateY(-5px); }
+    /* Speaking: breathe glow + ring pulse — no positional movement */
+    .genieAvatar.speaking {
+      animation: genieBreath 1.8s ease-in-out infinite;
+    }
+    .genieAvatar.speaking .genieAvatarRing {
+      border-color: rgba(255,210,60,0.65);
+      animation: speakPulse 0.75s ease-in-out infinite alternate;
+    }
+    /* Thinking: shimmer brightness */
+    .genieAvatar.thinking {
+      animation: genieThinkShimmer 0.8s ease-in-out infinite alternate;
+    }
+    .genieAvatar.celebrate {
+      animation: genieCelebrate 0.5s cubic-bezier(0.34,1.56,0.64,1) 3 both;
+    }
+    @keyframes genieBreath {
+      0%,100% { box-shadow: 0 0 18px rgba(200,105,14,0.48); transform: scale(1);    }
+      50%      { box-shadow: 0 0 32px rgba(200,105,14,0.88); transform: scale(1.05); }
+    }
+    @keyframes genieThinkShimmer {
+      from { box-shadow: 0 0 14px rgba(200,105,14,0.40); filter: brightness(1.0); }
+      to   { box-shadow: 0 0 28px rgba(255,200,60,0.72); filter: brightness(1.35); }
     }
     @keyframes genieAvatarGlow {
       from { box-shadow: 0 0 20px rgba(200,105,14,0.50); }
@@ -12429,52 +12442,109 @@
     }
 
     // ── TTS — backend gTTS (Google neural voices) ────────────────────────────────
+    // ── Voice quality: prefer browser neural voices, fall back to gTTS ──────────
+    // Modern Chrome ships "Google UK English Female" (neural), Safari uses Siri voices.
+    // Both sound far more natural than gTTS. We only call the backend when the browser
+    // has no suitable voice for the selected language.
+
+    const _BCP47 = {
+      "en":    "en-US", "en-gb": "en-GB", "en-in": "en-IN", "en-au": "en-AU",
+      "hi":    "hi-IN", "ta":    "ta-IN", "te":    "te-IN", "bn":    "bn-IN",
+      "mr":    "mr-IN", "gu":    "gu-IN", "kn":    "kn-IN", "ml":    "ml-IN",
+      "pa":    "pa-IN", "es":    "es-ES", "fr":    "fr-FR", "de":    "de-DE",
+      "ar":    "ar-SA", "ja":    "ja-JP", "ko":    "ko-KR", "zh":    "zh-CN",
+      "pt":    "pt-BR", "ru":    "ru-RU", "it":    "it-IT",
+    };
+
+    // Ordered preference list of voice names known to be high-quality
+    const _VOICE_PREF = {
+      "en":    ["Google UK English Female", "Google US English", "Samantha", "Karen", "Moira", "Victoria", "Daniel"],
+      "en-gb": ["Google UK English Female", "Daniel", "Moira", "Google US English", "Samantha"],
+      "en-in": ["Google UK English Female", "Lekha", "Samantha", "Google US English"],
+      "hi":    ["Google हिन्दी", "Lekha"],
+      "ta":    ["Google தமிழ்"],
+      "te":    ["Google తెలుగు"],
+      "bn":    ["Google বাংলা"],
+      "mr":    ["Google मराठी"],
+      "gu":    ["Google ગુજરાતી"],
+      "kn":    ["Google ಕನ್ನಡ"],
+      "ml":    ["Google മലയാളം"],
+      "pa":    ["Google ਪੰਜਾਬੀ"],
+      "es":    ["Google español de Estados Unidos", "Google español", "Monica", "Jorge", "Paulina"],
+      "fr":    ["Google français", "Thomas", "Amelie"],
+      "de":    ["Google Deutsch", "Anna", "Markus"],
+      "ar":    ["Google العربية", "Maged"],
+      "ja":    ["Google 日本語", "Kyoko", "O-ren"],
+      "ko":    ["Google 한국의", "Yuna"],
+      "zh":    ["Google 普通话（中国大陆）", "Ting-Ting", "Mei-Jia"],
+      "pt":    ["Google português do Brasil", "Joana", "Luciana"],
+      "ru":    ["Google русский", "Milena", "Yuri"],
+      "it":    ["Google italiano", "Alice", "Luca"],
+    };
+
+    function _pickVoice(langCode) {
+      const synth = window.speechSynthesis;
+      if (!synth) return null;
+      const voices = synth.getVoices();
+      if (!voices.length) return null;
+      // 1. Try preferred names
+      for (const name of (_VOICE_PREF[langCode] || [])) {
+        const v = voices.find(v => v.name === name);
+        if (v) return v;
+      }
+      // 2. Any voice whose lang starts with our BCP-47 prefix
+      const target = _BCP47[langCode] || langCode;
+      const prefix = target.slice(0, 2).toLowerCase();
+      // Prefer remote (neural) voices on Chrome, then local
+      return voices.find(v => !v.localService && v.lang.toLowerCase().startsWith(prefix))
+          || voices.find(v =>  v.lang.toLowerCase().startsWith(prefix))
+          || null;
+    }
+
+    function _genieSetSpeaking(on) {
+      document.getElementById("genieBar")?.classList.toggle("speaking", on);
+      document.getElementById("genieAvatar")?.classList.toggle("speaking", on);
+    }
+
     async function _genieTTS(text) {
       if (!_genie.ttsEnabled || !text?.trim()) return;
       _genieStopTTS();
 
-      const bar     = document.getElementById("genieBar");
-      const avatar  = document.getElementById("genieAvatar");
+      // Update bar text immediately
+      const barText = document.getElementById("genieBarText");
+      if (barText) barText.textContent = text.slice(0, 90) + (text.length > 90 ? "…" : "");
+      _genieSetSpeaking(true);
+
+      // ── Strategy 1: Browser Web Speech (neural voices) ────────────────────────
+      const synth = window.speechSynthesis;
+      const voice = synth ? _pickVoice(_genie.lang) : null;
+      if (synth && voice) {
+        synth.cancel();
+        const utt   = new SpeechSynthesisUtterance(text);
+        utt.voice   = voice;
+        utt.lang    = _BCP47[_genie.lang] || _genie.lang;
+        utt.rate    = 0.95;  // slightly relaxed = more natural cadence
+        utt.pitch   = 1.0;
+        utt.volume  = 0.96;
+        utt.onend   = utt.onerror = () => _genieSetSpeaking(false);
+        synth.speak(utt);
+        return;
+      }
+
+      // ── Strategy 2: Backend gTTS (fallback for missing browser voices) ────────
       try {
         const params = new URLSearchParams({ text: text.slice(0, 400), lang: _genie.lang });
         const audio  = new Audio(`${API_BASE_URL}/tts?${params}`);
         audio.volume = 0.92;
         _genie.currentAudio = audio;
-        if (bar)    bar.classList.add("speaking");
-        if (avatar) avatar.classList.add("speaking");
-        // Update bar text with what we're saying
-        const barText = document.getElementById("genieBarText");
-        if (barText) barText.textContent = text.slice(0, 100) + (text.length > 100 ? "…" : "");
         audio.onended = audio.onerror = () => {
-          if (bar)    bar.classList.remove("speaking");
-          if (avatar) avatar.classList.remove("speaking");
+          _genieSetSpeaking(false);
           if (_genie.currentAudio === audio) _genie.currentAudio = null;
         };
         await audio.play();
       } catch {
-        _genieTTSFallback(text);
+        _genieSetSpeaking(false);
       }
-    }
-
-    function _genieTTSFallback(text) {
-      const synth = window.speechSynthesis;
-      if (!synth) return;
-      synth.cancel();
-      const utt  = new SpeechSynthesisUtterance(text);
-      const bcp47 = { "en": "en-US", "en-gb": "en-GB", "en-in": "en-IN",
-                      "en-au": "en-AU", "hi": "hi-IN", "ta": "ta-IN",
-                      "te": "te-IN", "bn": "bn-IN", "mr": "mr-IN" };
-      utt.lang  = bcp47[_genie.lang] || _genie.lang;
-      utt.rate  = 1.02; utt.pitch = 1.02;
-      const bar    = document.getElementById("genieBar");
-      const avatar = document.getElementById("genieAvatar");
-      if (bar)    bar.classList.add("speaking");
-      if (avatar) avatar.classList.add("speaking");
-      utt.onend = utt.onerror = () => {
-        bar?.classList.remove("speaking");
-        avatar?.classList.remove("speaking");
-      };
-      synth.speak(utt);
     }
 
     function _genieStopTTS() {
@@ -12484,8 +12554,7 @@
         _genie.currentAudio = null;
       }
       if (window.speechSynthesis) window.speechSynthesis.cancel();
-      document.getElementById("genieBar")?.classList.remove("speaking");
-      document.getElementById("genieAvatar")?.classList.remove("speaking");
+      _genieSetSpeaking(false);
     }
 
     // ── Narrate step — natural text pipeline ─────────────────────────────────────
@@ -12777,29 +12846,18 @@
             );
             langDrop.classList.add("hidden");
             langBtn.setAttribute("aria-expanded", "false");
-            const greetings = {
-              hi: "नमस्ते! मैं अब हिन्दी में बात करूँगा।",
-              ta: "வணக்கம்! நான் இப்போது தமிழில் பேசுகிறேன்.",
-              te: "నమస్కారం! నేను ఇప్పుడు తెలుగులో మాట్లాడతాను.",
-              bn: "নমস্কার! আমি এখন বাংলায় কথা বলব।",
-              mr: "नमस्कार! मी आता मराठीत बोलेन.",
-              gu: "નમસ્તે! હું હવે ગુજરાતીમાં બોલીશ.",
-              kn: "ನಮಸ್ಕಾರ! ನಾನು ಈಗ ಕನ್ನಡದಲ್ಲಿ ಮಾತನಾಡುತ್ತೇನೆ.",
-              ml: "നമസ്കാരം! ഞാൻ ഇനി മലയാളത്തിൽ സംസാരിക്കാം.",
-              pa: "ਸਤ ਸ੍ਰੀ ਅਕਾਲ! ਹੁਣ ਮੈਂ ਪੰਜਾਬੀ ਵਿੱਚ ਗੱਲ ਕਰਾਂਗਾ।",
-              es: "¡Hola! Ahora hablaré en español.",
-              fr: "Bonjour! Je parlerai maintenant en français.",
-              de: "Hallo! Ich spreche jetzt auf Deutsch.",
-              ar: "مرحباً! سأتحدث الآن بالعربية.",
-              ja: "こんにちは！これから日本語でご案内します。",
-              ko: "안녕하세요! 이제 한국어로 안내해 드릴게요.",
-              zh: "你好！我现在用中文来为您服务。",
-              pt: "Olá! Agora vou falar em português.",
-              ru: "Привет! Теперь я буду говорить по-русски.",
-              it: "Ciao! Ora parlerò in italiano.",
-            };
-            const greeting = greetings[code] || `Switched to ${cfg?.label || code}! 🌍`;
-            genieSay(greeting, [], 5);
+            // Stop any in-progress audio immediately — no announcement
+            _genieStopTTS();
+            // Show selected language as a quiet visual confirmation in the bar
+            const barText = document.getElementById("genieBarText");
+            if (barText) {
+              barText.textContent = `${cfg?.flag || "🌐"} ${cfg?.label || code}`;
+              // Fade back to idle hint after 2s
+              setTimeout(() => {
+                if (barText.textContent.startsWith(cfg?.flag || "🌐"))
+                  barText.textContent = "Tap ✦ for tips";
+              }, 2000);
+            }
           });
         }
       }
@@ -16465,6 +16523,11 @@
 
     initTheme();
     initCookMode();
+    // Pre-warm browser TTS voice list (Chrome loads it asynchronously)
+    if (window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
     initNotifications();
     initCommunityFeed();
     initVoiceInput();
