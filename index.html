@@ -6802,9 +6802,9 @@
       <div class="servingRow">
         <div class="servingLabel">Servings</div>
         <div class="servingControls" aria-label="Serving controls">
-          <button class="servingBtn" id="servingMinusBtn" type="button">-</button>
-          <span class="servingCount" id="servingCount">1x</span>
-          <button class="servingBtn" id="servingPlusBtn" type="button">+</button>
+          <button class="servingBtn" id="servingMinusBtn" type="button" title="Decrease servings" aria-label="Decrease servings">-</button>
+          <span class="servingCount" id="servingCount" aria-live="polite" aria-atomic="true">1x</span>
+          <button class="servingBtn" id="servingPlusBtn" type="button" title="Increase servings" aria-label="Increase servings">+</button>
         </div>
       </div>
       <div class="macroGrid" id="macroGrid"></div>
@@ -9103,7 +9103,7 @@
               </div>
               <div style="display:flex;gap:6px;align-items:center">
                 <button class="saveBtn ${getRecipeCollections(item.id).length ? "saved" : ""}" type="button" aria-label="Save to collection">🔖</button>
-                <button class="heartBtn" type="button" aria-label="Toggle favorite">
+                <button class="heartBtn" type="button" aria-label="Toggle favorite" title="Toggle favorite">
                   <span class="heart">${isFav ? "&#10084;" : "&#9825;"}</span>
                 </button>
               </div>
@@ -10414,15 +10414,18 @@
     });
 
     el.servingMinusBtn.addEventListener("click", () => {
+      if (navigator.vibrate) navigator.vibrate(40);
       servingMultiplier = Math.max(1, servingMultiplier - 1);
       renderRecipeModalDetails();
     });
 
     el.servingPlusBtn.addEventListener("click", () => {
-      servingMultiplier = Math.min(4, servingMultiplier + 1);
+      if (navigator.vibrate) navigator.vibrate(40);
+      servingMultiplier = Math.min(8, servingMultiplier + 1);
       renderRecipeModalDetails();
     });
 
+    el.timerBtn.title = "Start/Pause timer";
     el.timerBtn.addEventListener("click", () => {
       if (!timerSeconds) return;
       if (timerId) {
