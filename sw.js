@@ -1,14 +1,37 @@
-// Simmer Service Worker — cache-first static, network-first API
-const CACHE_NAME = "simmer-v5";
-const API_CACHE  = "simmer-api-v5";
+// Simmer Service Worker — v6
+// Strategy per endpoint:
+//   recipe endpoints  → stale-while-revalidate (instant cached response + bg refresh)
+//   ai / tts / track  → network-only (never cache dynamic AI responses)
+//   static shell      → cache-first with network fallback
+//   external images   → cache-first (fonts, Unsplash, TheMealDB thumbnails)
 
-const STATIC_ASSETS = [
-  "/",
-  "/index.html",
-  "/manifest.json"
+const CACHE_NAME = "simmer-v6";
+const API_CACHE  = "simmer-api-v6";
+
+const STATIC_ASSETS = ["/", "/index.html", "/manifest.json", "/icon.svg"];
+
+// Paths that get stale-while-revalidate treatment.
+// Matched as prefix against request.url pathname.
+const SWR_PATHS = [
+  "/api/recommend",
+  "/api/browse",
+  "/api/recipe/",
+  "/api/search",
+  "/api/meal-plan",
 ];
 
-// ── Install: pre-cache static shell ──────────────────────────────────────────
+// Paths that must always go to the network (no caching).
+const NETWORK_ONLY_PATHS = [
+  "/api/ai-chat",
+  "/api/tts",
+  "/api/track",
+  "/api/auth/",
+];
+
+// Max age we'll serve a stale API response while revalidating (24 h)
+const SWR_MAX_STALE_MS = 24 * 60 * 60 * 1000;
+
+// ── Install ───────────────────────────────────────────────────────────────────
 self.addEventListener("install", event => {
   self.skipWaiting();
   event.waitUntil(
@@ -16,34 +39,37 @@ self.addEventListener("install", event => {
   );
 });
 
-// ── Activate: delete old caches ───────────────────────────────────────────────
+// ── Activate ──────────────────────────────────────────────────────────────────
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
+    caches.keys()
+      .then(keys => Promise.all(
         keys
           .filter(k => k !== CACHE_NAME && k !== API_CACHE)
           .map(k => caches.delete(k))
-      )
-    ).then(() => self.clients.claim())
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
-// ── Fetch: strategy by request type ──────────────────────────────────────────
+// ── Fetch ─────────────────────────────────────────────────────────────────────
 self.addEventListener("fetch", event => {
   const { request } = event;
-  const url = new URL(request.url);
-
-  // Only handle same-origin + api requests
   if (request.method !== "GET") return;
 
-  // API calls → network-first, cache fallback (5 min TTL)
-  if (url.pathname.startsWith("/api/")) {
-    event.respondWith(networkFirstAPI(request));
+  const url = new URL(request.url);
+  const path = url.pathname;
+
+  // Network-only: AI, TTS, tracking, auth
+  if (NETWORK_ONLY_PATHS.some(p => path.startsWith(p))) return;
+
+  // Stale-while-revalidate: recipe endpoints
+  if (SWR_PATHS.some(p => path.startsWith(p))) {
+    event.respondWith(staleWhileRevalidate(request));
     return;
   }
 
-  // Google Fonts, Unsplash images, TheMealDB images → cache-first
+  // External assets: fonts, Unsplash, TheMealDB — cache-first
   if (
     url.hostname === "fonts.googleapis.com" ||
     url.hostname === "fonts.gstatic.com" ||
@@ -54,45 +80,59 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // Static shell → cache-first with network fallback
+  // Static shell — cache-first, but never serve stale HTML
   event.respondWith(cacheFirstStatic(request));
 });
 
-async function networkFirstAPI(request) {
+// ── Stale-while-revalidate ────────────────────────────────────────────────────
+async function staleWhileRevalidate(request) {
   const cache = await caches.open(API_CACHE);
-  try {
-    const response = await fetch(request.clone(), { signal: AbortSignal.timeout(35000) });
-    if (response.ok) {
-      // Tag with timestamp header for TTL check
-      const headers = new Headers(response.headers);
-      headers.set("x-sw-cached-at", Date.now().toString());
-      const tagged = new Response(await response.clone().blob(), {
-        status: response.status,
-        statusText: response.statusText,
-        headers
-      });
-      cache.put(request, tagged);
+  const cached = await cache.match(request);
+
+  // Always kick off a background fetch to keep the cache warm
+  const networkFetch = fetch(request.clone(), { signal: AbortSignal.timeout(45000) })
+    .then(async response => {
+      if (response.ok) {
+        const headers = new Headers(response.headers);
+        headers.set("x-sw-cached-at", Date.now().toString());
+        const tagged = new Response(await response.clone().blob(), {
+          status: response.status,
+          statusText: response.statusText,
+          headers,
+        });
+        cache.put(request, tagged);
+      }
+      return response;
+    })
+    .catch(() => null);
+
+  if (cached) {
+    const cachedAt = Number(cached.headers.get("x-sw-cached-at") || 0);
+    const age = Date.now() - cachedAt;
+
+    if (age < SWR_MAX_STALE_MS) {
+      // Respond with cached data immediately — network fetch updates cache in bg
+      return cached;
     }
-    return response;
-  } catch {
-    // Offline or timeout — try cache
-    const cached = await cache.match(request);
-    if (cached) {
-      const cachedAt = Number(cached.headers.get("x-sw-cached-at") || 0);
-      const age = Date.now() - cachedAt;
-      if (age < 60 * 60 * 1000) return cached; // accept if < 1 hour old
-    }
-    // Return a graceful offline JSON
-    return new Response(
-      JSON.stringify({ error: "offline", message: "No cached data available yet. Connect to the internet to load recipes." }),
-      { status: 503, headers: { "Content-Type": "application/json" } }
-    );
   }
+
+  // No usable cache — wait for the network
+  const response = await networkFetch;
+  if (response) return response;
+
+  // Network failed + no cache → graceful offline response
+  return new Response(
+    JSON.stringify({
+      error: "offline",
+      message: "No cached data available. Connect to the internet to load recipes.",
+    }),
+    { status: 503, headers: { "Content-Type": "application/json" } }
+  );
 }
 
+// ── Static shell (cache-first, never stale HTML) ──────────────────────────────
 async function cacheFirstStatic(request) {
   const url = new URL(request.url);
-  // Never serve index.html from cache — always fetch fresh so JS updates deploy immediately
   const isHtml = url.pathname === "/" || url.pathname === "/index.html" || !url.pathname.includes(".");
   if (isHtml) {
     try {
@@ -117,20 +157,34 @@ async function cacheFirstStatic(request) {
   }
 }
 
+// ── External assets (cache-first) ─────────────────────────────────────────────
+async function cacheFirstExternal(request) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    return new Response("", { status: 503 });
+  }
+}
+
 // ── Push notifications ────────────────────────────────────────────────────────
 self.addEventListener("push", event => {
   const data = event.data?.json() || {};
-  const title   = data.title || "Simmer 🔥";
-  const options = {
-    body:    data.body    || "Your personalised recipe picks are waiting.",
-    icon:    "/icons/icon-192.png",
-    badge:   "/icons/badge-72.png",
-    data:    { url: data.url || "/" },
-    vibrate: [100, 50, 100],
-    tag:     "simmer-daily",
+  event.waitUntil(self.registration.showNotification(data.title || "Simmer 🔥", {
+    body:     data.body    || "Your personalised recipe picks are waiting.",
+    icon:     "/icon.svg",
+    badge:    "/icon.svg",
+    data:     { url: data.url || "/" },
+    vibrate:  [100, 50, 100],
+    tag:      "simmer-daily",
     renotify: true,
-  };
-  event.waitUntil(self.registration.showNotification(title, options));
+  }));
 });
 
 self.addEventListener("notificationclick", event => {
@@ -148,18 +202,3 @@ self.addEventListener("notificationclick", event => {
     })
   );
 });
-
-async function cacheFirstExternal(request) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch {
-    return new Response("", { status: 503 });
-  }
-}

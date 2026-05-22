@@ -509,6 +509,20 @@
       border: 0;
     }
 
+    /* ── Cold-start countdown chip ───────────────── */
+    #coldCountdown {
+      display: inline-block;
+      padding: 1px 7px;
+      background: rgba(200,105,14,0.13);
+      border: 1px solid rgba(200,105,14,0.28);
+      border-radius: 20px;
+      font-weight: 700;
+      color: var(--accent);
+      font-size: 0.82em;
+      min-width: 32px;
+      text-align: center;
+    }
+
     .spinner {
       display: none;
       align-items: center;
@@ -7321,6 +7335,16 @@
 
     const API_BASE_URL = "/api";
 
+    // ── Cache TTL constants ───────────────────────────────────────────────────
+    // Serve stale results immediately; fetch fresh in background when stale > FRESH_TTL
+    const CACHE_FRESH_TTL  =  5 * 60 * 1000;  //  5 min — serve without bg refresh
+    const CACHE_STALE_TTL  = 24 * 60 * 60 * 1000; // 24 h — serve stale + refresh in bg
+
+    // ── Backend pre-warm ──────────────────────────────────────────────────────
+    // Fire a lightweight /health ping immediately so Render starts its cold-start
+    // boot sequence before the user even clicks "Suggest". Fire-and-forget.
+    fetch(`${API_BASE_URL}/health`, { method: "GET" }).catch(() => {});
+
     const PREFERENCES_KEY = "foodai_preferences";
     const LAST_MODE_KEY = "foodai_last_mode";
     const LAST_COOKED_KEY = "last_cooked";
@@ -10213,6 +10237,10 @@
       updateMicrocopy();
       renderLoadingCards(mode);
 
+      // Hoisted so both try and catch can clear these timers
+      let _coldTimer = null;
+      let _countdownTimer = null;
+
       try {
         const ingredients = getIngredients();
         // NOTE: name_query is intentionally NOT derived from ingredient tags here.
@@ -10225,27 +10253,54 @@
           : { ...state, mode, ingredients };
 
         const cacheKey = JSON.stringify({ ...state, mode, ingredients });
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
+        let servedStale = false;
+
+        // ── Stale-while-revalidate cache check ───────────────────────────────
+        // Serve cached results instantly (up to 24 h old), then refresh in bg.
+        // If cache is < 5 min old, skip the network entirely.
+        const _raw = localStorage.getItem(cacheKey);
+        if (_raw) {
           try {
-            const parsed = JSON.parse(cached);
-            const cachedData = parsed && typeof parsed === "object" ? parsed.data : null;
-            const cachedTime = parsed && typeof parsed === "object" ? parsed.time : null;
-            const isFresh = typeof cachedTime === "number" && (Date.now() - cachedTime < 5 * 60 * 1000);
-            if (isFresh && Array.isArray(cachedData) && cachedData.length > 0 && !uniSearchActive) {
+            const parsed = JSON.parse(_raw);
+            const cachedData = Array.isArray(parsed?.data) ? parsed.data : null;
+            const cacheAge  = Date.now() - (parsed?.time || 0);
+
+            if (cachedData && cachedData.length > 0 && cacheAge < CACHE_STALE_TTL && !uniSearchActive) {
+              // Render stale data immediately — user sees content at once
               renderResults(cachedData, mode);
               localStorage.setItem(LAST_MODE_KEY, mode);
-              if (mode === "decide" && cachedData.length > 0) trackInteraction("decide", cachedData[0].id);
-              el.statusText.textContent = "Ready.";
-              return;
+              if (mode === "decide") trackInteraction("decide", cachedData[0].id);
+
+              if (cacheAge < CACHE_FRESH_TTL) {
+                // Still fresh — no network call needed
+                el.statusText.textContent = "Ready.";
+                return;
+              }
+
+              // Stale (> 5 min) — keep serving it while we refresh in background
+              el.statusText.textContent = "Refreshing…";
+              el.loading.style.display = "none";   // hide spinner, data is already shown
+              el.suggestBtn.disabled = false;
+              el.decideBtn.disabled  = false;
+              el.planBtn.disabled    = false;
+              servedStale = true;
             }
-          } catch (error) {}
+          } catch {}
         }
 
-        // Show a hint after 3s so the user knows we're waking the server
-        const slowHint = setTimeout(() => {
-          if (isLoadingSuggestions) el.statusText.textContent = "Waking up kitchen… just a moment ☕";
-        }, 3000);
+        // ── Cold-start hint (only shown when no stale data) ───────────────────
+        if (!servedStale) {
+          _coldTimer = setTimeout(() => {
+            if (!isLoadingSuggestions) return;
+            let secsLeft = 30;
+            el.statusText.innerHTML = `☕ Kitchen warming up… <span id="coldCountdown">${secsLeft}s</span>`;
+            _countdownTimer = setInterval(() => {
+              secsLeft = Math.max(0, secsLeft - 1);
+              const cdEl = document.getElementById("coldCountdown");
+              if (cdEl) cdEl.textContent = secsLeft > 0 ? `${secsLeft}s` : "almost ready…";
+            }, 1000);
+          }, 3000);
+        }
 
         const response = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
           method: "POST",
@@ -10253,7 +10308,9 @@
           body: JSON.stringify(apiPayload)
         });
 
-        clearTimeout(slowHint);
+        clearTimeout(_coldTimer);
+        clearInterval(_countdownTimer);
+
         const data = await response.json();
         const resultItems = Array.isArray(data) ? data : [];
 
@@ -10262,37 +10319,63 @@
 
         try {
           localStorage.setItem(cacheKey, JSON.stringify({ data: resultItems, time: Date.now() }));
-        } catch (error) {}
+        } catch {}
 
-        renderResults(resultItems, mode);
-        localStorage.setItem(LAST_MODE_KEY, mode);
-        if (mode === "decide" && Array.isArray(data) && data.length > 0) trackInteraction("decide", data[0].id);
+        if (!servedStale) {
+          // First load — render normally
+          renderResults(resultItems, mode);
+          localStorage.setItem(LAST_MODE_KEY, mode);
+          if (mode === "decide" && resultItems.length > 0) trackInteraction("decide", resultItems[0].id);
+        } else if (resultItems.length > 0) {
+          // Silent update — results already on screen, patch them
+          renderResults(resultItems, mode);
+          el.statusText.textContent = "Updated ✓";
+          setTimeout(() => { if (el.statusText.textContent === "Updated ✓") el.statusText.textContent = ""; }, 2000);
+        }
+
       } catch (error) {
-        el.statusText.textContent = "Kitchen is warming up… retrying in 25s ☕";
-        renderEmpty("Waking up the kitchen — just a moment…");
-        // Auto-retry once after 25s to handle Render cold-start (can take 30-90s)
-        const retryMode = mode, retryQuery = queryOverride;
-        setTimeout(async () => {
-          try {
-            const r2 = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(retryMode === "fridge"
-                ? { ...state, mode: "normal", time_available: 999, mood: "any", ingredients: getIngredients() }
-                : { ...state, mode: retryMode, ingredients: getIngredients() })
-            });
-            const d2 = await r2.json();
-            if (Array.isArray(d2) && d2.length) {
-              renderResults(d2, retryMode);
-              el.statusText.textContent = "Ready.";
-            } else {
-              el.statusText.innerHTML = "No matches — tap <b>Suggest</b> to try different filters.";
+        clearInterval(_countdownTimer);
+
+        if (servedStale) {
+          // User already has results — just show a soft warning
+          el.statusText.textContent = "Using saved results (server unreachable)";
+          setTimeout(() => { el.statusText.textContent = ""; }, 4000);
+        } else {
+          // No cached data — show cold-start UI with countdown retry
+          el.statusText.textContent = "Kitchen is warming up… retrying in 30s ☕";
+          renderEmpty("Waking up the kitchen — just a moment…");
+
+          const retryMode = mode, retryQuery = queryOverride;
+          let retryLeft = 30;
+          const retryCountdown = setInterval(() => {
+            retryLeft = Math.max(0, retryLeft - 1);
+            el.statusText.textContent = `Kitchen warming up… retrying in ${retryLeft}s ☕`;
+          }, 1000);
+
+          setTimeout(async () => {
+            clearInterval(retryCountdown);
+            try {
+              const r2 = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(retryMode === "fridge"
+                  ? { ...state, mode: "normal", time_available: 999, mood: "any", ingredients: getIngredients() }
+                  : { ...state, mode: retryMode, ingredients: getIngredients() })
+              });
+              const d2 = await r2.json();
+              if (Array.isArray(d2) && d2.length) {
+                renderResults(d2, retryMode);
+                el.statusText.textContent = "Ready.";
+                try { localStorage.setItem(cacheKey, JSON.stringify({ data: d2, time: Date.now() })); } catch {}
+              } else {
+                el.statusText.innerHTML = "No matches — tap <b>Suggest</b> to try different filters.";
+              }
+            } catch {
+              el.statusText.innerHTML = "Server offline — tap <b>Suggest</b> to retry.";
+              renderError("Couldn't reach the kitchen. Tap Try again or adjust your filters.", () => getSuggestions(retryMode, retryQuery));
             }
-          } catch {
-            el.statusText.innerHTML = "Server offline — tap <b>Suggest</b> to retry.";
-            renderError("Couldn't reach the kitchen. Tap Try again or adjust your filters.", () => getSuggestions(retryMode, retryQuery));
-          }
-        }, 6000);
+          }, 30000);
+        }
       } finally {
         el.loading.style.display = "none";
         el.suggestBtn.disabled = false;
