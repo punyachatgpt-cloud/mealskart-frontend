@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#1a0a02"/>
+      <stop offset="100%" stop-color="#0a0501"/>
+    </radialGradient>
+    <linearGradient id="flame" x1="0" y1="0" x2="0.4" y2="1">
+      <stop offset="0%"   stop-color="#FFD166"/>
+      <stop offset="50%"  stop-color="#E8812A"/>
+      <stop offset="100%" stop-color="#C8590E"/>
+    </linearGradient>
+    <linearGradient id="bowl" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#E8A030"/>
+      <stop offset="100%" stop-color="#C8690E"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="256" fill="url(#bg)"/>
+
+  <!-- Bowl body -->
+  <path d="M138 282 Q138 370 256 370 Q374 370 374 282 Z" fill="url(#bowl)" opacity="0.95"/>
+
+  <!-- Bowl rim -->
+  <rect x="128" y="270" width="256" height="22" rx="11" fill="#E8A030"/>
+
+  <!-- Steam / flame above bowl -->
+  <path d="M214 256 Q202 220 218 195 Q224 184 216 170
+           Q236 190 228 215 Q240 198 246 178
+           Q264 204 252 230 Q268 208 274 186
+           Q294 212 282 240 Q300 220 302 200
+           Q318 226 306 258"
+        fill="none" stroke="url(#flame)" stroke-width="12"
+        stroke-linecap="round" stroke-linejoin="round" opacity="0.92"/>
+
+  <!-- Chopsticks / spoon suggestion — two thin rects -->
+  <rect x="248" y="142" width="10" height="80" rx="5" fill="#FFD166" opacity="0.70" transform="rotate(-12 253 182)"/>
+  <rect x="266" y="142" width="10" height="80" rx="5" fill="#FFD166" opacity="0.55" transform="rotate(8 271 182)"/>
+</svg>

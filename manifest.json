@@ -9,15 +9,15 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=192&h=192&fit=crop",
-      "sizes": "192x192",
-      "type": "image/jpeg",
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=512&h=512&fit=crop",
-      "sizes": "512x512",
-      "type": "image/jpeg",
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "maskable"
     }
   ],

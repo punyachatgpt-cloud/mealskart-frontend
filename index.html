@@ -12,7 +12,7 @@
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="manifest" href="/manifest.json" />
-  <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=192&h=192&fit=crop" />
+  <link rel="apple-touch-icon" href="/icon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -1462,6 +1462,36 @@
       border-radius: 0;
       background: transparent;
       border: none;
+    }
+
+    /* ── Difficulty badge ──────────────────────────── */
+    .diffBadge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 9px;
+      border-radius: 20px;
+      font-size: var(--t-xs);
+      font-weight: var(--fw-med);
+      letter-spacing: 0.01em;
+    }
+    .diffBadge.easy   { background: rgba(34,197,94,0.12);  color: #16a34a; border: 1px solid rgba(34,197,94,0.28);  }
+    .diffBadge.medium { background: rgba(234,179,8,0.12);  color: #b45309; border: 1px solid rgba(234,179,8,0.28);  }
+    .diffBadge.hard   { background: rgba(239,68,68,0.12);  color: #dc2626; border: 1px solid rgba(239,68,68,0.28);  }
+
+    /* ── Step timer chip (modal + cook mode) ──────── */
+    .stepTimerChip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      background: rgba(200,105,14,0.12);
+      border: 1px solid rgba(200,105,14,0.28);
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #C8690E;
+      margin-top: 10px;
     }
 
     .ingredientPreview {
@@ -8146,6 +8176,26 @@
       return `https://images.unsplash.com/${fallback[Math.abs(hashText(name)) % fallback.length]}?auto=format&fit=crop&w=${w}&q=82`;
     }
 
+    /**
+     * recipeImg — always prefer the real MealDB/Supabase image_url over
+     * a keyword-guessed Unsplash fallback.
+     */
+    function recipeImg(recipe, w = 900) {
+      const url = recipe && (recipe.image_url || "");
+      return (url && url.startsWith("http")) ? url : dishImageUrl((recipe && recipe.name) || "", w);
+    }
+
+    /**
+     * difficultyBadge — returns a coloured pill HTML string.
+     * easy=green  medium=amber  hard=red
+     */
+    function difficultyBadge(difficulty) {
+      const d = (String(difficulty || "medium")).toLowerCase();
+      const icon  = d === "easy" ? "🟢" : d === "hard" ? "🔴" : "🟡";
+      const label = d === "easy" ? "Easy" : d === "hard" ? "Hard" : "Medium";
+      return `<span class="diffBadge ${d}">${icon} ${label}</span>`;
+    }
+
     // ── Social proof (deterministic, seed from id+name) ──────────────────
     function recipeStats(recipeId, name) {
       const seed = Math.abs(hashText(String(recipeId) + String(name || "")));
@@ -9170,7 +9220,7 @@
             <div class="metaRow">
               <span class="metaItem">&#9201; ${clampInt(item.time_minutes, 0)} min</span>
               ${calories > 0 ? `<span class="metaItem">&#128293; ${calories} cal</span>` : ""}
-              <span class="metaItem">&#9989; ${escapeHtml(difficulty)}</span>
+              ${difficultyBadge(item.difficulty)}
               ${matchPercent > 0 ? `<span class="metaItem">&#127919; ${matchPercent}% match</span>` : ""}
             </div>
 
@@ -9798,7 +9848,11 @@
       el.stepNumBadge.textContent = stepNo;
 
       // Step text with highlights — use innerHTML
-      el.stepText.innerHTML = highlightStepText(rawText);
+      const _stepTimerSec = stepTimerSeconds(rawText);
+      const _stepTimerChip = _stepTimerSec > 0
+        ? `<div class="stepTimerChip">⏱ ${Math.round(_stepTimerSec / 60)} min</div>`
+        : "";
+      el.stepText.innerHTML = highlightStepText(rawText) + _stepTimerChip;
 
       // Slide animation
       el.stepCard.classList.remove("slideForward", "slideBack");
@@ -9905,7 +9959,7 @@
           .slice(0, 5);
         if (!items.length) return;
         row.innerHTML = items.map(r => {
-          const img = (r.image_url && r.image_url.startsWith("http")) ? r.image_url : dishImageUrl(r.name);
+          const img = recipeImg(r);
           const time = clampInt(r.time_minutes, 0);
           return `<div class="simCard" data-id="${r.id}" role="button" tabindex="0" aria-label="${escapeHtml(r.name)}">
             <div class="simCardImg" style="background-image:url('${img}')"></div>
@@ -10826,7 +10880,7 @@
       const cardEl   = document.getElementById("shareCardEl");
       if (!overlay || !cardEl || !recipe) return;
 
-      const imgUrl   = dishImageUrl(recipe.name);
+      const imgUrl   = recipeImg(recipe);
       const time     = clampInt(recipe.time_minutes, 0);
       const cal      = clampInt(recipe.calories, 0);
       const diff     = titleCase(recipe.difficulty || "easy");
@@ -11351,7 +11405,7 @@
             <div class="miniRecipeList">
               ${cols[name].map(r => `
                 <div class="miniRecipeCard" data-recipe-id="${r.id}" style="cursor:pointer" title="Open recipe">
-                  <div class="miniRecipeImg" style="background-image:url('${dishImageUrl(r.name)}')"></div>
+                  <div class="miniRecipeImg" style="background-image:url('${recipeImg(r)}')"></div>
                   <div style="flex:1;min-width:0">
                     <div class="miniRecipeName">${escapeHtml(r.name)}</div>
                     <div class="miniRecipeMeta">⏱ ${clampInt(r.time_minutes,0)} min · 🔥 ${clampInt(r.calories,0)||"~"} cal</div>
@@ -12111,11 +12165,11 @@
         const imgEl = card.querySelector(".foodImg");
         if (imgEl) {
           imgEl.classList.remove("imageLoaded");
-          imgEl.style.backgroundImage = `url('${dishImageUrl(newItem.name)}')`;
+          imgEl.style.backgroundImage = `url('${recipeImg(newItem)}')`;
           const img2 = new Image();
           img2.onload  = () => imgEl.classList.add("imageLoaded");
           img2.onerror = () => { imgEl.style.backgroundImage = "linear-gradient(135deg,rgba(249,115,22,0.36),rgba(124,45,18,0.62))"; imgEl.classList.add("imageLoaded"); };
-          img2.src = dishImageUrl(newItem.name);
+          img2.src = recipeImg(newItem);
         }
 
         const q = s => card.querySelector(s);
@@ -12222,11 +12276,11 @@
       const imgEl = card.querySelector(".foodImg");
       if (imgEl) {
         imgEl.classList.remove("imageLoaded");
-        imgEl.style.backgroundImage = `url('${dishImageUrl(originalItem.name)}')`;
+        imgEl.style.backgroundImage = `url('${recipeImg(originalItem)}')`;
         const img2 = new Image();
         img2.onload  = () => imgEl.classList.add("imageLoaded");
         img2.onerror = () => imgEl.classList.add("imageLoaded");
-        img2.src = dishImageUrl(originalItem.name);
+        img2.src = recipeImg(originalItem);
       }
 
       const imageTitle = q(".imageTitle");
@@ -13026,9 +13080,15 @@
         card.classList.add(direction === "backward" ? "cmAnimBwd" : "cmAnimFwd");
       }
 
-      // Step text
+      // Step text — use innerHTML so time highlights and ingredient bolds render
       const stepEl = document.getElementById("cookModeStepText");
-      if (stepEl) stepEl.textContent = stepText;
+      if (stepEl) {
+        const timerChipSec = stepTimerSeconds(rawText);
+        const timerChip = timerChipSec > 0
+          ? `<div class="stepTimerChip">⏱ ${Math.round(timerChipSec / 60)} min</div>`
+          : "";
+        stepEl.innerHTML = highlightStepText(stepText) + timerChip;
+      }
 
       // Step dots
       renderCookModeStepDots();
@@ -14324,7 +14384,7 @@
               : "";
             return `
               <div class="cookLogEntry" data-id="${entry.id}">
-                <div class="cookLogThumb" style="background-image:url('${dishImageUrl(entry.name)}')"></div>
+                <div class="cookLogThumb" style="background-image:url('${recipeImg(entry)}')"></div>
                 <div class="cookLogBody">
                   <div class="cookLogName">${entry.name}</div>
                   ${stars ? `<div class="cookLogStars">${stars}</div>` : ""}
@@ -14432,7 +14492,7 @@
         } else if (msg.role === "ai" && msg.recipes?.length) {
           const recipeCards = msg.recipes.map(r => `
             <div class="chatRecipeCard" data-id="${r.id}">
-              <div class="chatRecipeThumb" style="background-image:url('${dishImageUrl(r.name)}')"></div>
+              <div class="chatRecipeThumb" style="background-image:url('${recipeImg(r)}')"></div>
               <div>
                 <div class="chatRecipeName">${r.name}</div>
                 <div class="chatRecipeMeta">⏱ ${clampInt(r.time_minutes,0)} min · ${clampInt(r.calories||0,0)} kcal</div>
@@ -15610,7 +15670,7 @@
         const cals  = clampInt(r.calories, 0);
         const meta  = [time ? `⏱ ${time} min` : null, cals ? `🔥 ${cals} cal` : null]
                         .filter(Boolean).join("  ·  ");
-        const img   = dishImageUrl(r.name);
+        const img   = recipeImg(r);
         return `
           <div class="savedRecipeCard" data-saved-id="${escapeHtml(String(r.id))}">
             <img class="savedRecipeThumb" src="${escapeHtml(img)}" alt="${escapeHtml(r.name)}" loading="lazy" />
@@ -15805,32 +15865,32 @@
         card.className = "forYouCard";
         card.tabIndex = 0;
 
-        // Image area
-        if (r.image_url) {
-          const wrap = document.createElement("div");
-          wrap.className = "forYouCardImgWrap";
-          const img = document.createElement("img");
-          img.className = "forYouCardImg";
-          img.src = r.image_url;
-          img.alt = r.name || "";
-          img.loading = "lazy";
-          img.addEventListener("error", () => {
-            card.replaceChild(_forYouNoImg(r.name), wrap);
-          }, { once: true });
-          const overlay = document.createElement("div");
-          overlay.className = "forYouCardImgOverlay";
-          wrap.appendChild(img);
-          wrap.appendChild(overlay);
-          card.appendChild(wrap);
-        } else {
-          card.appendChild(_forYouNoImg(r.name));
-        }
+        // Image area — always show an image (MealDB real photo if available,
+        // Unsplash keyword guess otherwise — letter initial only as last resort)
+        const _imgSrc = recipeImg(r);
+        const wrap = document.createElement("div");
+        wrap.className = "forYouCardImgWrap";
+        const img = document.createElement("img");
+        img.className = "forYouCardImg";
+        img.src = _imgSrc;
+        img.alt = r.name || "";
+        img.loading = "lazy";
+        img.addEventListener("error", () => {
+          // If even the fallback fails, replace with a styled initial avatar
+          card.replaceChild(_forYouNoImg(r.name), wrap);
+        }, { once: true });
+        const overlay = document.createElement("div");
+        overlay.className = "forYouCardImgOverlay";
+        wrap.appendChild(img);
+        wrap.appendChild(overlay);
+        card.appendChild(wrap);
 
         // Body
         const body = document.createElement("div");
         body.className = "forYouCardBody";
         body.innerHTML = `<p class="forYouCardName">${escapeHtml(r.name || "")}</p>
-          <p class="forYouCardMeta">⏱ ${r.time_minutes||"?"}m &middot; ${r.calories||"?"}kcal</p>`;
+          <p class="forYouCardMeta">⏱ ${r.time_minutes||"?"}m &middot; ${r.calories||"?"}kcal</p>
+          ${difficultyBadge(r.difficulty)}`;
         card.appendChild(body);
 
         card.addEventListener("click", () => openRecipeModal(r.id));
@@ -16256,7 +16316,7 @@
       const time = clampInt(item.time_minutes, 0);
       const cals = clampInt(item.calories, 0);
       card.innerHTML = `
-        <img class="quickfireImg" src="${escapeHtml(dishImageUrl(item.name))}" alt="${escapeHtml(item.name)}" loading="lazy" />
+        <img class="quickfireImg" src="${escapeHtml(recipeImg(item))}" alt="${escapeHtml(item.name)}" loading="lazy" />
         <div class="quickfireInfo">
           <div class="quickfireName">${escapeHtml(item.name)}</div>
           <div class="quickfireMeta">${[time ? `⏱ ${time} min` : null, cals ? `🔥 ${cals} cal` : null].filter(Boolean).join("  ·  ")}</div>
