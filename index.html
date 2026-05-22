@@ -2084,6 +2084,13 @@
       padding: 7px 10px;
       font-weight: 950;
       cursor: pointer;
+      transition: opacity 0.2s, filter 0.2s;
+    }
+
+    .servingBtn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      filter: grayscale(1);
     }
 
     .servingCount {
@@ -6892,9 +6899,9 @@
       <div class="servingRow">
         <div class="servingLabel">Servings</div>
         <div class="servingControls" aria-label="Serving controls">
-          <button class="servingBtn" id="servingMinusBtn" type="button">-</button>
-          <span class="servingCount" id="servingCount">1x</span>
-          <button class="servingBtn" id="servingPlusBtn" type="button">+</button>
+          <button class="servingBtn" id="servingMinusBtn" title="Decrease servings" aria-label="Decrease servings" type="button">-</button>
+          <span class="servingCount" id="servingCount" aria-live="polite" aria-atomic="true">1x</span>
+          <button class="servingBtn" id="servingPlusBtn" title="Increase servings" aria-label="Increase servings" type="button">+</button>
         </div>
       </div>
       <div class="macroGrid" id="macroGrid"></div>
@@ -10609,12 +10616,18 @@
     });
 
     el.servingMinusBtn.addEventListener("click", () => {
-      servingMultiplier = Math.max(1, servingMultiplier - 1);
+      if (servingMultiplier > 1) {
+        servingMultiplier--;
+        if (navigator.vibrate) navigator.vibrate(40);
+      }
       renderRecipeModalDetails();
     });
 
     el.servingPlusBtn.addEventListener("click", () => {
-      servingMultiplier = Math.min(4, servingMultiplier + 1);
+      if (servingMultiplier < 8) {
+        servingMultiplier++;
+        if (navigator.vibrate) navigator.vibrate(40);
+      }
       renderRecipeModalDetails();
     });
 
