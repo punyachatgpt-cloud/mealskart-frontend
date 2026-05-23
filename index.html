@@ -3015,6 +3015,63 @@
     }
     .ratingSaveBtn:hover { opacity: 0.88; }
 
+    /* ── "I Made This" — photo upload row ──────── */
+    .ratingPhotoRow {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 14px;
+    }
+    .ratingPhotoBtnLabel {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 15px; border-radius: 999px;
+      border: 1.5px dashed var(--border); background: var(--bg0);
+      color: var(--muted); font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; transition: border-color 0.15s, color 0.15s;
+      font-family: 'Manrope', sans-serif; line-height: 1;
+    }
+    .ratingPhotoBtnLabel:hover { border-color: var(--accent); color: var(--accent); }
+    .ratingPhotoInput { display: none; }
+    .ratingPhotoThumb {
+      width: 54px; height: 54px; border-radius: 10px; object-fit: cover;
+      border: 2px solid var(--accent); display: none; flex-shrink: 0;
+    }
+    /* Phase 3 — post-save confirmation */
+    .ratingDonePhase {
+      display: flex; flex-direction: column; gap: 10px; margin-top: 6px;
+      animation: obFadeIn 0.32s ease both; text-align: center;
+    }
+    .ratingDoneCheck {
+      font-size: 2rem; line-height: 1;
+    }
+    .ratingDoneMsg {
+      font-size: 0.92rem; font-weight: 700; color: var(--ink);
+    }
+    .ratingShareBtn {
+      width: 100%; padding: 13px; border-radius: 14px;
+      background: linear-gradient(135deg, #C8690E 0%, #e59622 100%);
+      color: #fff; border: none; font-family: 'Manrope', sans-serif;
+      font-size: 0.93rem; font-weight: 800; cursor: pointer;
+      transition: opacity 0.15s; display: flex; align-items: center;
+      justify-content: center; gap: 7px;
+    }
+    .ratingShareBtn:hover { opacity: 0.88; }
+    .ratingSkipShareBtn {
+      background: none; border: none; color: var(--muted2);
+      font-size: 0.82rem; font-weight: 700; cursor: pointer;
+      font-family: 'Manrope', sans-serif; padding: 4px;
+    }
+    /* Cook Mode done screen buttons */
+    .cookModeDoneIMT {
+      background: linear-gradient(135deg, #C8690E 0%, #e59622 100%) !important;
+      font-size: 1rem !important; padding: 13px 30px !important;
+      border-radius: 16px !important;
+    }
+    .cookModeDoneSkip {
+      background: none !important;
+      border: 1.5px solid rgba(255,255,255,0.28) !important;
+      color: rgba(255,255,255,0.68) !important;
+      font-size: 0.82rem !important; padding: 9px 20px !important;
+    }
+
     /* ── Rated badge on cards ─────────────────── */
     .ratedBadge {
       display: inline-flex; align-items: center; gap: 3px;
@@ -6982,6 +7039,7 @@
         <button class="addToListBtn" id="addToListBtn" type="button">🛒 Add to List</button>
       </div>
       <button class="saveRecipeBtn" id="saveRecipeBtn" type="button">📌 Save recipe</button>
+      <button class="cookModeEntryBtn" id="imadethisModalBtn" type="button" style="background:linear-gradient(135deg,#C8690E 0%,#e59622 100%);color:#fff;margin-top:0;border:none">📸 I Made This — Rate &amp; Share</button>
       <div class="modalRemixRow" id="modalRemixRow">
         <button class="modalRemixBtn" id="modalRemixHealthier" data-remix="healthier" type="button">🥗 Healthier</button>
         <button class="modalRemixBtn" id="modalRemixSpicier"   data-remix="spicier"   type="button">🌶 Spicier</button>
@@ -7184,7 +7242,8 @@
       <div class="cookModeDoneEmoji">🎉</div>
       <div class="cookModeDoneName" id="cookModeDoneName"></div>
       <div class="cookModeDoneSubtitle">is ready to serve!</div>
-      <button class="cookModeNavBtn primary" id="cookModeDoneRateBtn" type="button">⭐ Rate &amp; Finish</button>
+      <button class="cookModeNavBtn primary cookModeDoneIMT" id="cookModeDoneRateBtn" type="button">📸 I Made This!</button>
+      <button class="cookModeNavBtn secondary cookModeDoneSkip" id="cookModeDoneSkipBtn" type="button">Maybe later</button>
     </div>
 
     <div class="cookModeTimersBar" id="cookModeTimersBar"></div>
@@ -8399,29 +8458,184 @@
     // ── Rating overlay ────────────────────────────────────────────────────
     const RATING_TAGS = ["Perfect 👌", "Make again 🔁", "Kid-approved 👧", "Too salty 🧂", "Needs tweaking 🔧", "Date night 🕯"];
 
-    function saveRating(recipeId, stars, note = "", tags = []) {
+    function saveRating(recipeId, stars, note = "", tags = [], photo = null) {
       try {
         const raw = localStorage.getItem("foodai_ratings");
         const existing = raw ? JSON.parse(raw) : {};
-        existing[String(recipeId)] = { stars, note, tags, at: Date.now() };
+        const entry = { stars, note, tags, at: Date.now() };
+        if (photo) entry.photo = photo;   // base64 JPEG thumbnail
+        existing[String(recipeId)] = entry;
         localStorage.setItem("foodai_ratings", JSON.stringify(existing));
         updateCookLogRating(recipeId, stars, note, tags);
         updateCookLogCount();
       } catch {}
     }
 
-    function showRatingOverlay(recipeId, recipeName) {
+    // ── Photo resize helper ───────────────────────────────────────────────
+    function resizePhotoToBase64(file, maxW = 480, quality = 0.72) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = e => {
+          const img = new Image();
+          img.onerror = reject;
+          img.onload = () => {
+            const scale = Math.min(1, maxW / img.width);
+            const c = document.createElement("canvas");
+            c.width  = Math.round(img.width  * scale);
+            c.height = Math.round(img.height * scale);
+            c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+            resolve(c.toDataURL("image/jpeg", quality));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // ── "I Made This" share card (canvas) ────────────────────────────────
+    async function showImadethisCard(recipe, photoDataUrl) {
+      const W = 400, H = 520;
+      const canvas = document.createElement("canvas");
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext("2d");
+
+      // Background: user photo or recipe image
+      const bgSrc = photoDataUrl || recipeImg(recipe, W);
+      await new Promise(resolve => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => {
+          const ratio = Math.max(W / img.width, H / img.height);
+          const dw = img.width * ratio, dh = img.height * ratio;
+          ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+          resolve();
+        };
+        img.onerror = () => {
+          // Solid warm fallback
+          const grd = ctx.createLinearGradient(0, 0, W, H);
+          grd.addColorStop(0, "#7c2d12"); grd.addColorStop(1, "#c2410c");
+          ctx.fillStyle = grd; ctx.fillRect(0, 0, W, H);
+          resolve();
+        };
+        img.src = bgSrc;
+      });
+
+      // Dark gradient overlay (bottom 55%)
+      const grad = ctx.createLinearGradient(0, H * 0.38, 0, H);
+      grad.addColorStop(0, "rgba(0,0,0,0)");
+      grad.addColorStop(0.5, "rgba(8,4,2,0.76)");
+      grad.addColorStop(1,   "rgba(8,4,2,0.96)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Top badge "I Made This!"
+      ctx.fillStyle = "#C8690E";
+      ctx.beginPath();
+      const bw = 130, bh = 30, bx = 14, by = 14, br = 14;
+      ctx.moveTo(bx + br, by);
+      ctx.lineTo(bx + bw - br, by); ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + br);
+      ctx.lineTo(bx + bw, by + bh - br); ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - br, by + bh);
+      ctx.lineTo(bx + br, by + bh); ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - br);
+      ctx.lineTo(bx, by + br); ctx.quadraticCurveTo(bx, by, bx + br, by);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 12px 'Arial', sans-serif";
+      ctx.fillText("I MADE THIS", bx + 12, by + 19);
+
+      // Stars
+      const rating = (() => {
+        try { return JSON.parse(localStorage.getItem("foodai_ratings") || "{}")?.[String(recipe.id)]?.stars || 0; } catch { return 0; }
+      })();
+      if (rating) {
+        ctx.font = "20px 'Arial', sans-serif";
+        ctx.fillStyle = "#f59e0b";
+        ctx.fillText("★".repeat(rating) + "☆".repeat(5 - rating), 16, H - 122);
+      }
+
+      // Recipe name (wrap long names)
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "bold 22px 'Arial', sans-serif";
+      const name = recipe.name || "";
+      if (ctx.measureText(name).width < W - 32) {
+        ctx.fillText(name, 16, H - 88);
+      } else {
+        const words = name.split(" ");
+        let line1 = "", line2 = "";
+        for (const w of words) {
+          if (ctx.measureText(line1 + " " + w).width < W - 32) line1 += (line1 ? " " : "") + w;
+          else line2 += (line2 ? " " : "") + w;
+        }
+        ctx.fillText(line1, 16, H - 100);
+        ctx.font = "bold 18px 'Arial', sans-serif";
+        ctx.fillText(line2, 16, H - 76);
+      }
+
+      // Meta
+      ctx.fillStyle = "rgba(255,255,255,0.60)";
+      ctx.font = "13px 'Arial', sans-serif";
+      const timePart = recipe.time_minutes ? `${recipe.time_minutes} min` : "";
+      const calPart  = recipe.calories     ? `${recipe.calories} cal`     : "";
+      ctx.fillText([timePart, calPart].filter(Boolean).join("  ·  "), 16, H - 50);
+
+      // Branding
+      ctx.fillStyle = "rgba(255,255,255,0.35)";
+      ctx.font = "11px 'Arial', sans-serif";
+      ctx.fillText("Cooked with Simmer", 16, H - 20);
+
+      // Show card in existing shareCardOverlay
+      const dataUrl   = canvas.toDataURL("image/jpeg", 0.88);
+      const cardEl    = document.getElementById("shareCardEl");
+      const overlayEl = document.getElementById("shareCardOverlay");
+      const dlBtn     = document.getElementById("shareCardDownload");
+      const shBtn     = document.getElementById("shareCardShare");
+      if (cardEl) {
+        cardEl.innerHTML = `<img src="${dataUrl}" style="width:100%;max-width:400px;border-radius:16px;display:block;margin:0 auto" alt="I Made This card">`;
+      }
+      if (dlBtn) {
+        dlBtn.onclick = () => {
+          const a = Object.assign(document.createElement("a"), {
+            href: dataUrl,
+            download: `simmer-${(recipe.name || "dish").replace(/\s+/g, "-").toLowerCase()}.jpg`
+          });
+          a.click();
+        };
+      }
+      if (shBtn) {
+        shBtn.onclick = async () => {
+          if (navigator.share) {
+            try {
+              const blob = await (await fetch(dataUrl)).blob();
+              const file = new File([blob], "simmer-dish.jpg", { type: "image/jpeg" });
+              if (navigator.canShare?.({ files: [file] })) {
+                await navigator.share({ files: [file], title: `I made ${recipe.name}!`, text: `Just cooked ${recipe.name} with Simmer` });
+                return;
+              }
+            } catch {}
+          }
+          showToast("Long-press the card image to save it", "info");
+        };
+      }
+      if (overlayEl) overlayEl.classList.remove("hidden");
+    }
+
+    function showRatingOverlay(recipeId, recipeName, recipeObj = null) {
       if (!el.ratingOverlay) return;
       if (el.ratingDishName) el.ratingDishName.textContent = recipeName || "the dish";
       el.ratingOverlay.classList.add("open");
 
-      const sheet = el.ratingOverlay.querySelector(".ratingSheet");
-      // Reset to phase 1 — remove any leftover phase 2
-      sheet.querySelectorAll(".ratingPhase2").forEach(e => e.remove());
+      const sheet   = el.ratingOverlay.querySelector(".ratingSheet");
       const skipBtn = el.ratingOverlay.querySelector(".skipRating");
+      // Reset: remove any leftover phase 2 / phase 3
+      sheet.querySelectorAll(".ratingPhase2, .ratingDonePhase").forEach(e => e.remove());
       if (skipBtn) skipBtn.style.display = "";
 
-      let chosenStars = 0;
+      // Resolve recipe object for share card
+      const recipe = recipeObj || activeRecipe || { id: recipeId, name: recipeName };
+
+      let chosenStars  = 0;
+      let capturedPhoto = null;   // base64 JPEG from camera/gallery
+
       const stars = el.ratingOverlay.querySelectorAll(".starBtn");
       stars.forEach((btn, i) => {
         btn.classList.remove("lit");
@@ -8430,11 +8644,17 @@
           chosenStars = i + 1;
           stars.forEach((b, j) => b.classList.toggle("lit", j <= i));
           if (skipBtn) skipBtn.style.display = "none";
-          // Inject phase 2 — notes + tags
+
+          // ── Phase 2: photo + tags + note ─────────────────────────────
           const ph2 = document.createElement("div");
           ph2.className = "ratingPhase2";
           ph2.innerHTML = `
-            <div class="ratingTagRow" id="ratingTagRow">
+            <div class="ratingPhotoRow">
+              <label class="ratingPhotoBtnLabel" for="ratingPhotoInput">📸 Add your photo</label>
+              <input type="file" id="ratingPhotoInput" class="ratingPhotoInput" accept="image/*" capture="environment">
+              <img class="ratingPhotoThumb" id="ratingPhotoThumb" alt="Your dish">
+            </div>
+            <div class="ratingTagRow">
               ${RATING_TAGS.map(t => `<button class="ratingTag" type="button">${t}</button>`).join("")}
             </div>
             <textarea class="ratingNote" id="ratingNoteInput"
@@ -8443,6 +8663,21 @@
           `;
           sheet.appendChild(ph2);
 
+          // Photo pick handler
+          const photoInput = ph2.querySelector("#ratingPhotoInput");
+          const photoThumb = ph2.querySelector("#ratingPhotoThumb");
+          photoInput?.addEventListener("change", async () => {
+            const file = photoInput.files?.[0];
+            if (!file) return;
+            try {
+              capturedPhoto = await resizePhotoToBase64(file);
+              photoThumb.src = capturedPhoto;
+              photoThumb.style.display = "block";
+              ph2.querySelector(".ratingPhotoBtnLabel").textContent = "📸 Change photo";
+            } catch { /* ignore */ }
+          });
+
+          // Tag selection
           const selTags = new Set();
           ph2.querySelectorAll(".ratingTag").forEach(tag => {
             tag.addEventListener("click", () => {
@@ -8450,11 +8685,33 @@
               tag.classList.contains("sel") ? selTags.add(tag.textContent) : selTags.delete(tag.textContent);
             });
           });
-          ph2.querySelector("#ratingSaveBtn").addEventListener("click", () => {
+
+          // Save handler
+          ph2.querySelector("#ratingSaveBtn")?.addEventListener("click", () => {
             const note = ph2.querySelector("#ratingNoteInput")?.value?.trim() || "";
-            el.ratingOverlay.classList.remove("open");
-            saveRating(recipeId, chosenStars, note, [...selTags]);
-            showToast(`⭐ Saved — ${chosenStars} star${chosenStars !== 1 ? "s" : ""}`, "success");
+            saveRating(recipeId, chosenStars, note, [...selTags], capturedPhoto);
+
+            // ── Phase 3: confirmation + share card offer ──────────────
+            ph2.remove();
+            if (skipBtn) skipBtn.style.display = "none";
+
+            const ph3 = document.createElement("div");
+            ph3.className = "ratingDonePhase";
+            ph3.innerHTML = `
+              <div class="ratingDoneCheck">✅</div>
+              <div class="ratingDoneMsg">Saved to your Cook Log! ${chosenStars === 5 ? "🔥 Perfect score!" : ""}</div>
+              <button class="ratingShareBtn" id="ratingShareCardBtn" type="button">📤 Share your dish</button>
+              <button class="ratingSkipShareBtn" id="ratingCloseFinalBtn" type="button">Done</button>
+            `;
+            sheet.appendChild(ph3);
+
+            ph3.querySelector("#ratingShareCardBtn")?.addEventListener("click", async () => {
+              el.ratingOverlay.classList.remove("open");
+              await showImadethisCard(recipe, capturedPhoto);
+            });
+            ph3.querySelector("#ratingCloseFinalBtn")?.addEventListener("click", () => {
+              el.ratingOverlay.classList.remove("open");
+            });
           });
         };
       });
@@ -13664,29 +13921,38 @@
           if (doneNameEl) doneNameEl.textContent    = recipeName;
           if (doneScreen) doneScreen.classList.remove("hidden");
 
-          // 3. "Rate & Finish" button (one-shot)
+          // 3. "I Made This!" button (one-shot)
           const rateBtn = document.getElementById("cookModeDoneRateBtn");
           if (rateBtn) {
             rateBtn.onclick = () => {
+              const recipeSnap = activeRecipe ? { ...activeRecipe } : null;
               closeCookMode();
               setTimeout(() => {
                 closeRecipeModal();
-                if (recipeId) showRatingOverlay(recipeId, recipeName);
+                if (recipeId) showRatingOverlay(recipeId, recipeName, recipeSnap);
               }, 350);
             };
           }
 
-          // 4. Auto-advance after 5 s if user doesn't tap
-          setTimeout(() => {
+          // 3b. "Maybe later" skip button
+          const skipDoneBtn = document.getElementById("cookModeDoneSkipBtn");
+          if (skipDoneBtn) {
+            skipDoneBtn.onclick = () => {
+              closeCookMode();
+            };
+          }
+
+          // 4. Auto-advance after 8 s if user doesn't tap anything
+          const _autoDoneTimer = setTimeout(() => {
             const overlay = document.getElementById("cookModeOverlay");
             if (overlay && !overlay.classList.contains("hidden")) {
               closeCookMode();
               setTimeout(() => {
                 closeRecipeModal();
-                if (recipeId) showRatingOverlay(recipeId, recipeName);
+                if (recipeId) showRatingOverlay(recipeId, recipeName, activeRecipe ? { ...activeRecipe } : null);
               }, 350);
             }
-          }, 5000);
+          }, 8000);
         }
       });
 
@@ -16153,6 +16419,12 @@
         } else {
           showCollectionPicker(saveRecipeBtn, activeRecipe);
         }
+      });
+
+      // "I Made This" button in recipe modal
+      document.getElementById("imadethisModalBtn")?.addEventListener("click", () => {
+        if (!activeRecipe) return;
+        showRatingOverlay(activeRecipe.id, activeRecipe.name, { ...activeRecipe });
       });
 
       // Patch renderRecipeModalDetails to update save button state
