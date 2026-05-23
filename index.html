@@ -509,18 +509,19 @@
       border: 0;
     }
 
-    /* ── Cold-start countdown chip ───────────────── */
-    #coldCountdown {
+    /* ── Warm-up animated dots (replaces countdown numbers) ── */
+    .dotPulse::after {
+      content: "";
+      animation: dotCycle 1.6s steps(4, end) infinite;
       display: inline-block;
-      padding: 1px 7px;
-      background: rgba(200,105,14,0.13);
-      border: 1px solid rgba(200,105,14,0.28);
-      border-radius: 20px;
-      font-weight: 700;
-      color: var(--accent);
-      font-size: 0.82em;
-      min-width: 32px;
-      text-align: center;
+      min-width: 1.6em;
+      text-align: left;
+    }
+    @keyframes dotCycle {
+      0%  { content: ""; }
+      25% { content: "."; }
+      50% { content: ".."; }
+      75% { content: "..."; }
     }
 
     .spinner {
@@ -7657,9 +7658,24 @@
     const CACHE_STALE_TTL  = 24 * 60 * 60 * 1000; // 24 h — serve stale + refresh in bg
 
     // ── Backend pre-warm ──────────────────────────────────────────────────────
-    // Fire a lightweight /health ping immediately so Render starts its cold-start
-    // boot sequence before the user even clicks "Suggest". Fire-and-forget.
-    fetch(`${API_BASE_URL}/health`, { method: "GET" }).catch(() => {});
+    // Fire the REAL /api/recommend endpoint immediately (not just /health) so
+    // Render warms up DB connections before the first user interaction.
+    // The result is ignored here — getSuggestions() will serve from SWR cache.
+    fetch(`${API_BASE_URL}/recommend`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode: "normal", diet: "", mood: "", time_available: 999 })
+    }).catch(() => {});
+
+    // ── Keep-alive: ping every 10 min while tab is open ──────────────────────
+    // Render free tier sleeps after 15 min of inactivity. Pinging every 10 min
+    // prevents cold starts for the current user session. We also relay through
+    // the service worker so even background tabs stay warm.
+    setInterval(() => {
+      fetch(`${API_BASE_URL}/health`, { method: "GET" }).catch(() => {});
+      // Also notify service worker (belt-and-suspenders)
+      navigator.serviceWorker?.controller?.postMessage({ type: "KEEP_ALIVE" });
+    }, 10 * 60 * 1000);
 
     const PREFERENCES_KEY = "foodai_preferences";
     const LAST_MODE_KEY = "foodai_last_mode";
@@ -7863,6 +7879,11 @@
     let timerRemaining = 0;
     let timerId = null;
     let isLoadingSuggestions = false;
+    // Module-level warm-up timers — declared here so any new call to
+    // getSuggestions() always clears the previous interval before creating a new one,
+    // preventing overlapping "kitchen warming up" messages.
+    let _coldTimer      = null;
+    let _countdownTimer = null;
 
     function addRipple(button, event) {
       const rect = button.getBoundingClientRect();
@@ -10793,9 +10814,11 @@
       updateMicrocopy();
       renderLoadingCards(mode);
 
-      // Hoisted so both try and catch can clear these timers
-      let _coldTimer = null;
-      let _countdownTimer = null;
+      // Clear any timers from a previous call (uses module-level vars)
+      clearTimeout(_coldTimer);
+      clearInterval(_countdownTimer);
+      _coldTimer = null;
+      _countdownTimer = null;
 
       try {
         const ingredients = getIngredients();
@@ -10847,17 +10870,13 @@
           } catch {}
         }
 
-        // ── Cold-start hint (only shown when no stale data) ───────────────────
+        // ── Cold-start hint (only shown when no stale data, after 3 s) ─────────
+        // No countdown numbers — just a smooth animated message. Countdowns
+        // create anxiety and feel slower than they are.
         if (!servedStale) {
           _coldTimer = setTimeout(() => {
             if (!isLoadingSuggestions) return;
-            let secsLeft = 30;
-            el.statusText.innerHTML = `☕ Kitchen warming up… <span id="coldCountdown">${secsLeft}s</span>`;
-            _countdownTimer = setInterval(() => {
-              secsLeft = Math.max(0, secsLeft - 1);
-              const cdEl = document.getElementById("coldCountdown");
-              if (cdEl) cdEl.textContent = secsLeft > 0 ? `${secsLeft}s` : "almost ready…";
-            }, 1000);
+            el.statusText.innerHTML = `☕ Waking up the kitchen<span class="dotPulse"></span>`;
           }, 3000);
         }
 
@@ -10900,19 +10919,14 @@
           el.statusText.textContent = "Using saved results (server unreachable)";
           setTimeout(() => { el.statusText.textContent = ""; }, 4000);
         } else {
-          // No cached data — show cold-start UI with countdown retry
-          el.statusText.textContent = "Kitchen is warming up… retrying in 30s ☕";
+          // No cached data — smooth animated message, silent auto-retry after 30 s
+          el.statusText.innerHTML = `☕ Waking up the kitchen<span class="dotPulse"></span>`;
           renderEmpty("Waking up the kitchen — just a moment…");
 
           const retryMode = mode, retryQuery = queryOverride;
-          let retryLeft = 30;
-          const retryCountdown = setInterval(() => {
-            retryLeft = Math.max(0, retryLeft - 1);
-            el.statusText.textContent = `Kitchen warming up… retrying in ${retryLeft}s ☕`;
-          }, 1000);
 
           setTimeout(async () => {
-            clearInterval(retryCountdown);
+            el.statusText.innerHTML = `🔄 Retrying<span class="dotPulse"></span>`;
             try {
               const r2 = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
                 method: "POST",
@@ -17636,9 +17650,8 @@
     updateStreakBanner();
     renderCookAgain();
     maybeShowOnboarding();
-    // Fire a silent ping to wake the Render backend before the real request.
-    // fetch() is fire-and-forget — errors are intentionally swallowed.
-    fetch(`${API_BASE_URL}/health`).catch(() => {});
+    // Pre-warm already fired at script top (real /api/recommend call).
+    // Just trigger getSuggestions — SWR cache will serve stale instantly if available.
     if (localStorage.getItem(ONBOARDING_KEY)) {
       getSuggestions(getInitialMode());
     }
