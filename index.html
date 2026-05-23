@@ -6342,6 +6342,75 @@
     .chefFab { animation: none; }
     .chefFab.idle { animation: fabGlowPulse 2.4s ease-in-out 0s 3; }
 
+    /* ── Add Your Own Recipe ──────────────────────────────────────────────── */
+    .addRecipeOverlay {
+      position: fixed; inset: 0; z-index: 9800;
+      background: rgba(20,10,2,0.65); backdrop-filter: blur(4px);
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .addRecipeOverlay.hidden { display: none; }
+    .addRecipeSheet {
+      background: var(--bg1); border-radius: 28px 28px 0 0;
+      width: 100%; max-width: 640px; max-height: 92dvh;
+      overflow-y: auto; padding: 0 0 env(safe-area-inset-bottom,0);
+      animation: slideUpSheet 0.32s cubic-bezier(0.2,0.9,0.2,1);
+    }
+    @keyframes slideUpSheet {
+      from { transform: translateY(100%); } to { transform: translateY(0); }
+    }
+    .addRecipeHead {
+      position: sticky; top: 0; background: var(--bg1); z-index: 2;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 20px 14px; border-bottom: 1px solid var(--border);
+    }
+    .addRecipeTitle { font-family:'Fraunces',serif; font-size:1.18rem; font-weight:700; color:var(--ink); }
+    .addRecipeBody { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+    .arFieldGroup { display: flex; flex-direction: column; gap: 6px; }
+    .arLabel { font-size:0.78rem; font-weight:700; color:var(--ink-lo); text-transform:uppercase; letter-spacing:0.04em; }
+    .arInput, .arTextarea, .arSelect {
+      background: var(--bg0); border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 10px 14px; font-size: 0.9rem;
+      color: var(--ink); font-family: inherit; width: 100%; box-sizing: border-box;
+    }
+    .arInput:focus, .arTextarea:focus, .arSelect:focus { outline:none; border-color:var(--accent); }
+    .arTextarea { resize: vertical; min-height: 96px; }
+    .arRow2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .arRow3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .arChipRow { display: flex; flex-wrap: wrap; gap: 8px; }
+    .arChip {
+      border: 1.5px solid var(--border); background: var(--bg0);
+      border-radius: 20px; padding: 6px 14px; font-size: 0.82rem;
+      font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.15s;
+    }
+    .arChip.active { border-color: var(--accent); background: var(--goldBg); color: var(--accent); }
+    .arHint { font-size: 0.74rem; color: var(--muted2); }
+    .arSaveBtn {
+      background: var(--accent); color: #fff; border: none; border-radius: 14px;
+      padding: 14px; font-size: 1rem; font-weight: 700; cursor: pointer; width: 100%;
+    }
+    .arSaveBtn:hover { filter: brightness(1.08); }
+    .arSaveBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .myRecipeCard {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 20px; border-bottom: 1px solid var(--border); cursor: pointer;
+    }
+    .myRecipeCard:hover { background: var(--bg0); }
+    .myRecipeCardImg {
+      width: 54px; height: 54px; border-radius: 12px; object-fit: cover;
+      background: var(--goldBg); flex-shrink: 0;
+    }
+    .myRecipeCardBody { flex: 1; min-width: 0; }
+    .myRecipeCardName { font-weight: 700; font-size: 0.94rem; color: var(--ink); }
+    .myRecipeCardMeta { font-size: 0.74rem; color: var(--muted2); margin-top: 2px; }
+    .myRecipeCardDel { padding: 8px; border: none; background: none; color: var(--muted2); cursor: pointer; flex-shrink: 0; font-size: 1rem; }
+    .myRecipeCardDel:hover { color: #dc2626; }
+    .myRecipesEmpty { text-align: center; padding: 48px 24px; color: var(--muted2); }
+    .customRecipeBadge { font-size: 0.7rem; font-weight: 700; background: #e0f2fe; color: #0369a1; border-radius: 20px; padding: 2px 8px; }
+    [data-theme="dark"] .arInput, [data-theme="dark"] .arTextarea, [data-theme="dark"] .arSelect { background: rgba(255,255,255,0.06); }
+    [data-theme="dark"] .addRecipeSheet { background: var(--bg1); }
+    [data-theme="dark"] .myRecipeCard:hover { background: rgba(255,255,255,0.04); }
+    [data-theme="dark"] .customRecipeBadge { background: rgba(3,105,161,0.2); color: #7dd3fc; }
+
     /* 5 ── Toast notifications ───────────────────── */
     .simmerToast {
       position: fixed;
@@ -6977,6 +7046,10 @@
               <span>🌍 Cuisine Explorer</span>
               <span id="exploreBadge" style="font-size:0.7rem;color:var(--accent);font-weight:800"></span>
             </button>
+            <button class="collectionsLink" id="addRecipeBtn" type="button">
+              <span>✏️ My Recipes</span>
+              <span class="collectionsLinkCount" id="myRecipesBadge" style="display:none">0</span>
+            </button>
             <a class="collectionsLink" href="/profile.html" style="text-decoration:none">
               <span>👤 My Profile</span>
               <span style="font-size:0.7rem;color:var(--accent);font-weight:700">→</span>
@@ -7482,6 +7555,7 @@
         <button class="moreBtn" id="moreWeekBtn" type="button"><span class="moreBtnIcon">📊</span>My Week</button>
         <button class="moreBtn" id="moreTasteBtn" type="button"><span class="moreBtnIcon">🧬</span>Taste DNA</button>
         <button class="moreBtn" id="moreSavedBtn" type="button"><span class="moreBtnIcon">📌</span>Saved <span id="savedCountBadge" style="font-size:0.7rem;opacity:0.7"></span></button>
+        <button class="moreBtn" id="moreMyRecipesBtn" type="button"><span class="moreBtnIcon">✏️</span>My Recipes</button>
         <a class="moreBtn" href="/profile.html" style="text-decoration:none;display:flex;align-items:center;gap:8px"><span class="moreBtnIcon">👤</span>My Profile</a>
       </div>
       <div class="themePickerRow">
@@ -9876,6 +9950,7 @@
         <div class="modalMetaItem"><span>⏱ Time</span>${time || "--"} min</div>
         <div class="modalMetaItem"><span>🔥 Calories</span>${calories || "--"} cal</div>
         <div class="modalMetaItem"><span>📊 Difficulty</span>${escapeHtml(difficulty)}</div>
+        ${activeRecipe.custom ? `<div class="modalMetaItem" style="color:#0369a1"><span style="color:#0369a1">✏️ Type</span>My Recipe</div>` : ""}
         ${cookCount > 0 ? `<div class="modalMetaItem" style="color:#15803d"><span style="color:#15803d">🍳 Cooked</span>${cookCount}×</div>` : ""}
       `;
 
@@ -17437,6 +17512,288 @@
         setTimeout(showPushPrompt, 45000);
       }
     })();
+    // ── Add Your Own Recipe ─────────────────────────────────────────────────
+    const CUSTOM_RECIPES_KEY = "simmer_custom_recipes_v1";
+
+    function getCustomRecipes() {
+      try { return JSON.parse(localStorage.getItem(CUSTOM_RECIPES_KEY) || "[]"); }
+      catch { return []; }
+    }
+    function saveCustomRecipesList(arr) {
+      try { localStorage.setItem(CUSTOM_RECIPES_KEY, JSON.stringify(arr)); } catch {}
+    }
+
+    function parseIngredientLine(line) {
+      line = line.trim();
+      if (!line) return null;
+      // Handles: "1 cup flour", "2 tbsp oil", "1/2 tsp salt", "3 eggs", "flour"
+      const m = line.match(/^(\d+(?:[./]\d+)?)\s*([a-z]+(?:\s[a-z]+)*)?\s+(.+)$/i);
+      if (m) {
+        const rawQty = m[1];
+        const qty = rawQty.includes('/') ? rawQty.split('/').reduce((a,b) => Number(a)/Number(b)) : parseFloat(rawQty);
+        return { name: m[3].trim(), quantity: Number.isFinite(qty) ? qty : null, unit: (m[2] || "").toLowerCase().trim() };
+      }
+      return { name: line, quantity: null, unit: "" };
+    }
+
+    function buildCustomRecipeObj(form) {
+      const name = (form.name || "").trim();
+      if (!name) return null;
+      const ingredientsRaw = (form.ingredients || "").split("\n").map(l => l.trim()).filter(Boolean);
+      const stepsRaw       = (form.steps || "").split("\n").map(l => l.trim()).filter(Boolean);
+      const parsed = ingredientsRaw.map(parseIngredientLine).filter(Boolean);
+      return {
+        id:         "custom_" + Date.now(),
+        name,
+        category:   form.cuisine || "custom",
+        tags:       ["custom", ...(form.diet ? [form.diet] : [])],
+        time_minutes: parseInt(form.time) || 30,
+        difficulty: form.difficulty || "easy",
+        servings:   parseInt(form.servings) || 2,
+        calories:   parseInt(form.calories) || 0,
+        ingredients: parsed.map(i => i.name),
+        ingredients_with_quantities: parsed,
+        ingredients_preview: parsed.slice(0, 4).map(i => i.name),
+        steps:      stepsRaw,
+        image_url:  form.imageUrl || "",
+        reason:     "Your personal recipe",
+        custom:     true,
+      };
+    }
+
+    function closeAddRecipeSheet() {
+      document.getElementById("addRecipeOverlay")?.classList.add("hidden");
+    }
+
+    function updateCustomRecipesBadge() {
+      const count = getCustomRecipes().length;
+      const badge = document.getElementById("myRecipesBadge");
+      if (badge) { badge.textContent = count || ""; badge.style.display = count ? "" : "none"; }
+    }
+
+    function deleteCustomRecipe(id) {
+      saveCustomRecipesList(getCustomRecipes().filter(r => r.id !== id));
+      updateCustomRecipesBadge();
+    }
+
+    function openAddRecipeSheet(prefill) {
+      const overlay = document.getElementById("addRecipeOverlay");
+      if (!overlay) return;
+      const sheet = document.getElementById("addRecipeSheet");
+      const pf = prefill || {};
+      const cuisineOpts = ["North Indian","South Indian","Continental","Chinese","Italian","Mexican","Middle Eastern","Other"];
+      const dietOpts = [{v:"veg",l:"🌿 Veg"},{v:"non-veg",l:"🍗 Non-Veg"},{v:"vegan",l:"🌱 Vegan"}];
+
+      sheet.innerHTML = `
+        <div class="addRecipeHead">
+          <span class="addRecipeTitle">✏️ Add Your Recipe</span>
+          <button class="closeBtn" id="addRecipeCloseBtn" type="button">✕ Close</button>
+        </div>
+        <div class="addRecipeBody">
+          <div class="arFieldGroup">
+            <label class="arLabel" for="arName">Recipe Name *</label>
+            <input class="arInput" id="arName" type="text" placeholder="e.g. Grandma's Dal Tadka" maxlength="80" value="${escapeHtml(pf.name||"")}" autocomplete="off" />
+          </div>
+          <div class="arRow2">
+            <div class="arFieldGroup">
+              <label class="arLabel" for="arCuisine">Cuisine</label>
+              <select class="arSelect" id="arCuisine">
+                ${cuisineOpts.map(c=>`<option value="${c.toLowerCase()}">${c}</option>`).join("")}
+              </select>
+            </div>
+            <div class="arFieldGroup">
+              <label class="arLabel" for="arDiff">Difficulty</label>
+              <select class="arSelect" id="arDiff">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </div>
+          </div>
+          <div class="arRow3">
+            <div class="arFieldGroup">
+              <label class="arLabel" for="arTime">Time (min)</label>
+              <input class="arInput" id="arTime" type="number" min="1" max="600" placeholder="30" value="${pf.time||""}" />
+            </div>
+            <div class="arFieldGroup">
+              <label class="arLabel" for="arServings">Servings</label>
+              <input class="arInput" id="arServings" type="number" min="1" max="20" placeholder="2" value="${pf.servings||""}" />
+            </div>
+            <div class="arFieldGroup">
+              <label class="arLabel" for="arCal">Calories</label>
+              <input class="arInput" id="arCal" type="number" min="0" max="5000" placeholder="optional" value="${pf.calories||""}" />
+            </div>
+          </div>
+          <div class="arFieldGroup">
+            <span class="arLabel">Diet</span>
+            <div class="arChipRow">
+              ${dietOpts.map(d=>`<button class="arChip" data-diet="${d.v}" type="button">${d.l}</button>`).join("")}
+            </div>
+          </div>
+          <div class="arFieldGroup">
+            <label class="arLabel" for="arIngredients">Ingredients *</label>
+            <textarea class="arTextarea" id="arIngredients" rows="6" placeholder="One per line — optionally with quantity &amp; unit:&#10;1 cup flour&#10;2 eggs&#10;1/2 tsp salt&#10;onion finely chopped">${escapeHtml((pf.ingredients||[]).join("\n"))}</textarea>
+            <span class="arHint">Format: quantity unit ingredient — e.g. "1 cup flour" or just "flour"</span>
+          </div>
+          <div class="arFieldGroup">
+            <label class="arLabel" for="arSteps">Steps *</label>
+            <textarea class="arTextarea" id="arSteps" rows="7" placeholder="One step per line:&#10;Heat oil in a pan over medium heat.&#10;Add onions and sauté until golden.&#10;Add tomatoes and cook for 5 minutes.">${escapeHtml((pf.steps||[]).join("\n"))}</textarea>
+          </div>
+          <div class="arFieldGroup">
+            <label class="arLabel" for="arImg">Image URL (optional)</label>
+            <input class="arInput" id="arImg" type="url" placeholder="https://…" value="${escapeHtml(pf.imageUrl||"")}" />
+            <span class="arHint">Paste any image URL from Unsplash, Google Images, etc.</span>
+          </div>
+          <button class="arSaveBtn" id="arSaveBtn" type="button">💾 Save Recipe</button>
+        </div>
+      `;
+
+      let selectedDiet = pf.diet || "";
+      const refreshDietChips = () => {
+        sheet.querySelectorAll(".arChip[data-diet]").forEach(c =>
+          c.classList.toggle("active", c.dataset.diet === selectedDiet));
+      };
+      refreshDietChips();
+      sheet.querySelectorAll(".arChip[data-diet]").forEach(chip => {
+        chip.addEventListener("click", () => {
+          selectedDiet = selectedDiet === chip.dataset.diet ? "" : chip.dataset.diet;
+          refreshDietChips();
+        });
+      });
+
+      document.getElementById("addRecipeCloseBtn")?.addEventListener("click", closeAddRecipeSheet);
+
+      document.getElementById("arSaveBtn")?.addEventListener("click", () => {
+        const name        = document.getElementById("arName")?.value.trim();
+        const ingredients = document.getElementById("arIngredients")?.value.trim();
+        const steps       = document.getElementById("arSteps")?.value.trim();
+        if (!name)        { showToast("Please enter a recipe name!", "warn"); document.getElementById("arName")?.focus(); return; }
+        if (!ingredients) { showToast("Please add at least one ingredient!", "warn"); document.getElementById("arIngredients")?.focus(); return; }
+        if (!steps)       { showToast("Please add at least one step!", "warn"); document.getElementById("arSteps")?.focus(); return; }
+
+        const recipe = buildCustomRecipeObj({
+          name, ingredients, steps,
+          cuisine:    document.getElementById("arCuisine")?.value,
+          difficulty: document.getElementById("arDiff")?.value,
+          time:       document.getElementById("arTime")?.value,
+          servings:   document.getElementById("arServings")?.value,
+          calories:   document.getElementById("arCal")?.value,
+          imageUrl:   document.getElementById("arImg")?.value.trim(),
+          diet:       selectedDiet,
+        });
+        if (!recipe) return;
+
+        const list = getCustomRecipes();
+        list.unshift(recipe);
+        saveCustomRecipesList(list);
+        closeAddRecipeSheet();
+        showToast(`✅ "${recipe.name}" saved to My Recipes!`);
+        updateCustomRecipesBadge();
+      });
+
+      overlay.classList.remove("hidden");
+      setTimeout(() => document.getElementById("arName")?.focus(), 200);
+    }
+
+    function openMyRecipesSheet() {
+      const overlay = document.getElementById("addRecipeOverlay");
+      if (!overlay) return;
+      const sheet  = document.getElementById("addRecipeSheet");
+      const recipes = getCustomRecipes();
+
+      sheet.innerHTML = `
+        <div class="addRecipeHead">
+          <span class="addRecipeTitle">✏️ My Recipes</span>
+          <button class="closeBtn" id="addRecipeCloseBtn" type="button">✕ Close</button>
+        </div>
+        <div style="padding:16px 20px 4px">
+          <button class="arSaveBtn" id="addNewRecipeBtn" type="button">➕ Add New Recipe</button>
+        </div>
+        <div id="myRecipesList">
+          ${recipes.length === 0
+            ? `<div class="myRecipesEmpty">
+                 <div style="font-size:2.5rem;margin-bottom:10px">📝</div>
+                 <div style="font-weight:700;color:var(--ink);margin-bottom:4px">No custom recipes yet</div>
+                 <div>Tap "Add New Recipe" to save your family recipes here.</div>
+               </div>`
+            : recipes.map(r => `
+                <div class="myRecipeCard" data-id="${escapeHtml(r.id)}">
+                  <img class="myRecipeCardImg" src="${escapeHtml(r.image_url || dishImageUrl(r.name))}" alt="" loading="lazy" onerror="this.style.background='var(--goldBg)';this.style.display='block'" />
+                  <div class="myRecipeCardBody">
+                    <div class="myRecipeCardName">${escapeHtml(r.name)} <span class="customRecipeBadge">✏️ Custom</span></div>
+                    <div class="myRecipeCardMeta">⏱ ${r.time_minutes} min · ${titleCase(r.difficulty)} · ${r.servings} servings</div>
+                  </div>
+                  <button class="myRecipeCardDel" data-del="${escapeHtml(r.id)}" title="Delete recipe">🗑</button>
+                </div>`
+              ).join("")}
+        </div>
+      `;
+
+      document.getElementById("addRecipeCloseBtn")?.addEventListener("click", closeAddRecipeSheet);
+      document.getElementById("addNewRecipeBtn")?.addEventListener("click",  () => openAddRecipeSheet());
+
+      sheet.querySelectorAll(".myRecipeCard").forEach(card => {
+        card.addEventListener("click", e => {
+          if (e.target.closest(".myRecipeCardDel")) return;
+          const id = card.dataset.id;
+          closeAddRecipeSheet();
+          setTimeout(() => openRecipeModal(id), 180);
+        });
+      });
+
+      sheet.querySelectorAll(".myRecipeCardDel").forEach(btn => {
+        btn.addEventListener("click", e => {
+          e.stopPropagation();
+          const id = btn.dataset.del;
+          const r  = getCustomRecipes().find(x => x.id === id);
+          if (r && confirm(`Delete "${r.name}"? This cannot be undone.`)) {
+            deleteCustomRecipe(id);
+            openMyRecipesSheet();
+          }
+        });
+      });
+
+      overlay.classList.remove("hidden");
+    }
+
+    // Close on overlay backdrop click
+    document.getElementById("addRecipeOverlay")?.addEventListener("click", e => {
+      if (e.target === document.getElementById("addRecipeOverlay")) closeAddRecipeSheet();
+    });
+
+    // ── Patch openRecipeModal to handle custom_ IDs ──────────────────────────
+    (function patchOpenRecipeModalForCustom() {
+      const _orig = openRecipeModal;
+      openRecipeModal = async function(recipeId, ...rest) {
+        if (String(recipeId).startsWith("custom_")) {
+          const recipe = getCustomRecipes().find(r => r.id === String(recipeId));
+          if (!recipe) { showToast("Custom recipe not found", "warn"); return; }
+          activeRecipe = recipe;
+          servingMultiplier = 1;
+          _subAICache = null;
+          el.modalDishName.textContent = recipe.name || "Recipe";
+          renderRecipeModalDetails();
+          modalSteps = Array.isArray(recipe.steps) ? recipe.steps : [];
+          currentStepIndex = 0;
+          updateModalStep();
+          _modalReturnFocus = document.activeElement;
+          el.recipeModal.classList.add("open");
+          requestAnimationFrame(() => {
+            el.closeModalBtn?.focus();
+            if (_modalFocusTrapOff) _modalFocusTrapOff();
+            _modalFocusTrapOff = createFocusTrap(document.querySelector(".modal"));
+          });
+          return;
+        }
+        return _orig.call(this, recipeId, ...rest);
+      };
+    })();
+
+    // ── Wire buttons & init badge ────────────────────────────────────────────
+    updateCustomRecipesBadge();
+    document.getElementById("addRecipeBtn")?.addEventListener("click", openMyRecipesSheet);
+    document.getElementById("moreMyRecipesBtn")?.addEventListener("click", () => { closeMoreSheet(); openMyRecipesSheet(); });
+
     // ─────────────────────────────────────────────────────────────────────────
   </script>
   <!-- Pantry Drawer -->
@@ -17459,6 +17816,11 @@
         <button class="pantryClearBtn" id="pantryClearBtn" type="button">Clear all</button>
       </div>
     </div>
+  </div>
+
+  <!-- Add Your Own Recipe overlay -->
+  <div class="addRecipeOverlay hidden" id="addRecipeOverlay" role="dialog" aria-modal="true" aria-label="Add your own recipe">
+    <div class="addRecipeSheet" id="addRecipeSheet"><!-- injected by JS --></div>
   </div>
 
   <!-- ARIA live regions — visually hidden, announced by screen readers -->
