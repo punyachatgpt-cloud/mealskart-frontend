@@ -6715,6 +6715,81 @@
       font-size: 0.8rem; color: var(--muted); text-decoration: underline;
     }
     .pantryClearBtn:hover { color: #dc2626; }
+
+    /* ── Pantry Expiry Tracker ──────────────────────────────────────────── */
+    .pantryChip { position: relative; display: inline-flex; align-items: center; gap: 4px; }
+    .pantryChipExpBtn {
+      background: none; border: none; cursor: pointer;
+      font-size: 0.78rem; padding: 0 1px; opacity: 0.55; transition: opacity 0.15s;
+      flex-shrink: 0; line-height: 1;
+    }
+    .pantryChipExpBtn:hover { opacity: 1; }
+    .pantryExpTag {
+      font-size: 0.68rem; font-weight: 700; border-radius: 6px;
+      padding: 1px 5px; margin-left: 1px; white-space: nowrap;
+    }
+    .pantryExpTag.warn  { background: #fef3c7; color: #b45309; }
+    .pantryExpTag.danger { background: #fee2e2; color: #b91c1c; }
+    .pantryExpTag.ok    { background: #dcfce7; color: #15803d; }
+    .pantryChipDateWrap {
+      position: absolute; top: calc(100% + 6px); left: 0; z-index: 200;
+      background: var(--bg1); border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 8px; box-shadow: var(--shadow);
+      display: flex; flex-direction: column; gap: 6px; min-width: 200px;
+    }
+    .pantryChipDateInput {
+      border: 1.5px solid var(--border); border-radius: 8px;
+      padding: 6px 10px; font-size: 0.84rem; font-family: inherit;
+      color: var(--ink); background: var(--bg0); width: 100%; box-sizing: border-box;
+    }
+    .pantryChipDateInput:focus { outline: none; border-color: var(--accent); }
+    .pantryChipDateActions { display: flex; gap: 6px; }
+    .pantryChipDateSave {
+      flex: 1; background: var(--accent); color: #fff; border: none;
+      border-radius: 8px; padding: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer;
+    }
+    .pantryChipDateClear {
+      flex: 1; background: var(--bg0); color: var(--muted); border: 1.5px solid var(--border);
+      border-radius: 8px; padding: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+    }
+    /* "Use expiring" section inside pantry drawer */
+    .pantryUseSoonSection {
+      margin: 10px 0 0; padding: 10px 14px; border-radius: 12px;
+      background: #fef3c7; border: 1px solid #fde68a; font-size: 0.83rem;
+    }
+    .pantryUseSoonTitle { font-weight: 700; color: #92400e; margin-bottom: 6px; }
+    .pantryUseSoonBtn {
+      background: #d97706; color: #fff; border: none; border-radius: 10px;
+      padding: 7px 14px; font-size: 0.82rem; font-weight: 700; cursor: pointer; width: 100%;
+    }
+    .pantryUseSoonBtn:hover { filter: brightness(1.08); }
+    /* Expiry context banner in main content */
+    .expiryBanner {
+      display: flex; align-items: center; gap: 10px;
+      background: #fef3c7; border: 1px solid #fde68a;
+      border-radius: 14px; padding: 10px 14px; margin-bottom: 10px;
+      font-size: 0.84rem; color: #92400e; animation: fadeIn 0.3s;
+    }
+    .expiryBannerText { flex: 1; font-weight: 600; }
+    .expiryBannerCta {
+      background: #d97706; color: #fff; border: none;
+      border-radius: 10px; padding: 6px 12px; font-size: 0.8rem;
+      font-weight: 700; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+    }
+    .expiryBannerClose {
+      background: none; border: none; cursor: pointer;
+      color: #a16207; font-size: 0.8rem; padding: 2px 4px; flex-shrink: 0;
+    }
+    [data-theme="dark"] .pantryUseSoonSection { background: rgba(234,179,8,0.12); border-color: rgba(234,179,8,0.3); }
+    [data-theme="dark"] .pantryUseSoonTitle { color: #fbbf24; }
+    [data-theme="dark"] .pantryUseSoonBtn  { background: #b45309; }
+    [data-theme="dark"] .expiryBanner { background: rgba(234,179,8,0.12); border-color: rgba(234,179,8,0.3); color: #fbbf24; }
+    [data-theme="dark"] .expiryBannerCta { background: #b45309; }
+    [data-theme="dark"] .pantryExpTag.warn   { background: rgba(234,179,8,0.18); color: #fbbf24; }
+    [data-theme="dark"] .pantryExpTag.danger { background: rgba(220,38,38,0.18); color: #fca5a5; }
+    [data-theme="dark"] .pantryExpTag.ok     { background: rgba(21,128,61,0.18); color: #86efac; }
+    [data-theme="dark"] .pantryChipDateWrap  { background: var(--bg1); }
+
     .pantryCookBtn {
       width: 100%; margin-top: 14px;
       background: var(--accent); color: #fff;
@@ -17084,30 +17159,6 @@
     // ══════════════════════════════════════════════
     // PANTRY MODE — Drawer Logic
     // ══════════════════════════════════════════════
-    function renderPantryChips() {
-      const pantry = getPantryStore();
-      const container = document.getElementById("pantryChips");
-      if (!container) return;
-      if (pantry.length === 0) {
-        container.innerHTML = `<span style="font-size:0.82rem;color:var(--muted)">No ingredients yet.</span>`;
-      } else {
-        container.innerHTML = pantry.map((item, i) =>
-          `<span class="pantryChip">${escapeHtml(titleCase(item))}
-            <button type="button" aria-label="Remove ${escapeHtml(item)}" data-idx="${i}">✕</button>
-          </span>`
-        ).join("");
-        container.querySelectorAll("button[data-idx]").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const arr = getPantryStore();
-            arr.splice(Number(btn.dataset.idx), 1);
-            savePantryStore(arr);
-            renderPantryChips();
-            updatePantryBtn();
-          });
-        });
-      }
-    }
-
     function updatePantryBtn() {
       const count = getPantryStore().length;
       const btn   = document.getElementById("pantryToggleBtn");
@@ -17206,6 +17257,230 @@
     }
 
     document.getElementById("pantryCookBtn")?.addEventListener("click", searchFromPantry);
+
+    // ── Pantry Expiry Tracker ──────────────────────────────────────────────
+    const EXPIRY_MAP_KEY = "simmer_pantry_expiry_v1";
+
+    function getExpiryMap() {
+      try { return JSON.parse(localStorage.getItem(EXPIRY_MAP_KEY) || "{}"); }
+      catch { return {}; }
+    }
+    function setItemExpiry(name, isoDate) {
+      const m = getExpiryMap();
+      if (isoDate) m[name.toLowerCase()] = isoDate;
+      else delete m[name.toLowerCase()];
+      try { localStorage.setItem(EXPIRY_MAP_KEY, JSON.stringify(m)); } catch {}
+    }
+    function clearAllExpiry() {
+      try { localStorage.removeItem(EXPIRY_MAP_KEY); } catch {}
+    }
+
+    // Returns: null (no expiry set) | "ok" (>7 days) | "warn" (1–7 days) | "danger" (today or past)
+    function expiryStatus(name) {
+      const m = getExpiryMap();
+      const iso = m[name.toLowerCase()];
+      if (!iso) return null;
+      const today = new Date(); today.setHours(0,0,0,0);
+      const exp   = new Date(iso); exp.setHours(0,0,0,0);
+      const days  = Math.round((exp - today) / 86400000);
+      if (days <= 0) return "danger";
+      if (days <= 7) return "warn";
+      return "ok";
+    }
+    function expiryDaysLabel(name) {
+      const m = getExpiryMap();
+      const iso = m[name.toLowerCase()];
+      if (!iso) return null;
+      const today = new Date(); today.setHours(0,0,0,0);
+      const exp   = new Date(iso); exp.setHours(0,0,0,0);
+      const days  = Math.round((exp - today) / 86400000);
+      if (days < 0)  return "Expired";
+      if (days === 0) return "Today!";
+      if (days === 1) return "1 day";
+      return `${days}d`;
+    }
+    function getExpiringItems(withinDays = 7) {
+      const pantry = getPantryStore();
+      const m = getExpiryMap();
+      const today = new Date(); today.setHours(0,0,0,0);
+      return pantry.filter(name => {
+        const iso = m[name.toLowerCase()];
+        if (!iso) return false;
+        const exp = new Date(iso); exp.setHours(0,0,0,0);
+        return Math.round((exp - today) / 86400000) <= withinDays;
+      });
+    }
+
+    // ── Enhanced renderPantryChips with expiry UI ──────────────────────────
+    function renderPantryChips() {
+      const pantry    = getPantryStore();
+      const container = document.getElementById("pantryChips");
+      if (!container) return;
+
+      if (pantry.length === 0) {
+        container.innerHTML = `<span style="font-size:0.82rem;color:var(--muted)">No ingredients yet.</span>`;
+        renderPantryUseSoon();
+        return;
+      }
+
+      container.innerHTML = pantry.map((item, i) => {
+        const status = expiryStatus(item);
+        const label  = expiryDaysLabel(item);
+        const tagHtml = (status && label)
+          ? `<span class="pantryExpTag ${status}">${label}</span>`
+          : "";
+        return `
+          <span class="pantryChip" data-item="${escapeHtml(item)}" data-idx="${i}">
+            ${escapeHtml(titleCase(item))}${tagHtml}
+            <button class="pantryChipExpBtn" data-expbtn="${escapeHtml(item)}" title="Set expiry date">📅</button>
+            <button type="button" aria-label="Remove ${escapeHtml(item)}" data-rmbtn="${i}">✕</button>
+          </span>`;
+      }).join("");
+
+      // Remove buttons
+      container.querySelectorAll("[data-rmbtn]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const arr = getPantryStore();
+          const name = arr[Number(btn.dataset.rmbtn)];
+          arr.splice(Number(btn.dataset.rmbtn), 1);
+          savePantryStore(arr);
+          if (name) setItemExpiry(name, null); // clear expiry on remove
+          renderPantryChips();
+          updatePantryBtn();
+          renderExpiryContextBanner();
+        });
+      });
+
+      // Calendar / expiry date buttons
+      container.querySelectorAll("[data-expbtn]").forEach(btn => {
+        btn.addEventListener("click", e => {
+          e.stopPropagation();
+          // Close any already-open date pickers
+          container.querySelectorAll(".pantryChipDateWrap").forEach(el => el.remove());
+
+          const name = btn.dataset.expbtn;
+          const existing = (getExpiryMap()[name.toLowerCase()]) || "";
+          const chip = btn.closest(".pantryChip");
+          if (!chip) return;
+
+          const wrap = document.createElement("div");
+          wrap.className = "pantryChipDateWrap";
+          wrap.innerHTML = `
+            <div style="font-size:0.75rem;font-weight:700;color:var(--muted)">Expiry date for <strong>${escapeHtml(titleCase(name))}</strong></div>
+            <input class="pantryChipDateInput" type="date" value="${escapeHtml(existing)}" min="${new Date().toISOString().slice(0,10)}" />
+            <div class="pantryChipDateActions">
+              <button class="pantryChipDateSave" type="button">✓ Save</button>
+              <button class="pantryChipDateClear" type="button">Clear</button>
+            </div>
+          `;
+          chip.appendChild(wrap);
+
+          const dateInput = wrap.querySelector("input[type=date]");
+          dateInput?.focus();
+
+          wrap.querySelector(".pantryChipDateSave")?.addEventListener("click", () => {
+            const v = dateInput?.value;
+            setItemExpiry(name, v || null);
+            renderPantryChips();
+            renderExpiryContextBanner();
+          });
+          wrap.querySelector(".pantryChipDateClear")?.addEventListener("click", () => {
+            setItemExpiry(name, null);
+            renderPantryChips();
+            renderExpiryContextBanner();
+          });
+
+          // Close on outside click
+          const onOutside = ev => {
+            if (!chip.contains(ev.target)) { wrap.remove(); document.removeEventListener("click", onOutside); }
+          };
+          setTimeout(() => document.addEventListener("click", onOutside), 10);
+        });
+      });
+
+      renderPantryUseSoon();
+    }
+
+    function renderPantryUseSoon() {
+      const box  = document.getElementById("pantryUseSoon");
+      if (!box) return;
+      const expiring = getExpiringItems(3); // ≤3 days
+      if (!expiring.length) { box.innerHTML = ""; return; }
+      const names = expiring.map(n => titleCase(n)).join(", ");
+      box.innerHTML = `
+        <div class="pantryUseSoonSection">
+          <div class="pantryUseSoonTitle">⚠️ Expiring soon: ${escapeHtml(names)}</div>
+          <button class="pantryUseSoonBtn" id="useSoonBtn" type="button">🍳 Cook with these before they expire!</button>
+        </div>
+      `;
+      document.getElementById("useSoonBtn")?.addEventListener("click", () => cookWithExpiringItems(expiring));
+    }
+
+    async function cookWithExpiringItems(items) {
+      if (!items || !items.length) return;
+      closePantryDrawer();
+      el.results?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+      renderLoadingCards("search");
+      try {
+        const resp = await fetchWithRetry(`${API_BASE_URL}/recommend`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mode: "fridge",
+            ingredients: items,
+            diet: state.diet || "any",
+            mood: "any",
+            time_available: 999,
+          }),
+        });
+        const data = await resp.json();
+        if (Array.isArray(data) && data.length) {
+          renderResults(data, "search");
+        } else {
+          renderEmpty("No matches — try adding more pantry items.");
+        }
+      } catch {
+        renderError("Couldn't reach the kitchen.", () => cookWithExpiringItems(items));
+      }
+    }
+
+    function renderExpiryContextBanner() {
+      const wrap = document.getElementById("contextBannerWrap");
+      if (!wrap) return;
+      const expiring = getExpiringItems(3);
+      // Remove existing expiry banner if any
+      wrap.querySelectorAll(".expiryBanner").forEach(b => b.remove());
+      if (!expiring.length) return;
+
+      const div = document.createElement("div");
+      div.className = "expiryBanner";
+      const names = expiring.slice(0, 2).map(n => titleCase(n)).join(", ");
+      const more  = expiring.length > 2 ? ` +${expiring.length - 2} more` : "";
+      div.innerHTML = `
+        <span style="font-size:1.1rem">⏰</span>
+        <span class="expiryBannerText"><strong>${escapeHtml(names)}${more}</strong> expire${expiring.length === 1 ? "s" : ""} soon — use them before they go to waste!</span>
+        <button class="expiryBannerCta" id="expiryBannerCta" type="button">Cook with them →</button>
+        <button class="expiryBannerClose" id="expiryBannerClose" type="button" aria-label="Dismiss">✕</button>
+      `;
+      wrap.appendChild(div);
+
+      document.getElementById("expiryBannerCta")?.addEventListener("click",  () => cookWithExpiringItems(expiring));
+      document.getElementById("expiryBannerClose")?.addEventListener("click", () => { div.remove(); });
+    }
+
+    // Also clear expiry data when pantry is cleared
+    const _origClearPantry = document.getElementById("pantryClearBtn");
+    if (_origClearPantry) {
+      _origClearPantry.addEventListener("click", () => {
+        clearAllExpiry();
+        renderExpiryContextBanner();
+      });
+    }
+
+    // Init: show expiry banner on page load if items are expiring
+    renderExpiryContextBanner();
+    // ── end Pantry Expiry Tracker ──────────────────────────────────────────
+
     // ── end Pantry Mode ────────────────────────────
 
     // ══════════════════════════════════════════════
@@ -17803,11 +18078,12 @@
         <span class="pantryTitle">🥫 My Pantry</span>
         <button class="pantryCloseBtn" id="pantryCloseBtn" type="button" aria-label="Close pantry">✕</button>
       </div>
-      <p class="pantryHint">Add ingredients you have at home. Cards will show how well each recipe matches.</p>
+      <p class="pantryHint">Add ingredients you have at home. Tap 📅 on any item to set an expiry date.</p>
       <div class="pantryInputRow">
         <input class="pantryInput" id="pantryInput" type="text" placeholder="e.g. onion, tomato, chicken…" autocomplete="off" />
         <button class="pantryAddBtn" id="pantryAddBtn" type="button">Add</button>
       </div>
+      <div id="pantryUseSoon"></div>
       <div class="pantryChips" id="pantryChips"></div>
       <button class="pantryCookBtn" id="pantryCookBtn" type="button">
         🔍 What can I make?
