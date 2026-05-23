@@ -2216,6 +2216,71 @@
     [data-theme="dark"] .myNotesBox { background: rgba(251,191,36,0.06); border-color: rgba(251,191,36,0.16); }
     [data-theme="dark"] .myNotesTag { background: rgba(251,191,36,0.12); color: #fbbf24; }
 
+    /* ── Grocery / Order Online section ─────────────────────────────── */
+    .groceryShopSection {
+      margin: 0 0 14px;
+      padding: 11px 13px 12px;
+      background: rgba(240, 253, 244, 0.75);
+      border: 1px solid rgba(34, 197, 94, 0.22);
+      border-radius: 14px;
+    }
+    .groceryShopLabel {
+      font-size: 0.70rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #166534;
+      margin-bottom: 8px;
+    }
+    .groceryStoreRow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .groceryStoreBtn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 5px 11px 5px 9px;
+      border-radius: 999px;
+      border: 1.5px solid;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 0.14s, opacity 0.14s;
+      white-space: nowrap;
+      line-height: 1;
+    }
+    .groceryStoreBtn:hover { opacity: 0.82; transform: translateY(-1px); }
+    .groceryStoreBtn:active { transform: scale(0.97); }
+    .gsBigBasket { background: #fff; border-color: #84cc16; color: #3f6212; }
+    .gsZepto     { background: #fff; border-color: #a855f7; color: #6d28d9; }
+    .gsBlinkit   { background: #fff; border-color: #f59e0b; color: #92400e; }
+    .gsSwiggy    { background: #fff; border-color: #f97316; color: #9a3412; }
+    .gsInstamart { background: #fff; border-color: #f97316; color: #9a3412; }
+    /* per-ingredient buy link */
+    .ingBuyLink {
+      display: inline-flex;
+      align-items: center;
+      margin-left: auto;
+      flex-shrink: 0;
+      font-size: 0.65rem;
+      text-decoration: none;
+      opacity: 0.65;
+      transition: opacity 0.15s;
+    }
+    .ingBuyLink:hover { opacity: 1; }
+    [data-theme="dark"] .groceryShopSection {
+      background: rgba(20, 50, 30, 0.55);
+      border-color: rgba(34, 197, 94, 0.18);
+    }
+    [data-theme="dark"] .groceryShopLabel { color: #86efac; }
+    [data-theme="dark"] .gsBigBasket,
+    [data-theme="dark"] .gsZepto,
+    [data-theme="dark"] .gsBlinkit,
+    [data-theme="dark"] .gsSwiggy { background: transparent; }
+
     .missingBox,
     .substitutionBox {
       border-radius: 16px;
@@ -6903,6 +6968,10 @@
       <div class="ingredientChecklist" id="modalIngredients"></div>
       <div class="missingBox" id="missingBox"></div>
       <div class="substitutionBox" id="substitutionBox"></div>
+      <div class="groceryShopSection" id="groceryShopSection" style="display:none">
+        <div class="groceryShopLabel">🛒 Order ingredients online</div>
+        <div class="groceryStoreRow" id="groceryStoreRow"></div>
+      </div>
       <div class="recipeActionRow">
         <button class="actionChip" id="shareRecipeBtn" type="button">&#128279; Share</button>
         <button class="actionChip actionChipWA" id="shareWhatsAppBtn" type="button">
@@ -8422,6 +8491,31 @@
       window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
     }
 
+    // ── Grocery delivery store links ──────────────────────────────────────
+    const GROCERY_STORES = [
+      { cls: "gsBigBasket", emoji: "🟢", label: "BigBasket",  url: q => `https://www.bigbasket.com/ps/?q=${encodeURIComponent(q)}` },
+      { cls: "gsZepto",     emoji: "⚡", label: "Zepto",      url: q => `https://www.zeptonow.com/search?query=${encodeURIComponent(q)}` },
+      { cls: "gsBlinkit",   emoji: "🟡", label: "Blinkit",    url: q => `https://blinkit.com/s/?q=${encodeURIComponent(q)}` },
+      { cls: "gsSwiggy",    emoji: "🟠", label: "Instamart",  url: q => `https://www.swiggy.com/instamart/search?query=${encodeURIComponent(q)}` },
+    ];
+
+    function renderGrocerySection(recipe, ingredients, missingForGrocery) {
+      const section = document.getElementById("groceryShopSection");
+      const row     = document.getElementById("groceryStoreRow");
+      if (!section || !row || !ingredients.length) {
+        if (section) section.style.display = "none";
+        return;
+      }
+      // Smart query: use first 3 missing ingredient names if known, else recipe name
+      const queryItems = (missingForGrocery.length ? missingForGrocery : ingredients.map(i => i.name || "")).slice(0, 3);
+      const query = queryItems.filter(Boolean).join(" ") || recipe.name;
+
+      row.innerHTML = GROCERY_STORES.map(s =>
+        `<a class="groceryStoreBtn ${s.cls}" href="${s.url(query)}" target="_blank" rel="noopener noreferrer">${s.emoji} ${s.label}</a>`
+      ).join("");
+      section.style.display = "block";
+    }
+
     // ── Export grocery list ───────────────────────────────────────────────
     function exportGrocery(recipe) {
       const ingredients = Array.isArray(recipe.ingredients_with_quantities) && recipe.ingredients_with_quantities.length
@@ -9505,17 +9599,24 @@
       const hasQtyData = Array.isArray(activeRecipe.ingredients_with_quantities) && activeRecipe.ingredients_with_quantities.length > 0;
       const scaleBadge = (!hasQtyData && servingMultiplier > 1)
         ? `<span class="scaleMultiBadge">×${servingMultiplier}</span>` : "";
+      const missingForGrocery = [];
       el.modalIngredients.innerHTML = ingredients.map((item) => {
         const normalized = normalizeIngredientName(item.name);
         const isChecked = available.size === 0 || available.has(normalized);
         const inPantry = pantryActive2 && [...pantryNorm].some(p => normalized.includes(p) || p.includes(normalized));
+        const needToBuy = pantryActive2 && !inPantry;
+        if (needToBuy) missingForGrocery.push(item.name);
+        const buyLink = needToBuy
+          ? `<a class="ingBuyLink" href="https://www.bigbasket.com/ps/?q=${encodeURIComponent(item.name)}" target="_blank" rel="noopener noreferrer" title="Buy on BigBasket">🛒</a>`
+          : "";
         return `
           <label class="ingredientCheck${pantryActive2 ? (inPantry ? " pantryHave" : " pantryNeed") : ""}">
             <input type="checkbox" ${isChecked ? "checked" : ""} />
-            <span class="ingredientCheckLabel">${escapeHtml(scaledIngredientText(item))}</span>${pantryActive2 ? (inPantry ? `<span class="pantryHaveIcon" title="You have this">✓</span>` : `<span class="pantryNeedIcon" title="Need to buy">○</span>`) : ""}
+            <span class="ingredientCheckLabel">${escapeHtml(scaledIngredientText(item))}</span>${pantryActive2 ? (inPantry ? `<span class="pantryNeedIcon" title="Need to buy">○</span>` : `<span class="pantryHaveIcon" title="You have this">✓</span>`) : ""}${buyLink}
           </label>
         `;
       }).join("") + scaleBadge;
+      renderGrocerySection(activeRecipe, ingredients, missingForGrocery);
 
       // ── Your Notes (past rating + note) ──────────────────────────────
       if (el.myNotesBox) {
