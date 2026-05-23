@@ -201,6 +201,84 @@
     .pickMeta { font-size: 0.62rem; color: #9B7553; }
     [data-theme="dark"] .pickMeta { color: #C4906A; }
 
+    /* ── Preferences section ── */
+    .prefCard {
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px 20px 16px;
+      box-shadow: var(--shadow); margin-bottom: 14px;
+    }
+    [data-theme="dark"] .prefCard { background: #1a0e06; }
+    .prefCardHead {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .prefCardTitle {
+      font-size: var(--t-xs); font-weight: var(--fw-bold); color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .prefEditBtn {
+      background: none; border: 1px solid var(--border); border-radius: 999px;
+      padding: 3px 12px; font-size: 0.72rem; font-weight: 700;
+      color: var(--muted); cursor: pointer; font-family: inherit;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .prefEditBtn:hover { border-color: var(--accent); color: var(--accent); }
+    /* Single-select pill group */
+    .prefPillRow {
+      display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 4px;
+    }
+    .prefPill {
+      padding: 6px 14px; border-radius: 999px;
+      border: 1.5px solid var(--border); background: var(--bg0);
+      color: var(--ink); font-family: inherit; font-size: 0.82rem;
+      font-weight: 700; cursor: pointer;
+      transition: all 0.15s; white-space: nowrap;
+    }
+    .prefPill:hover  { border-color: var(--accent); color: var(--accent); }
+    .prefPill.active {
+      background: var(--accent); border-color: var(--accent);
+      color: #fff; box-shadow: 0 2px 8px rgba(200,105,14,0.28);
+    }
+    /* Multi-select chip group (same but toggleable) */
+    .prefChipGrid {
+      display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 4px;
+    }
+    .prefChip {
+      padding: 6px 13px; border-radius: 999px;
+      border: 1.5px solid var(--border); background: var(--bg0);
+      color: var(--ink); font-family: inherit; font-size: 0.80rem;
+      font-weight: 700; cursor: pointer; transition: all 0.15s;
+    }
+    .prefChip:hover { border-color: var(--accent); color: var(--accent); }
+    .prefChip.sel {
+      background: var(--accent); border-color: var(--accent); color: #fff;
+    }
+    /* Save button */
+    .prefSaveBtn {
+      width: 100%; padding: 12px; border-radius: 12px; margin-top: 16px;
+      background: linear-gradient(135deg, #C8690E 0%, #8A4508 100%);
+      color: #fff; border: none; font-family: inherit;
+      font-size: var(--t-sm); font-weight: var(--fw-bold);
+      cursor: pointer; transition: opacity 0.15s;
+      box-shadow: 0 4px 14px rgba(200,105,14,0.30);
+    }
+    .prefSaveBtn:hover { opacity: 0.88; }
+    .prefSaveBtn:disabled { opacity: 0.45; cursor: not-allowed; }
+    /* Hint label under each group */
+    .prefGroupHint {
+      font-size: 0.68rem; color: var(--muted2); font-weight: 600; margin-top: 3px;
+    }
+    /* Toast */
+    .prefToast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #1C1008; color: #fff; padding: 10px 22px; border-radius: 999px;
+      font-size: 0.84rem; font-weight: 700; box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      transition: transform 0.28s cubic-bezier(0.34,1.4,0.64,1), opacity 0.2s;
+      opacity: 0; z-index: 999; white-space: nowrap; pointer-events: none;
+    }
+    .prefToast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    [data-theme="dark"] .prefToast { background: #F2E5CC; color: #1C1008; }
+
     /* ── Misc ── */
     .emptyNote {
       font-size: var(--t-sm); color: var(--muted2); text-align: center; padding: 20px 0;
@@ -247,7 +325,57 @@
       <div class="statCard"><div class="statVal" id="statSaved">0</div><div class="statLbl">Saved recipes</div></div>
     </div>
 
-    <!-- Favourite cuisines -->
+    <!-- ── Preferences ── -->
+    <div class="section">
+      <div class="sectionHead">My Preferences</div>
+
+      <!-- Diet -->
+      <div class="prefCard">
+        <div class="prefCardHead">
+          <span class="prefCardTitle">🥘 Diet</span>
+        </div>
+        <div class="prefPillRow" id="prefDietRow"></div>
+      </div>
+
+      <!-- Allergies -->
+      <div class="prefCard">
+        <div class="prefCardHead">
+          <span class="prefCardTitle">🚫 Allergies</span>
+        </div>
+        <div class="prefChipGrid" id="prefAllergyGrid"></div>
+        <div class="prefGroupHint">Tap to toggle · leave empty if none</div>
+      </div>
+
+      <!-- Favourite Cuisines -->
+      <div class="prefCard">
+        <div class="prefCardHead">
+          <span class="prefCardTitle">🌍 Favourite Cuisines</span>
+        </div>
+        <div class="prefChipGrid" id="prefCuisineGrid"></div>
+        <div class="prefGroupHint">Pick as many as you like</div>
+      </div>
+
+      <!-- Skill level -->
+      <div class="prefCard">
+        <div class="prefCardHead">
+          <span class="prefCardTitle">👨‍🍳 Skill Level</span>
+        </div>
+        <div class="prefPillRow" id="prefSkillRow"></div>
+      </div>
+
+      <!-- Equipment -->
+      <div class="prefCard">
+        <div class="prefCardHead">
+          <span class="prefCardTitle">🍳 Equipment</span>
+        </div>
+        <div class="prefChipGrid" id="prefEquipGrid"></div>
+        <div class="prefGroupHint">Tap to toggle · helps filter recipes</div>
+      </div>
+
+      <button class="prefSaveBtn" id="prefSaveBtn" disabled>Save preferences</button>
+    </div>
+
+    <!-- Favourite cuisines (cook-log based) -->
     <div class="section" id="cuisineSection" style="display:none">
       <div class="sectionHead">Favourite cuisines</div>
       <div class="tasteBar" id="cuisineBar"></div>
@@ -279,10 +407,13 @@
     </div>
   </div>
 
+  <div class="prefToast" id="prefToast"></div>
+
   <script>
-    const API_BASE_URL = "/api";
-    const COOK_LOG_KEY = "simmer_cook_log_v1";
-    const SAVED_KEY    = "simmer_saved_v1";
+    const API_BASE_URL  = "/api";
+    const COOK_LOG_KEY  = "simmer_cook_log_v1";
+    const SAVED_KEY     = "simmer_saved_v1";
+    const PREFS_KEY     = "simmer_prefs_v1";
 
     // ── Theme ──────────────────────────────────────────────────────────────────
     (function() {
@@ -475,6 +606,157 @@
           </div>`).join("");
       } catch { sec.style.display = "none"; }
     }
+
+    // ── Preferences ───────────────────────────────────────────────────────────
+    const DIET_OPTIONS = [
+      { label: "🥦 Vegetarian", value: "veg"     },
+      { label: "🍗 Non-Veg",    value: "non-veg"  },
+      { label: "🌱 Vegan",      value: "veg"      },
+      { label: "🍽️ Any",        value: ""          },
+    ];
+    const SKILL_OPTIONS = [
+      { label: "🌱 Still learning", value: "quick",   time: 20  },
+      { label: "🍳 Comfortable",    value: "healthy", time: 35  },
+      { label: "⭐ I'm the chef",   value: "comfort", time: 999 },
+    ];
+    const ALLERGY_OPTIONS = [
+      { label: "🌾 Gluten",     value: "gluten"  },
+      { label: "🥛 Dairy",      value: "dairy"   },
+      { label: "🥜 Nuts",       value: "nuts"    },
+      { label: "🥚 Eggs",       value: "eggs"    },
+      { label: "🐟 Seafood",    value: "seafood" },
+      { label: "🫘 Soy",        value: "soy"     },
+      { label: "🌶 Very Spicy", value: "spicy"   },
+    ];
+    const CUISINE_OPTIONS = [
+      { label: "🍛 North Indian",   value: "north-indian"   },
+      { label: "🌶 South Indian",   value: "south-indian"   },
+      { label: "🍝 Continental",    value: "continental"    },
+      { label: "🥡 Chinese",        value: "chinese"        },
+      { label: "🥘 Mughlai",        value: "mughlai"        },
+      { label: "🌮 Mexican",        value: "mexican"        },
+      { label: "🍜 Thai",           value: "thai"           },
+      { label: "🥙 Middle Eastern", value: "middle-eastern" },
+      { label: "🍣 Japanese",       value: "japanese"       },
+      { label: "🥗 Mediterranean",  value: "mediterranean"  },
+    ];
+    const EQUIP_OPTIONS = [
+      { label: "🫕 Pressure Cooker", value: "pressure-cooker" },
+      { label: "💨 Air Fryer",        value: "air-fryer"       },
+      { label: "🥘 Oven",             value: "oven"            },
+      { label: "📡 Microwave",        value: "microwave"       },
+      { label: "🫙 Blender",          value: "blender"         },
+      { label: "🍳 Non-stick Pan",    value: "non-stick"       },
+      { label: "🥢 Wok",              value: "wok"             },
+      { label: "🫕 Kadhai",           value: "kadhai"          },
+    ];
+
+    function loadPrefs() {
+      try { return JSON.parse(localStorage.getItem(PREFS_KEY) || "{}"); } catch { return {}; }
+    }
+    function savePrefs(p) {
+      try { localStorage.setItem(PREFS_KEY, JSON.stringify(p)); } catch {}
+    }
+
+    let _prefs = loadPrefs();
+    let _dirty = false;
+
+    function markDirty() {
+      _dirty = true;
+      document.getElementById("prefSaveBtn").disabled = false;
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById("prefToast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2400);
+    }
+
+    // ── Render single-select pill row ─────────────────────────────────────────
+    function renderPillRow(containerId, options, currentVal, onPick) {
+      const row = document.getElementById(containerId);
+      if (!row) return;
+      row.innerHTML = options.map(o =>
+        `<button class="prefPill${o.value === currentVal ? " active" : ""}"
+           data-value="${esc(o.value)}" type="button">${esc(o.label)}</button>`
+      ).join("");
+      row.querySelectorAll(".prefPill").forEach(btn => {
+        btn.addEventListener("click", () => {
+          row.querySelectorAll(".prefPill").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          onPick(btn.dataset.value);
+          markDirty();
+        });
+      });
+    }
+
+    // ── Render multi-select chip grid ─────────────────────────────────────────
+    function renderChipGrid(containerId, options, currentSet, onToggle) {
+      const grid = document.getElementById(containerId);
+      if (!grid) return;
+      grid.innerHTML = options.map(o =>
+        `<button class="prefChip${currentSet.has(o.value) ? " sel" : ""}"
+           data-value="${esc(o.value)}" type="button">${esc(o.label)}</button>`
+      ).join("");
+      grid.querySelectorAll(".prefChip").forEach(btn => {
+        btn.addEventListener("click", () => {
+          btn.classList.toggle("sel");
+          onToggle(btn.dataset.value, btn.classList.contains("sel"));
+          markDirty();
+        });
+      });
+    }
+
+    // ── Init preference UI ────────────────────────────────────────────────────
+    function initPrefs() {
+      // Mutable working copy so we don't mutate _prefs until Save is tapped
+      const wip = {
+        diet:      _prefs.diet      || "",
+        mood:      _prefs.mood      || "",
+        allergies: new Set(_prefs.allergies  || []),
+        cuisines:  new Set(_prefs.cuisines   || []),
+        equipment: new Set(_prefs.equipment  || []),
+      };
+
+      renderPillRow("prefDietRow", DIET_OPTIONS, wip.diet, v => { wip.diet = v; });
+
+      renderPillRow("prefSkillRow", SKILL_OPTIONS, wip.mood, v => {
+        wip.mood = v;
+        const opt = SKILL_OPTIONS.find(o => o.value === v);
+        if (opt) wip.time_available = opt.time;
+      });
+
+      renderChipGrid("prefAllergyGrid", ALLERGY_OPTIONS, wip.allergies,
+        (v, sel) => sel ? wip.allergies.add(v) : wip.allergies.delete(v));
+
+      renderChipGrid("prefCuisineGrid", CUISINE_OPTIONS, wip.cuisines,
+        (v, sel) => sel ? wip.cuisines.add(v) : wip.cuisines.delete(v));
+
+      renderChipGrid("prefEquipGrid", EQUIP_OPTIONS, wip.equipment,
+        (v, sel) => sel ? wip.equipment.add(v) : wip.equipment.delete(v));
+
+      document.getElementById("prefSaveBtn").addEventListener("click", () => {
+        if (!_dirty) return;
+        const updated = {
+          ..._prefs,
+          diet:           wip.diet,
+          mood:           wip.mood,
+          allergies:      [...wip.allergies],
+          cuisines:       [...wip.cuisines],
+          equipment:      [...wip.equipment],
+          category:       [...wip.cuisines][0] || _prefs.category || "all",
+          time_available: wip.time_available ?? _prefs.time_available ?? 999,
+        };
+        savePrefs(updated);
+        _prefs = updated;
+        _dirty = false;
+        document.getElementById("prefSaveBtn").disabled = true;
+        showToast("✅ Preferences saved!");
+      });
+    }
+
+    initPrefs();
 
     // ── Sign out ───────────────────────────────────────────────────────────────
     document.getElementById("signOutBtn").addEventListener("click", () => {
