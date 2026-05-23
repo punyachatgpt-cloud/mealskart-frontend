@@ -1,12 +1,12 @@
-// Simmer Service Worker — v6
+// Simmer Service Worker — v7
 // Strategy per endpoint:
 //   recipe endpoints  → stale-while-revalidate (instant cached response + bg refresh)
 //   ai / tts / track  → network-only (never cache dynamic AI responses)
 //   static shell      → cache-first with network fallback
 //   external images   → cache-first (fonts, Unsplash, TheMealDB thumbnails)
 
-const CACHE_NAME = "simmer-v6";
-const API_CACHE  = "simmer-api-v6";
+const CACHE_NAME = "simmer-v7";
+const API_CACHE  = "simmer-api-v7";
 
 const STATIC_ASSETS = ["/", "/index.html", "/manifest.json", "/icon.svg"];
 
@@ -49,7 +49,19 @@ self.addEventListener("activate", event => {
           .map(k => caches.delete(k))
       ))
       .then(() => self.clients.claim())
+      .then(() => {
+        // Fire a warm-up ping on SW activation so the backend boots early
+        fetch("/api/health").catch(() => {});
+      })
   );
+});
+
+// ── Keep-alive via message from page ────────────────────────────────────────
+// The page posts { type: "KEEP_ALIVE" } every 10 min; we relay to the backend.
+self.addEventListener("message", event => {
+  if (event.data?.type === "KEEP_ALIVE") {
+    fetch("/api/health").catch(() => {});
+  }
 });
 
 // ── Fetch ─────────────────────────────────────────────────────────────────────
