@@ -3790,6 +3790,45 @@
       margin: 0 0 18px; text-align: center;
     }
 
+    /* Multi-select chip steps (allergies, cuisines, equipment) */
+    .obMultiChips {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-bottom: 10px;
+      max-height: 190px; overflow-y: auto;
+    }
+    .obMultiChip {
+      padding: 8px 15px; border-radius: 999px;
+      border: 1.5px solid var(--border);
+      background: var(--bg1); color: var(--ink);
+      font-family: inherit; font-size: 0.83rem; font-weight: 700;
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+      user-select: none;
+    }
+    .obMultiChip:hover  { border-color: var(--accent); color: var(--accent); }
+    .obMultiChip.sel {
+      background: var(--accent); border-color: var(--accent); color: #fff;
+    }
+    .obMultiHint {
+      font-size: 0.76rem; font-weight: 600; color: var(--muted2);
+      margin: 0 0 18px; text-align: center;
+    }
+    /* "None selected" badge for optional steps */
+    .obNoneBadge {
+      display: inline-block; padding: 3px 10px; border-radius: 999px;
+      background: rgba(22,163,74,0.10); color: #15803d;
+      font-size: 0.72rem; font-weight: 800; margin-left: 4px;
+    }
+    /* Profile summary card on success screen */
+    .obProfileSummary {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      justify-content: center; margin: 12px 0 20px;
+    }
+    .obProfilePill {
+      padding: 5px 12px; border-radius: 999px;
+      background: rgba(200,105,14,0.10); border: 1px solid rgba(200,105,14,0.25);
+      color: var(--accent); font-size: 0.78rem; font-weight: 700;
+    }
+
     .obActions {
       display: flex;
       align-items: center;
@@ -7608,7 +7647,10 @@
       diet: "",             // "All" — show veg + non-veg by default
       category: "all",
       budget: "any",
-      ingredientTags: []
+      ingredientTags: [],
+      allergies: [],        // e.g. ["gluten","dairy","nuts"]
+      equipment: [],        // e.g. ["pressure-cooker","air-fryer"]
+      cuisines: [],         // multi-select: ["north-indian","continental"]
     };
 
     const el = {
@@ -7950,6 +7992,9 @@
         if (typeof parsed.diet === "string") state.diet = parsed.diet;
         if (typeof parsed.category === "string") state.category = parsed.category;
         if (typeof parsed.budget === "string") state.budget = parsed.budget;
+        if (Array.isArray(parsed.allergies))  state.allergies  = parsed.allergies;
+        if (Array.isArray(parsed.equipment))  state.equipment  = parsed.equipment;
+        if (Array.isArray(parsed.cuisines))   state.cuisines   = parsed.cuisines;
         return true;
       } catch (error) {
         return false;
@@ -7963,7 +8008,10 @@
           mood: state.mood,
           diet: state.diet,
           category: state.category,
-          budget: state.budget
+          budget: state.budget,
+          allergies: state.allergies,
+          equipment: state.equipment,
+          cuisines:  state.cuisines,
         }));
       } catch (error) {}
     }
@@ -10609,6 +10657,9 @@
         const apiPayload = mode === "fridge"
           ? { ...state, mode: "normal", time_available: 999, mood: "any", ingredients }
           : { ...state, mode, ingredients };
+        // Attach profile extras (backend uses these for future filtering)
+        if (state.allergies?.length)  apiPayload.allergies = state.allergies;
+        if (state.cuisines?.length)   apiPayload.cuisines  = state.cuisines;
 
         const cacheKey = JSON.stringify({ ...state, mode, ingredients });
         let servedStale = false;
@@ -12282,47 +12333,99 @@
     // ══════════════════════════════════════════════
     // ONBOARDING
     // ══════════════════════════════════════════════
-    const ONBOARDING_KEY = "simmer_onboarded_v1";
+    const ONBOARDING_KEY    = "simmer_onboarded_v2";
+    const ONBOARDING_KEY_V1 = "simmer_onboarded_v1";  // detect upgrades
 
     const ONBOARD_STEPS = [
+      // ① Diet
       {
         emoji: "🥘",
         title: "What do you eat?",
         subtitle: "We'll personalise every suggestion for you.",
         key: "diet",
+        type: "single",
         choices: [
-          { emoji: "🥦", label: "Vegetarian", value: "veg" },
+          { emoji: "🥦", label: "Vegetarian", value: "veg"     },
           { emoji: "🍗", label: "Non-Veg",    value: "non-veg" },
-          { emoji: "🌱", label: "Vegan",       value: "veg" }
+          { emoji: "🌱", label: "Vegan",      value: "veg"     }
         ]
       },
+      // ② Allergies (NEW — multi-chip, optional)
+      {
+        emoji: "🚫",
+        title: "Any food allergies?",
+        subtitle: "We'll avoid these in your suggestions. Skip if none.",
+        key: "allergies",
+        type: "multi",
+        optional: true,
+        chips: [
+          { label: "🌾 Gluten",    value: "gluten"  },
+          { label: "🥛 Dairy",     value: "dairy"   },
+          { label: "🥜 Nuts",      value: "nuts"    },
+          { label: "🥚 Eggs",      value: "eggs"    },
+          { label: "🐟 Seafood",   value: "seafood" },
+          { label: "🫘 Soy",       value: "soy"     },
+          { label: "🌶 Very spicy",value: "spicy"   },
+        ]
+      },
+      // ③ Cuisines (ENHANCED — multi-chip, more options)
       {
         emoji: "🌍",
-        title: "Favourite cuisine?",
-        subtitle: "Pick your go-to — you can always change it.",
-        key: "category",
-        choices: [
-          { emoji: "🍛", label: "North Indian",  value: "north-indian" },
-          { emoji: "🥘", label: "South Indian",  value: "south-indian" },
-          { emoji: "🍝", label: "Continental",   value: "continental" },
-          { emoji: "🌏", label: "Mix it up",     value: "all" }
+        title: "Cuisines you love?",
+        subtitle: "Pick as many as you like — we'll prioritise these.",
+        key: "cuisines",
+        type: "multi",
+        optional: true,
+        chips: [
+          { label: "🍛 North Indian",    value: "north-indian"    },
+          { label: "🌶 South Indian",    value: "south-indian"    },
+          { label: "🍝 Continental",     value: "continental"     },
+          { label: "🥡 Chinese",         value: "chinese"         },
+          { label: "🥘 Mughlai",         value: "mughlai"         },
+          { label: "🌮 Mexican",         value: "mexican"         },
+          { label: "🍜 Thai",            value: "thai"            },
+          { label: "🥙 Middle Eastern",  value: "middle-eastern"  },
+          { label: "🍣 Japanese",        value: "japanese"        },
+          { label: "🥗 Mediterranean",   value: "mediterranean"   },
         ]
       },
+      // ④ Skill level
       {
         emoji: "👨‍🍳",
         title: "Kitchen confidence?",
         subtitle: "We'll match recipes to your comfort level.",
         key: "skill",
+        type: "single",
         choices: [
-          { emoji: "🌱", label: "Still learning", value: "quick",   time: 15 },
-          { emoji: "🍳", label: "Comfortable",    value: "healthy", time: 30 },
-          { emoji: "⭐", label: "I'm the chef",   value: "comfort", time: 45 }
+          { emoji: "🌱", label: "Still learning", value: "quick",   time: 20 },
+          { emoji: "🍳", label: "Comfortable",    value: "healthy", time: 35 },
+          { emoji: "⭐", label: "I'm the chef",   value: "comfort", time: 999 }
         ]
       },
+      // ⑤ Equipment (NEW — multi-chip, optional)
+      {
+        emoji: "🍳",
+        title: "What do you cook with?",
+        subtitle: "Helps us suggest recipes that actually fit your kitchen.",
+        key: "equipment",
+        type: "multi",
+        optional: true,
+        chips: [
+          { label: "🫕 Pressure Cooker", value: "pressure-cooker" },
+          { label: "💨 Air Fryer",       value: "air-fryer"       },
+          { label: "🥘 Oven",            value: "oven"            },
+          { label: "📡 Microwave",       value: "microwave"       },
+          { label: "🫙 Blender",         value: "blender"         },
+          { label: "🍳 Non-stick Pan",   value: "non-stick"       },
+          { label: "🥢 Wok",             value: "wok"             },
+          { label: "🫕 Kadhai",          value: "kadhai"          },
+        ]
+      },
+      // ⑥ Pantry
       {
         emoji: "🥫",
         title: "What's in your kitchen?",
-        subtitle: "Tap everything you usually have. We'll show recipes you can actually make.",
+        subtitle: "Tap everything you usually have. We'll highlight recipes you can make right now.",
         key: "pantry",
         type: "pantry",
         pantryItems: [
@@ -12336,31 +12439,59 @@
       }
     ];
 
+    // Steps shown to users who did v1 onboarding — just the two new steps
+    const ONBOARD_UPGRADE_STEPS = ONBOARD_STEPS.filter(s => s.key === "allergies" || s.key === "equipment");
+
     let obStep = 0;
     let obAnswers = {};
+    let _obSteps = ONBOARD_STEPS;  // set to ONBOARD_UPGRADE_STEPS for v1 upgrades
 
     function renderOnboardStep() {
       const card = document.getElementById("onboardCard");
-      const step = ONBOARD_STEPS[obStep];
-      const totalDots = ONBOARD_STEPS.length;
-      const isLast = obStep === ONBOARD_STEPS.length - 1;
+      const step = _obSteps[obStep];
+      const totalDots = _obSteps.length;
+      const isLast = obStep === _obSteps.length - 1;
 
       const dotsHTML = Array.from({ length: totalDots }, (_, i) =>
         `<div class="obDot ${i < obStep ? "done" : i === obStep ? "active" : ""}"></div>`
       ).join("");
 
       const isPantryStep = step.type === "pantry";
-      const selectedPantry = new Set(obAnswers.pantry || []);
+      const isMultiStep  = step.type === "multi";
+      const isSingleStep = step.type === "single" || !step.type;
 
-      const choicesHTML = isPantryStep
-        ? `<div class="obPantryChips" id="obPantryChips">
+      // ── Pantry chips ─────────────────────────────────────────────────
+      let choicesHTML = "";
+      if (isPantryStep) {
+        const selectedPantry = new Set(obAnswers.pantry || []);
+        choicesHTML = `
+          <div class="obPantryChips" id="obPantryChips">
             ${step.pantryItems.map(item => `
               <button class="obPantryChip ${selectedPantry.has(item) ? "selected" : ""}"
                 data-item="${escapeHtml(item)}" type="button">${escapeHtml(item)}</button>
             `).join("")}
           </div>
-          <p class="obPantryHint" id="obPantryHint">${selectedPantry.size > 0 ? `${selectedPantry.size} selected` : "Tap to select · skip if unsure"}</p>`
-        : `<div class="obChoices" id="obChoices">
+          <p class="obPantryHint" id="obMultiHint">${selectedPantry.size > 0 ? `${selectedPantry.size} selected` : "Tap to select · skip if unsure"}</p>
+        `;
+      }
+      // ── Multi-chip (allergies, cuisines, equipment) ───────────────────
+      else if (isMultiStep) {
+        const selectedSet = new Set(obAnswers[step.key] || []);
+        const noneLabel   = step.key === "allergies" ? "✅ None — all clear!" : "Tap to select · skip if unsure";
+        choicesHTML = `
+          <div class="obMultiChips" id="obMultiChips">
+            ${step.chips.map(c => `
+              <button class="obMultiChip ${selectedSet.has(c.value) ? "sel" : ""}"
+                data-value="${c.value}" type="button">${escapeHtml(c.label)}</button>
+            `).join("")}
+          </div>
+          <p class="obMultiHint" id="obMultiHint">${selectedSet.size > 0 ? `${selectedSet.size} selected` : noneLabel}</p>
+        `;
+      }
+      // ── Single-choice cards ───────────────────────────────────────────
+      else {
+        choicesHTML = `
+          <div class="obChoices" id="obChoices">
             ${step.choices.map(c => `
               <button class="obChoice ${obAnswers[step.key] === c.value ? "selected" : ""}"
                 data-value="${c.value}" data-time="${c.time || ""}" type="button">
@@ -12368,8 +12499,11 @@
                 <span class="obChoiceLabel">${c.label}</span>
               </button>
             `).join("")}
-          </div>`;
+          </div>
+        `;
+      }
 
+      const skipLabel = (isPantryStep || isMultiStep) && step.optional ? "Skip" : "Skip for now";
       card.innerHTML = `
         <div class="obDots">${dotsHTML}</div>
         <span class="obEmoji">${step.emoji}</span>
@@ -12377,27 +12511,37 @@
         <p class="obSubtitle">${step.subtitle}</p>
         ${choicesHTML}
         <div class="obActions">
-          <button class="obSkip" id="obSkipBtn" type="button">${isPantryStep ? "Skip" : "Skip for now"}</button>
+          <button class="obSkip" id="obSkipBtn" type="button">${skipLabel}</button>
           <button class="obNext" id="obNextBtn" type="button">
             ${isLast ? "Let's cook! 🔥" : "Continue →"}
           </button>
         </div>
       `;
 
+      // ── Bind interactions ─────────────────────────────────────────────
       if (isPantryStep) {
+        const selectedPantry = new Set(obAnswers.pantry || []);
         card.querySelectorAll(".obPantryChip").forEach(chip => {
           chip.addEventListener("click", () => {
             const item = chip.dataset.item;
-            if (selectedPantry.has(item)) {
-              selectedPantry.delete(item);
-              chip.classList.remove("selected");
-            } else {
-              selectedPantry.add(item);
-              chip.classList.add("selected");
-            }
+            if (selectedPantry.has(item)) { selectedPantry.delete(item); chip.classList.remove("selected"); }
+            else                          { selectedPantry.add(item);    chip.classList.add("selected"); }
             obAnswers.pantry = [...selectedPantry];
-            const hint = document.getElementById("obPantryHint");
+            const hint = document.getElementById("obMultiHint");
             if (hint) hint.textContent = selectedPantry.size > 0 ? `${selectedPantry.size} selected` : "Tap to select · skip if unsure";
+          });
+        });
+      } else if (isMultiStep) {
+        const selectedSet = new Set(obAnswers[step.key] || []);
+        const noneLabel   = step.key === "allergies" ? "✅ None — all clear!" : "Tap to select · skip if unsure";
+        card.querySelectorAll(".obMultiChip").forEach(chip => {
+          chip.addEventListener("click", () => {
+            const v = chip.dataset.value;
+            if (selectedSet.has(v)) { selectedSet.delete(v); chip.classList.remove("sel"); }
+            else                    { selectedSet.add(v);    chip.classList.add("sel"); }
+            obAnswers[step.key] = [...selectedSet];
+            const hint = document.getElementById("obMultiHint");
+            if (hint) hint.textContent = selectedSet.size > 0 ? `${selectedSet.size} selected` : noneLabel;
           });
         });
       } else {
@@ -12412,36 +12556,38 @@
       }
 
       document.getElementById("obNextBtn").addEventListener("click", () => {
-        if (obStep < ONBOARD_STEPS.length - 1) {
-          obStep++;
-          animateObTransition();
-        } else {
-          finishOnboarding();
-        }
+        if (obStep < _obSteps.length - 1) { obStep++; animateObTransition(); }
+        else finishOnboarding();
       });
-
       document.getElementById("obSkipBtn").addEventListener("click", () => {
-        if (obStep < ONBOARD_STEPS.length - 1) {
-          obStep++;
-          animateObTransition();
-        } else {
-          closeOnboarding();
-        }
+        if (obStep < _obSteps.length - 1) { obStep++; animateObTransition(); }
+        else closeOnboarding();
       });
     }
 
     function renderOnboardSuccess() {
-      const card = document.getElementById("onboardCard");
-      const dietLabel = { veg: "vegetarian", "non-veg": "non-veg" }[obAnswers.diet] || "personalised";
-      const pantryCount = Array.isArray(obAnswers.pantry) ? obAnswers.pantry.length : 0;
+      const card       = document.getElementById("onboardCard");
+      const dietLabel  = { veg: "Vegetarian", "non-veg": "Non-Veg" }[obAnswers.diet] || "All";
+      const pantryCount= Array.isArray(obAnswers.pantry)    ? obAnswers.pantry.length    : 0;
+      const allergyCount= Array.isArray(obAnswers.allergies) ? obAnswers.allergies.length : 0;
+      const equip       = Array.isArray(obAnswers.equipment) ? obAnswers.equipment        : [];
+      const cuisines    = Array.isArray(obAnswers.cuisines)  ? obAnswers.cuisines         : [];
+
+      // Build profile pills
+      const pills = [];
+      pills.push(`🥘 ${dietLabel}`);
+      if (cuisines.length)   pills.push(`🌍 ${cuisines.length} cuisine${cuisines.length > 1 ? "s" : ""}`);
+      if (allergyCount)      pills.push(`🚫 ${allergyCount} allerg${allergyCount > 1 ? "ies" : "y"} noted`);
+      if (equip.length)      pills.push(`🍳 ${equip.length} equipment`);
+      if (pantryCount)       pills.push(`🥫 ${pantryCount} pantry items`);
+
       card.innerHTML = `
         <span class="obSuccessEmoji">🎉</span>
         <h2 class="obSuccessTitle">You're all set!</h2>
-        <p class="obSuccessText">
-          Your Simmer is tuned to your taste.<br>
-          Showing <strong>${dietLabel}</strong> recipes you'll actually want to cook.
-          ${pantryCount > 0 ? `<br><span style="color:var(--accent);font-weight:700">🥫 ${pantryCount} pantry items saved</span> — we'll highlight what you can make right now.` : ""}
-        </p>
+        <p class="obSuccessText">Your Simmer is tuned to your taste.</p>
+        <div class="obProfileSummary">
+          ${pills.map(p => `<span class="obProfilePill">${escapeHtml(p)}</span>`).join("")}
+        </div>
         <button class="obNext" id="obDoneBtn" type="button" style="width:100%;padding:16px">
           Start cooking 🔥
         </button>
@@ -12467,13 +12613,19 @@
     }
 
     function applyOnboardAnswers() {
-      if (obAnswers.diet)           { state.diet     = obAnswers.diet; }
-      if (obAnswers.category)       { state.category = obAnswers.category; }
-      if (obAnswers.skill)          { state.mood     = obAnswers.skill; }
-      if (obAnswers.time_available) { state.time_available = obAnswers.time_available; }
+      if (obAnswers.diet)            { state.diet          = obAnswers.diet; }
+      if (obAnswers.skill)           { state.mood          = obAnswers.skill; }
+      if (obAnswers.time_available)  { state.time_available= obAnswers.time_available; }
+      // Multi-cuisine → set primary category to first pick (or "all" if none)
+      if (Array.isArray(obAnswers.cuisines) && obAnswers.cuisines.length > 0) {
+        state.cuisines = obAnswers.cuisines;
+        state.category = obAnswers.cuisines[0];  // primary
+      }
+      if (Array.isArray(obAnswers.allergies)) state.allergies = obAnswers.allergies;
+      if (Array.isArray(obAnswers.equipment)) state.equipment = obAnswers.equipment;
       // Save pantry picks from onboarding
       if (Array.isArray(obAnswers.pantry) && obAnswers.pantry.length > 0) {
-        const existing = getPantryStore();
+        const existing     = getPantryStore();
         const existingNorm = new Set(existing.map(normalizeIngredientName));
         const toAdd = obAnswers.pantry.filter(item => !existingNorm.has(normalizeIngredientName(item)));
         if (toAdd.length > 0) savePantryStore([...existing, ...toAdd]);
@@ -12519,8 +12671,24 @@
 
     function maybeShowOnboarding() {
       if (localStorage.getItem(ONBOARDING_KEY)) return;
+
       const overlay = document.getElementById("onboardOverlay");
       overlay.classList.remove("hidden");
+
+      // Returning v1 users: show only the 2 new steps (allergies + equipment)
+      const isUpgrade = !!localStorage.getItem(ONBOARDING_KEY_V1);
+      if (isUpgrade) {
+        _obSteps = ONBOARD_UPGRADE_STEPS;
+        // Seed obAnswers from existing state so existing prefs are preserved
+        obAnswers.diet     = state.diet;
+        obAnswers.skill    = state.mood;
+        obAnswers.cuisines = state.cuisines || [];
+      } else {
+        _obSteps = ONBOARD_STEPS;
+      }
+
+      obStep = 0;
+      obAnswers = isUpgrade ? obAnswers : {};
       renderOnboardStep();
     }
 
