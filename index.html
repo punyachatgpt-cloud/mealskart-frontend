@@ -2853,6 +2853,57 @@
     .streakBanner.show { display: flex; }
 
     /* ── Cook again card ────────────────────────── */
+    /* ── Daily Spotlight ─────────────────────────────────────────────────── */
+    .dailySpotlight {
+      position: relative; overflow: hidden;
+      border-radius: 20px; margin-bottom: 14px;
+      background: var(--bg1); border: 1px solid var(--border);
+      box-shadow: var(--shadow-card);
+      display: flex; align-items: stretch; min-height: 120px;
+      animation: fadeIn 0.4s ease;
+      cursor: pointer;
+    }
+    .dailySpotlight:hover { box-shadow: var(--shadow-card-lg); transform: translateY(-1px); transition: all 0.2s; }
+    .dsImg {
+      width: 120px; min-width: 120px; background-size: cover;
+      background-position: center; flex-shrink: 0; border-radius: 20px 0 0 20px;
+    }
+    .dsBody {
+      flex: 1; padding: 14px 14px 14px 16px; display: flex;
+      flex-direction: column; justify-content: space-between; gap: 6px; min-width: 0;
+    }
+    .dsBadgeRow { display: flex; align-items: center; gap: 6px; }
+    .dsBadge {
+      font-size: 0.7rem; font-weight: 800; border-radius: 20px;
+      padding: 3px 9px; letter-spacing: 0.03em; text-transform: uppercase;
+    }
+    .dsBadge.today { background: var(--goldBg); color: var(--accent); border: 1px solid var(--goldBorder); }
+    .dsDayTheme { font-size: 0.72rem; color: var(--muted2); font-weight: 600; }
+    .dsName {
+      font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 700;
+      color: var(--ink); line-height: 1.25; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .dsMetaRow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .dsMeta { font-size: 0.74rem; color: var(--muted2); font-weight: 600; }
+    .dsActions { display: flex; align-items: center; gap: 8px; }
+    .dsCookBtn {
+      background: var(--accent); color: #fff; border: none; border-radius: 10px;
+      padding: 7px 14px; font-size: 0.82rem; font-weight: 700;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .dsCookBtn:hover { filter: brightness(1.08); }
+    .dsDismiss {
+      background: none; border: none; color: var(--muted2); cursor: pointer;
+      font-size: 0.78rem; padding: 6px; flex-shrink: 0;
+    }
+    .dsDismiss:hover { color: var(--ink); }
+    [data-theme="dark"] .dailySpotlight { background: rgba(255,255,255,0.04); }
+    @media (max-width: 440px) {
+      .dsImg { width: 90px; min-width: 90px; }
+      .dsName { font-size: 0.94rem; }
+    }
+
     .cookAgainWrap {
       display: none;
       grid-column: 1 / -1;
@@ -7155,6 +7206,8 @@
         <div class="goalBar" id="goalBar"></div>
         <div class="cookAgainWrap" id="cookAgainWrap"></div>
         <div id="contextBannerWrap"></div>
+        <!-- Daily Spotlight — changes once per day, above regular results -->
+        <div id="dailySpotlightWrap"></div>
         <!-- Taste DNA inline card — shown after 3+ cooks -->
         <div class="tasteDNAInline" id="tasteDNAInline"></div>
         <!-- Universal Search mode indicator — shown when a live search is active -->
@@ -9975,9 +10028,16 @@
 
     function formatQuantity(value) {
       const n = Number(value);
-      if (!Number.isFinite(n)) return "";
-      const rounded = Math.round(n * 100) / 100;
-      return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+      if (!Number.isFinite(n) || n <= 0) return "";
+      // Split into whole + fractional parts
+      const whole = Math.floor(n);
+      const frac  = Math.round((n - whole) * 100) / 100;
+      // Map common fractions to Unicode glyphs
+      const FRACS = { 0.25:"¼", 0.5:"½", 0.75:"¾", 0.33:"⅓", 0.67:"⅔", 0.2:"⅕", 0.4:"⅖", 0.6:"⅗", 0.8:"⅘" };
+      const fracStr = FRACS[frac] || (frac > 0 ? String(Math.round(frac * 100) / 100) : "");
+      if (whole === 0)  return fracStr || "0";
+      if (!fracStr)     return String(whole);
+      return `${whole}${fracStr}`;   // e.g. "1½", "2¼"
     }
 
     function scaledIngredientText(item) {
@@ -11187,7 +11247,7 @@
     });
 
     el.servingPlusBtn.addEventListener("click", () => {
-      servingMultiplier = Math.min(4, servingMultiplier + 1);
+      servingMultiplier = Math.min(8, servingMultiplier + 1);
       renderRecipeModalDetails();
     });
 
@@ -17496,6 +17556,145 @@
     // ── end Pantry Expiry Tracker ──────────────────────────────────────────
 
     // ── end Pantry Mode ────────────────────────────
+
+    // ══════════════════════════════════════════════
+    // DAILY SPOTLIGHT — one curated pick per day
+    // ══════════════════════════════════════════════
+    const DS_CACHE_KEY   = "simmer_daily_spotlight_v1";
+    const DS_DISMISS_KEY = "simmer_ds_dismissed_v1";
+
+    // Day-of-week theme rotation (0=Sun … 6=Sat)
+    const DS_THEMES = {
+      0: { label: "Family Sunday",   emoji: "👨‍👩‍👧", mood: "comfort",  time: 60, tag: "Family Feast"   },
+      1: { label: "Quick Monday",    emoji: "⚡",     mood: "energetic", time: 20, tag: "Under 20 min"   },
+      2: { label: "Healthy Tuesday", emoji: "🥗",     mood: "healthy",   time: 30, tag: "Light & Fresh"  },
+      3: { label: "Comfort Wednesday",emoji: "🍲",    mood: "comfort",   time: 45, tag: "Soul Food"      },
+      4: { label: "Veggie Thursday",  emoji: "🌿",    mood: "healthy",   time: 35, tag: "Plant-Based"    },
+      5: { label: "Friday Feast",     emoji: "🎉",    mood: "indulgent", time: 60, tag: "Treat Yourself" },
+      6: { label: "Brunch Saturday",  emoji: "☀️",    mood: "comfort",   time: 25, tag: "Weekend Brunch" },
+    };
+
+    function getDailySpotlightKey() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    }
+
+    function isDailySpotlightDismissed() {
+      try { return localStorage.getItem(DS_DISMISS_KEY) === getDailySpotlightKey(); }
+      catch { return false; }
+    }
+
+    function dismissDailySpotlight() {
+      try { localStorage.setItem(DS_DISMISS_KEY, getDailySpotlightKey()); } catch {}
+      const wrap = document.getElementById("dailySpotlightWrap");
+      if (wrap) {
+        wrap.style.transition = "opacity 0.3s, transform 0.3s";
+        wrap.style.opacity = "0";
+        wrap.style.transform = "translateY(-6px)";
+        setTimeout(() => { wrap.innerHTML = ""; wrap.style.cssText = ""; }, 320);
+      }
+    }
+
+    function getCachedSpotlight() {
+      try {
+        const raw = localStorage.getItem(DS_CACHE_KEY);
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        if (obj.dateKey !== getDailySpotlightKey()) return null;
+        return obj.recipe;
+      } catch { return null; }
+    }
+
+    function setCachedSpotlight(recipe) {
+      try {
+        localStorage.setItem(DS_CACHE_KEY, JSON.stringify({ dateKey: getDailySpotlightKey(), recipe }));
+      } catch {}
+    }
+
+    async function fetchDailySpotlightRecipe() {
+      const theme = DS_THEMES[new Date().getDay()];
+      const prefs = getPrefs();
+      const body = {
+        mode:           "normal",
+        mood:           theme.mood,
+        time_available: theme.time,
+        diet:           prefs.diet || "",
+        pantry_items:   getPantryItems(),
+        allergies:      prefs.allergies || [],
+      };
+      try {
+        const res = await fetch(`${API_BASE_URL}/recommend`, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify(body),
+          signal:  AbortSignal.timeout(20000),
+        });
+        if (!res.ok) return null;
+        const data = await res.json();
+        const recipes = data.recipes || data.suggestions || [];
+        return recipes[0] || null;
+      } catch { return null; }
+    }
+
+    function renderDailySpotlightCard(recipe) {
+      const wrap = document.getElementById("dailySpotlightWrap");
+      if (!wrap) return;
+
+      const theme     = DS_THEMES[new Date().getDay()];
+      const img       = recipe.image_url || recipe.thumbnail || "";
+      const name      = escapeHtml(recipe.name || "Today's Pick");
+      const time      = recipe.time_minutes ? `⏱ ${recipe.time_minutes} min` : "";
+      const cals      = recipe.calories     ? `🔥 ${recipe.calories} kcal`  : "";
+      const diff      = recipe.difficulty   ? `📊 ${titleCase(recipe.difficulty)}` : "";
+      const metaParts = [time, cals, diff].filter(Boolean);
+
+      wrap.innerHTML = `
+        <div class="dailySpotlight" id="dsCard" role="button" tabindex="0"
+             aria-label="Daily spotlight: ${name}">
+          ${img ? `<div class="dsImg" style="background-image:url('${escapeHtml(img)}')"></div>` : ""}
+          <div class="dsBody">
+            <div class="dsBadgeRow">
+              <span class="dsBadge today">✨ Today's Pick</span>
+              <span class="dsDayTheme">${theme.emoji} ${escapeHtml(theme.label)}</span>
+            </div>
+            <div class="dsName">${name}</div>
+            <div class="dsMetaRow">
+              ${metaParts.map(m => `<span class="dsMeta">${m}</span>`).join("")}
+            </div>
+            <div class="dsActions">
+              <button class="dsCookBtn" id="dsCookBtn" type="button">View Recipe →</button>
+              <button class="dsDismiss" id="dsDismissBtn" type="button" title="Dismiss for today">✕ Not now</button>
+            </div>
+          </div>
+        </div>`;
+
+      // Open recipe on card click or View button
+      const open = () => openRecipeModal(recipe.id || recipe._id, recipe);
+      document.getElementById("dsCard")?.addEventListener("click", e => {
+        if (e.target.closest("#dsDismissBtn")) return;
+        open();
+      });
+      document.getElementById("dsCookBtn")?.addEventListener("click", e => { e.stopPropagation(); open(); });
+      document.getElementById("dsDismissBtn")?.addEventListener("click", e => { e.stopPropagation(); dismissDailySpotlight(); });
+    }
+
+    async function initDailySpotlight() {
+      if (isDailySpotlightDismissed()) return;
+
+      // Try localStorage cache first (instant)
+      const cached = getCachedSpotlight();
+      if (cached) { renderDailySpotlightCard(cached); return; }
+
+      // Fetch from API (happens once per day, in the background)
+      const recipe = await fetchDailySpotlightRecipe();
+      if (!recipe) return; // silently skip if offline / no result
+      setCachedSpotlight(recipe);
+      renderDailySpotlightCard(recipe);
+    }
+
+    // Kick off after a short delay so it doesn't race with the main recipe load
+    setTimeout(initDailySpotlight, 800);
+    // ── end Daily Spotlight ────────────────────────────────────────────────────
 
     // ══════════════════════════════════════════════
     // PHASE 12 — PWA INSTALL PROMPT
