@@ -2904,6 +2904,139 @@
       .dsName { font-size: 0.94rem; }
     }
 
+    /* ── Week Planner overlay ────────────────────────────────────────── */
+    .plannerOverlay {
+      position: fixed; inset: 0; z-index: 1200;
+      background: rgba(20,10,0,0.55); backdrop-filter: blur(4px);
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .plannerOverlay.hidden { display: none; }
+    .plannerSheet {
+      background: var(--bg0); border-radius: 28px 28px 0 0;
+      width: 100%; max-width: 680px; max-height: 92vh;
+      display: flex; flex-direction: column;
+      box-shadow: 0 -8px 40px rgba(50,20,5,0.22); overflow: hidden;
+    }
+    .plannerHeader {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 20px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .plannerTitle { font-family: 'Fraunces', serif; font-size: 1.15rem; font-weight: 700; }
+    .plannerWeekNav { display: flex; align-items: center; gap: 8px; }
+    .plannerWeekLabel { font-size: 0.78rem; font-weight: 700; color: var(--muted); min-width: 88px; text-align: center; }
+    .plannerNavBtn {
+      background: var(--bg1); border: 1px solid var(--border); border-radius: 8px;
+      width: 30px; height: 30px; cursor: pointer; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .plannerNavBtn:hover { background: var(--goldBg); }
+    .plannerBody { flex: 1; overflow-y: auto; padding: 12px 14px 0; }
+    .plannerDayRow {
+      margin-bottom: 12px; border-radius: 16px;
+      border: 1px solid var(--border); overflow: hidden; background: var(--bg1);
+    }
+    .plannerDayHeader {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 14px; background: var(--goldBg); border-bottom: 1px solid var(--goldBorder);
+    }
+    .plannerDayName { font-weight: 800; font-size: 0.88rem; color: var(--goldInk); }
+    .plannerDayName.today { color: var(--accent); }
+    .plannerDayCal { font-size: 0.72rem; color: var(--muted2); font-weight: 600; }
+    .plannerSlot {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 14px; border-top: 1px solid var(--border);
+      min-height: 52px; cursor: pointer; transition: background 0.12s;
+    }
+    .plannerSlot:first-child { border-top: none; }
+    .plannerSlot:hover { background: rgba(200,105,14,0.04); }
+    .plannerSlotLabel {
+      font-size: 0.7rem; font-weight: 800; color: var(--muted2);
+      text-transform: uppercase; letter-spacing: 0.04em;
+      min-width: 62px; flex-shrink: 0;
+    }
+    .plannerSlotEmpty {
+      flex: 1; font-size: 0.82rem; color: var(--muted2);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .plannerSlotEmpty::before { content: "+"; font-size: 1rem; color: var(--accent); font-weight: 900; }
+    .plannerSlotFilled { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .plannerSlotThumb {
+      width: 36px; height: 36px; border-radius: 8px;
+      background-size: cover; background-position: center;
+      background-color: var(--goldBg); flex-shrink: 0;
+    }
+    .plannerSlotName {
+      flex: 1; min-width: 0; font-size: 0.84rem; font-weight: 700;
+      color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .plannerSlotMeta { font-size: 0.7rem; color: var(--muted2); font-weight: 600; flex-shrink: 0; }
+    .plannerSlotRemove {
+      background: none; border: none; color: var(--muted2); cursor: pointer;
+      font-size: 0.95rem; padding: 4px 6px; flex-shrink: 0; border-radius: 6px;
+    }
+    .plannerSlotRemove:hover { color: var(--danger); background: rgba(220,38,38,0.08); }
+    .plannerFooter {
+      padding: 12px 14px 16px; border-top: 1px solid var(--border);
+      display: flex; gap: 10px; flex-shrink: 0;
+    }
+    .plannerShopBtn {
+      flex: 1; background: var(--accent); color: #fff; border: none;
+      border-radius: 13px; padding: 13px; font-size: 0.9rem; font-weight: 800;
+      cursor: pointer; transition: filter 0.15s;
+    }
+    .plannerShopBtn:hover { filter: brightness(1.1); }
+    .plannerShopBtn:disabled { opacity: 0.5; cursor: default; filter: none; }
+    .plannerClearBtn {
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: 13px; padding: 13px 14px; font-size: 0.85rem;
+      font-weight: 700; cursor: pointer; color: var(--muted);
+    }
+    /* Slot picker mini-sheet */
+    .slotPickerOverlay {
+      position: fixed; inset: 0; z-index: 1300;
+      background: rgba(20,10,0,0.45); backdrop-filter: blur(3px);
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .slotPickerOverlay.hidden { display: none; }
+    .slotPickerSheet {
+      background: var(--bg0); border-radius: 24px 24px 0 0;
+      width: 100%; max-width: 680px; max-height: 72vh;
+      display: flex; flex-direction: column;
+      box-shadow: 0 -4px 24px rgba(50,20,5,0.18); overflow: hidden;
+    }
+    .slotPickerHeader {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 18px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .slotPickerTitle { font-weight: 800; font-size: 0.95rem; }
+    .slotPickerClose {
+      background: none; border: none; font-size: 1.1rem; cursor: pointer;
+      color: var(--muted); padding: 4px 8px; border-radius: 8px;
+    }
+    .slotPickerClose:hover { background: var(--goldBg); }
+    .slotPickerList { flex: 1; overflow-y: auto; }
+    .slotPickerItem {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 18px; cursor: pointer; transition: background 0.12s;
+    }
+    .slotPickerItem:hover { background: rgba(200,105,14,0.06); }
+    .slotPickerThumb {
+      width: 44px; height: 44px; border-radius: 10px;
+      background-size: cover; background-position: center;
+      background-color: var(--goldBg); flex-shrink: 0;
+    }
+    .slotPickerInfo { flex: 1; min-width: 0; }
+    .slotPickerName {
+      font-weight: 700; font-size: 0.88rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .slotPickerMeta { font-size: 0.74rem; color: var(--muted2); font-weight: 600; margin-top: 2px; }
+    .slotPickerEmpty { text-align: center; padding: 32px 20px; color: var(--muted2); font-size: 0.88rem; }
+    [data-theme="dark"] .plannerSheet,
+    [data-theme="dark"] .slotPickerSheet { background: var(--bg0); }
+    [data-theme="dark"] .plannerDayRow,
+    [data-theme="dark"] .plannerDayHeader { background: rgba(255,255,255,0.04); }
+
     .cookAgainWrap {
       display: none;
       grid-column: 1 / -1;
@@ -7177,6 +7310,10 @@
               <span>✏️ My Recipes</span>
               <span class="collectionsLinkCount" id="myRecipesBadge" style="display:none">0</span>
             </button>
+            <button class="collectionsLink" id="weekPlannerBtn" type="button">
+              <span>📅 Week Planner</span>
+              <span style="font-size:0.7rem;color:var(--accent);font-weight:700">→</span>
+            </button>
             <a class="collectionsLink" href="/profile.html" style="text-decoration:none">
               <span>👤 My Profile</span>
               <span style="font-size:0.7rem;color:var(--accent);font-weight:700">→</span>
@@ -7685,6 +7822,7 @@
         <button class="moreBtn" id="moreTasteBtn" type="button"><span class="moreBtnIcon">🧬</span>Taste DNA</button>
         <button class="moreBtn" id="moreSavedBtn" type="button"><span class="moreBtnIcon">📌</span>Saved <span id="savedCountBadge" style="font-size:0.7rem;opacity:0.7"></span></button>
         <button class="moreBtn" id="moreMyRecipesBtn" type="button"><span class="moreBtnIcon">✏️</span>My Recipes</button>
+        <button class="moreBtn" id="moreWeekPlannerBtn" type="button"><span class="moreBtnIcon">📅</span>Week Planner</button>
         <a class="moreBtn" href="/profile.html" style="text-decoration:none;display:flex;align-items:center;gap:8px"><span class="moreBtnIcon">👤</span>My Profile</a>
       </div>
       <div class="themePickerRow">
@@ -18281,6 +18419,298 @@
     document.getElementById("addRecipeBtn")?.addEventListener("click", openMyRecipesSheet);
     document.getElementById("moreMyRecipesBtn")?.addEventListener("click", () => { closeMoreSheet(); openMyRecipesSheet(); });
 
+    // ══════════════════════════════════════════════════════════════════════
+    // WEEK PLANNER
+    // ══════════════════════════════════════════════════════════════════════
+    const WP_KEY        = "simmer_week_planner_v1";
+    const MEALS         = ["breakfast", "lunch", "dinner"];
+    const MEAL_LABELS   = { breakfast: "🌅 Breakfast", lunch: "☀️ Lunch", dinner: "🌙 Dinner" };
+    let   _wpWeekOffset = 0;   // 0 = current week, -1 = last week, +1 = next week
+    let   _wpPickCtx    = null; // { dateKey, meal } — what slot is being picked
+
+    // ── Data helpers ──────────────────────────────────────────────────────
+    function _wpLoad() {
+      try { return JSON.parse(localStorage.getItem(WP_KEY) || "{}"); }
+      catch { return {}; }
+    }
+    function _wpSave(data) {
+      try { localStorage.setItem(WP_KEY, JSON.stringify(data)); } catch {}
+    }
+
+    // Returns array of 7 Date objects for Mon–Sun of the given week offset
+    function _wpWeekDates(offset) {
+      const today = new Date();
+      // Find Monday of this week
+      const dow = today.getDay(); // 0=Sun..6=Sat
+      const diffToMon = dow === 0 ? -6 : 1 - dow;
+      const dates = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + diffToMon + i + offset * 7);
+        dates.push(d);
+      }
+      return dates;
+    }
+
+    function _wpDateKey(date) {
+      return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+    }
+
+    function _wpIsToday(date) {
+      const t = new Date();
+      return date.getDate() === t.getDate() && date.getMonth() === t.getMonth() && date.getFullYear() === t.getFullYear();
+    }
+
+    function _wpDayLabel(date) {
+      const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      const FULL_NAMES = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+      const d = date.getDate();
+      const mo = date.toLocaleString("default", { month: "short" });
+      return { short: DAY_NAMES[date.getDay()], full: FULL_NAMES[date.getDay()], d, mo };
+    }
+
+    function _wpWeekLabel(dates) {
+      const s = dates[0], e = dates[6];
+      const fmt = d => `${d.getDate()} ${d.toLocaleString("default",{month:"short"})}`;
+      return `${fmt(s)} – ${fmt(e)}`;
+    }
+
+    function _wpSlimRecipe(r) {
+      return {
+        id: r.id || r._id || String(Date.now()),
+        name: r.name || "Recipe",
+        image_url: r.image_url || r.thumbnail || "",
+        calories: r.calories || 0,
+        time_minutes: r.time_minutes || 0,
+        ingredients: r.ingredients || [],
+        ingredients_with_quantities: r.ingredients_with_quantities || [],
+      };
+    }
+
+    // ── Render ─────────────────────────────────────────────────────────────
+    function renderPlannerWeek() {
+      const body   = document.getElementById("plannerBody");
+      const label  = document.getElementById("plannerWeekLabel");
+      const shopBtn = document.getElementById("plannerShopBtn");
+      if (!body) return;
+
+      const dates  = _wpWeekDates(_wpWeekOffset);
+      const data   = _wpLoad();
+      if (label) label.textContent = _wpWeekLabel(dates);
+
+      let html = "";
+      let totalAssigned = 0;
+      dates.forEach(date => {
+        const dk    = _wpDateKey(date);
+        const day   = data[dk] || {};
+        const lbl   = _wpDayLabel(date);
+        const today = _wpIsToday(date);
+        let dayCals = 0;
+        MEALS.forEach(m => { dayCals += Number(day[m]?.calories || 0); });
+        totalAssigned += MEALS.filter(m => day[m]).length;
+
+        html += `<div class="plannerDayRow">
+          <div class="plannerDayHeader">
+            <span class="plannerDayName${today ? " today" : ""}">${today ? "✦ " : ""}${lbl.full} · ${lbl.d} ${lbl.mo}</span>
+            ${dayCals > 0 ? `<span class="plannerDayCal">🔥 ${dayCals} kcal</span>` : ""}
+          </div>`;
+
+        MEALS.forEach(meal => {
+          const recipe = day[meal];
+          html += `<div class="plannerSlot" data-date="${escapeHtml(dk)}" data-meal="${meal}" role="button" tabindex="0"
+                       aria-label="${MEAL_LABELS[meal]}: ${recipe ? escapeHtml(recipe.name) : "Add recipe"}">
+            <span class="plannerSlotLabel">${MEAL_LABELS[meal]}</span>`;
+          if (recipe) {
+            const img = recipe.image_url ? `background-image:url('${escapeHtml(recipe.image_url)}')` : "";
+            const time = recipe.time_minutes ? `⏱${recipe.time_minutes}m` : "";
+            const cal  = recipe.calories    ? `🔥${recipe.calories}` : "";
+            html += `<div class="plannerSlotFilled">
+              <div class="plannerSlotThumb" style="${img}"></div>
+              <span class="plannerSlotName">${escapeHtml(recipe.name)}</span>
+              <span class="plannerSlotMeta">${[time,cal].filter(Boolean).join(" ")}</span>
+            </div>
+            <button class="plannerSlotRemove" data-date="${escapeHtml(dk)}" data-meal="${meal}"
+                    type="button" aria-label="Remove ${escapeHtml(recipe.name)}">✕</button>`;
+          } else {
+            html += `<span class="plannerSlotEmpty">Add recipe</span>`;
+          }
+          html += `</div>`;
+        });
+        html += `</div>`;
+      });
+
+      body.innerHTML = html;
+      if (shopBtn) shopBtn.disabled = totalAssigned === 0;
+
+      // Wire up slot clicks (open picker)
+      body.querySelectorAll(".plannerSlot").forEach(slot => {
+        slot.addEventListener("click", e => {
+          if (e.target.closest(".plannerSlotRemove")) return;
+          const dk   = slot.dataset.date;
+          const meal = slot.dataset.meal;
+          openSlotPicker(dk, meal);
+        });
+        slot.addEventListener("keydown", e => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); slot.click(); }
+        });
+      });
+
+      // Wire up remove buttons
+      body.querySelectorAll(".plannerSlotRemove").forEach(btn => {
+        btn.addEventListener("click", e => {
+          e.stopPropagation();
+          const dk   = btn.dataset.date;
+          const meal = btn.dataset.meal;
+          const d    = _wpLoad();
+          if (d[dk]) { delete d[dk][meal]; if (!Object.keys(d[dk]).length) delete d[dk]; }
+          _wpSave(d);
+          renderPlannerWeek();
+        });
+      });
+    }
+
+    // ── Slot picker ────────────────────────────────────────────────────────
+    function openSlotPicker(dateKey, meal) {
+      _wpPickCtx = { dateKey, meal };
+      const overlay = document.getElementById("slotPickerOverlay");
+      const title   = document.getElementById("slotPickerTitle");
+      const list    = document.getElementById("slotPickerList");
+      if (!overlay || !list) return;
+
+      const lbl   = MEAL_LABELS[meal] || meal;
+      // Parse date for display
+      const [y,mo,d] = dateKey.split("-").map(Number);
+      const dateObj  = new Date(y, mo-1, d);
+      const dayName  = _wpDayLabel(dateObj);
+      if (title) title.textContent = `${lbl} · ${dayName.full} ${d} ${dateObj.toLocaleString("default",{month:"short"})}`;
+
+      // Collect candidate recipes: saved + custom + recent cooked
+      const saved  = getSavedRecipes();
+      const custom = getCustomRecipes();
+      const log    = getCookLog();
+      // Dedupe: prefer saved over log entries
+      const seen   = new Set();
+      const candidates = [];
+
+      [...saved, ...custom].forEach(r => {
+        const key = String(r.id);
+        if (!seen.has(key) && r.name) { seen.add(key); candidates.push(r); }
+      });
+      log.forEach(entry => {
+        if (!entry.id || !entry.name) return;
+        const key = String(entry.id);
+        if (!seen.has(key)) { seen.add(key); candidates.push(entry); }
+      });
+
+      if (!candidates.length) {
+        list.innerHTML = `<div class="slotPickerEmpty">Save or cook some recipes first,<br>then come back to plan your week!</div>`;
+      } else {
+        list.innerHTML = candidates.map(r => {
+          const img  = r.image_url || r.thumbnail || "";
+          const time = r.time_minutes ? `⏱ ${r.time_minutes} min` : "";
+          const cal  = r.calories    ? `🔥 ${r.calories} kcal` : "";
+          const meta = [time, cal].filter(Boolean).join(" · ");
+          return `<div class="slotPickerItem" data-id="${escapeHtml(String(r.id))}" role="button" tabindex="0">
+            <div class="slotPickerThumb" style="${img ? `background-image:url('${escapeHtml(img)}')` : ""}"></div>
+            <div class="slotPickerInfo">
+              <div class="slotPickerName">${escapeHtml(r.name)}</div>
+              ${meta ? `<div class="slotPickerMeta">${meta}</div>` : ""}
+            </div>
+          </div>`;
+        }).join("");
+
+        // Wire clicks
+        list.querySelectorAll(".slotPickerItem").forEach((item, idx) => {
+          const recipe = candidates[idx];
+          const handler = () => {
+            assignSlotRecipe(dateKey, meal, recipe);
+            closeSlotPicker();
+            renderPlannerWeek();
+          };
+          item.addEventListener("click", handler);
+          item.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handler(); } });
+        });
+      }
+
+      overlay.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeSlotPicker() {
+      document.getElementById("slotPickerOverlay")?.classList.add("hidden");
+      document.body.style.overflow = "";
+      _wpPickCtx = null;
+    }
+
+    function assignSlotRecipe(dateKey, meal, recipe) {
+      const d = _wpLoad();
+      if (!d[dateKey]) d[dateKey] = {};
+      d[dateKey][meal] = _wpSlimRecipe(recipe);
+      _wpSave(d);
+    }
+
+    // ── Shopping list integration ───────────────────────────────────────────
+    function plannerAddAllToShoppingList() {
+      const dates = _wpWeekDates(_wpWeekOffset);
+      const data  = _wpLoad();
+      let added   = 0;
+      dates.forEach(date => {
+        const day = data[_wpDateKey(date)] || {};
+        MEALS.forEach(meal => {
+          if (day[meal]) added += addRecipeToShoppingList(day[meal]);
+        });
+      });
+      const msg = added > 0 ? `✅ ${added} ingredient${added !== 1 ? "s" : ""} added to shopping list` : "All ingredients already in your shopping list!";
+      showToast(msg, added > 0 ? "success" : "warn");
+      if (added > 0) {
+        closePlannerSheet();
+        setTimeout(() => openShoppingSheet(), 350);
+      }
+    }
+
+    // ── Open / Close ─────────────────────────────────────────────────────────
+    function openPlannerSheet() {
+      _wpWeekOffset = 0;
+      document.getElementById("plannerOverlay")?.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+      renderPlannerWeek();
+    }
+
+    function closePlannerSheet() {
+      document.getElementById("plannerOverlay")?.classList.add("hidden");
+      document.body.style.overflow = "";
+    }
+
+    // ── Wire up ───────────────────────────────────────────────────────────────
+    document.getElementById("weekPlannerBtn")?.addEventListener("click",      openPlannerSheet);
+    document.getElementById("moreWeekPlannerBtn")?.addEventListener("click",  () => { closeMoreSheet(); openPlannerSheet(); });
+    document.getElementById("plannerCloseBtn")?.addEventListener("click",     closePlannerSheet);
+    document.getElementById("plannerShopBtn")?.addEventListener("click",      plannerAddAllToShoppingList);
+    document.getElementById("slotPickerClose")?.addEventListener("click",     closeSlotPicker);
+
+    document.getElementById("plannerPrevWeek")?.addEventListener("click", () => {
+      _wpWeekOffset--; renderPlannerWeek();
+    });
+    document.getElementById("plannerNextWeek")?.addEventListener("click", () => {
+      _wpWeekOffset++; renderPlannerWeek();
+    });
+
+    // Close planner on backdrop click
+    document.getElementById("plannerOverlay")?.addEventListener("click", e => {
+      if (e.target === document.getElementById("plannerOverlay")) closePlannerSheet();
+    });
+    document.getElementById("slotPickerOverlay")?.addEventListener("click", e => {
+      if (e.target === document.getElementById("slotPickerOverlay")) closeSlotPicker();
+    });
+
+    // Close on Escape
+    document.addEventListener("keydown", e => {
+      if (e.key !== "Escape") return;
+      if (!document.getElementById("slotPickerOverlay")?.classList.contains("hidden")) { closeSlotPicker(); return; }
+      if (!document.getElementById("plannerOverlay")?.classList.contains("hidden")) { closePlannerSheet(); }
+    });
+    // ── end Week Planner ─────────────────────────────────────────────────────
+
     // ─────────────────────────────────────────────────────────────────────────
   </script>
   <!-- Pantry Drawer -->
@@ -18309,6 +18739,36 @@
   <!-- Add Your Own Recipe overlay -->
   <div class="addRecipeOverlay hidden" id="addRecipeOverlay" role="dialog" aria-modal="true" aria-label="Add your own recipe">
     <div class="addRecipeSheet" id="addRecipeSheet"><!-- injected by JS --></div>
+  </div>
+
+  <!-- Week Planner overlay -->
+  <div class="plannerOverlay hidden" id="plannerOverlay" role="dialog" aria-modal="true" aria-label="Week Planner">
+    <div class="plannerSheet">
+      <div class="plannerHeader">
+        <span class="plannerTitle">📅 Week Planner</span>
+        <div class="plannerWeekNav">
+          <button class="plannerNavBtn" id="plannerPrevWeek" type="button" aria-label="Previous week">‹</button>
+          <span class="plannerWeekLabel" id="plannerWeekLabel"></span>
+          <button class="plannerNavBtn" id="plannerNextWeek" type="button" aria-label="Next week">›</button>
+        </div>
+        <button class="plannerClearBtn" id="plannerCloseBtn" type="button">✕</button>
+      </div>
+      <div class="plannerBody" id="plannerBody"></div>
+      <div class="plannerFooter">
+        <button class="plannerShopBtn" id="plannerShopBtn" type="button">🛒 Add all to Shopping List</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slot picker mini-sheet -->
+  <div class="slotPickerOverlay hidden" id="slotPickerOverlay" role="dialog" aria-modal="true" aria-label="Pick a recipe">
+    <div class="slotPickerSheet">
+      <div class="slotPickerHeader">
+        <span class="slotPickerTitle" id="slotPickerTitle">Choose a recipe</span>
+        <button class="slotPickerClose" id="slotPickerClose" type="button">✕ Close</button>
+      </div>
+      <div class="slotPickerList" id="slotPickerList"></div>
+    </div>
   </div>
 
   <!-- ARIA live regions — visually hidden, announced by screen readers -->
