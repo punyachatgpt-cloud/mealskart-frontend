@@ -2272,6 +2272,48 @@
       transition: opacity 0.15s;
     }
     .ingBuyLink:hover { opacity: 1; }
+
+    /* ── Ingredient substitution ──────────────────────────── */
+    .ingredientCheck { position: relative; }
+    .subBtn {
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-left: 6px; flex-shrink: 0;
+      background: none; border: 1px solid var(--border); border-radius: 6px;
+      padding: 1px 5px; font-size: 0.65rem; cursor: pointer; color: var(--muted2);
+      opacity: 0; transition: opacity 0.15s, background 0.12s;
+      line-height: 1.4;
+    }
+    .ingredientCheck:hover .subBtn,
+    .ingredientCheck:focus-within .subBtn { opacity: 1; }
+    .subBtn:hover { background: var(--goldBg); color: var(--accent); border-color: var(--goldBorder); }
+    .subBtn.loading { opacity: 1; }
+    .subPopover {
+      position: absolute; left: 0; right: 0; z-index: 20;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px 12px; margin-top: 4px;
+      box-shadow: 0 8px 24px rgba(50,20,5,0.16);
+      animation: fadeIn 0.18s ease;
+    }
+    .subPopoverTitle {
+      font-size: 0.7rem; font-weight: 800; color: var(--muted2);
+      text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 7px;
+    }
+    .subItems { display: flex; flex-wrap: wrap; gap: 6px; }
+    .subItem {
+      background: var(--goldBg); color: var(--accent);
+      border: 1px solid var(--goldBorder); border-radius: 20px;
+      padding: 4px 10px; font-size: 0.78rem; font-weight: 700;
+      cursor: pointer; transition: background 0.12s;
+    }
+    .subItem:hover { background: #fde8c8; }
+    .subCloseBtn {
+      background: none; border: none; color: var(--muted2); cursor: pointer;
+      font-size: 0.7rem; float: right; margin-top: -2px; padding: 2px 4px;
+      border-radius: 4px;
+    }
+    .subCloseBtn:hover { color: var(--ink); }
+    [data-theme="dark"] .subPopover { background: #1a0d05; border-color: rgba(255,255,255,0.1); }
+
     [data-theme="dark"] .groceryShopSection {
       background: rgba(20, 50, 30, 0.55);
       border-color: rgba(34, 197, 94, 0.18);
@@ -10337,10 +10379,12 @@
           <label class="ingredientCheck${pantryActive2 ? (inPantry ? " pantryHave" : " pantryNeed") : ""}">
             <input type="checkbox" ${isChecked ? "checked" : ""} />
             <span class="ingredientCheckLabel">${escapeHtml(scaledIngredientText(item))}</span>${pantryActive2 ? (inPantry ? `<span class="pantryNeedIcon" title="Need to buy">○</span>` : `<span class="pantryHaveIcon" title="You have this">✓</span>`) : ""}${buyLink}
+            <button class="subBtn" type="button" data-ing="${escapeHtml(item.name || String(item))}" title="Find substitutes">🔄</button>
           </label>
         `;
       }).join("") + scaleBadge;
       renderGrocerySection(activeRecipe, ingredients, missingForGrocery);
+      wireSubstitutionBtns();
 
       // ── Your Notes (past rating + note) ──────────────────────────────
       if (el.myNotesBox) {
@@ -18468,6 +18512,107 @@
     updateCustomRecipesBadge();
     document.getElementById("addRecipeBtn")?.addEventListener("click", openMyRecipesSheet);
     document.getElementById("moreMyRecipesBtn")?.addEventListener("click", () => { closeMoreSheet(); openMyRecipesSheet(); });
+
+    // ══════════════════════════════════════════════════════════════════════
+    // INGREDIENT SUBSTITUTION
+    // ══════════════════════════════════════════════════════════════════════
+    let _subBusy = false;
+
+    function closeAllSubPopovers() {
+      document.querySelectorAll(".subPopover").forEach(p => p.remove());
+    }
+
+    async function fetchSubs(ingredientName) {
+      const res = await fetch(`${API_BASE_URL}/ai-chat`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: `Give exactly 3 common cooking substitutes for "${ingredientName}". Reply with ONLY the 3 substitutes, one per line, max 5 words each. No intro, no numbers, no bullets.`,
+          history: [],
+          diet: getPrefs()?.diet || "",
+        }),
+        signal: AbortSignal.timeout(18000),
+      });
+      if (!res.ok) throw new Error("api");
+      const data = await res.json();
+      const reply = (data.reply || "").trim();
+      return reply.split("\n").map(l => l.replace(/^[-•*\d.)\s]+/, "").trim()).filter(Boolean).slice(0, 3);
+    }
+
+    function wireSubstitutionBtns() {
+      const container = document.getElementById("modalIngredients");
+      if (!container) return;
+
+      container.addEventListener("click", async e => {
+        const btn = e.target.closest(".subBtn");
+        if (!btn || _subBusy) return;
+        e.preventDefault(); e.stopPropagation();
+
+        const ingName = btn.dataset.ing || "";
+        if (!ingName) return;
+
+        // Close any existing popovers; if clicking same button, just close
+        const label = btn.closest(".ingredientCheck");
+        const existing = label?.querySelector(".subPopover");
+        closeAllSubPopovers();
+        if (existing) return; // toggle off
+
+        // Show loading popover
+        const pop = document.createElement("div");
+        pop.className = "subPopover";
+        pop.innerHTML = `
+          <div class="subPopoverTitle">🔄 Substitutes for <em>${escapeHtml(ingName)}</em>
+            <button class="subCloseBtn" type="button">✕</button>
+          </div>
+          <div class="subItems" id="subItemsInner">
+            <span style="font-size:0.8rem;color:var(--muted2)">Finding options<span class="dotPulse"></span></span>
+          </div>`;
+        label?.appendChild(pop);
+        pop.querySelector(".subCloseBtn")?.addEventListener("click", e => { e.stopPropagation(); pop.remove(); });
+
+        btn.classList.add("loading");
+        _subBusy = true;
+        try {
+          const subs = await fetchSubs(ingName);
+          const inner = pop.querySelector("#subItemsInner");
+          if (!inner) return;
+          if (subs.length === 0) {
+            inner.innerHTML = `<span style="font-size:0.8rem;color:var(--muted2)">No suggestions found.</span>`;
+          } else {
+            inner.innerHTML = subs.map(s =>
+              `<button class="subItem" type="button" title="Use ${escapeHtml(s)} instead">${escapeHtml(s)}</button>`
+            ).join("");
+            // Tapping a substitute adds it to the AI chat for more detail
+            inner.querySelectorAll(".subItem").forEach(chip => {
+              chip.addEventListener("click", e => {
+                e.stopPropagation();
+                pop.remove();
+                // Pre-fill chef chat with a follow-up question
+                const chatInput = document.getElementById("chefChatInput");
+                if (chatInput) {
+                  chatInput.value = `How do I substitute ${ingName} with ${chip.textContent} in this recipe?`;
+                  document.getElementById("chefFab")?.click();
+                }
+              });
+            });
+          }
+        } catch {
+          const inner = pop.querySelector("#subItemsInner");
+          if (inner) inner.innerHTML = `<span style="font-size:0.8rem;color:var(--muted2)">Couldn't fetch — try the AI Chef 👨‍🍳</span>`;
+        } finally {
+          _subBusy = false;
+          btn.classList.remove("loading");
+        }
+      });
+
+      // Close popover when clicking outside
+      document.addEventListener("click", e => {
+        if (!e.target.closest(".subPopover") && !e.target.closest(".subBtn")) {
+          closeAllSubPopovers();
+        }
+      }, { once: false });
+    }
+    // ── end Ingredient Substitution ───────────────────────────────────────────
 
     // ══════════════════════════════════════════════════════════════════════
     // RECENTLY VIEWED
