@@ -3037,6 +3037,140 @@
     [data-theme="dark"] .plannerDayRow,
     [data-theme="dark"] .plannerDayHeader { background: rgba(255,255,255,0.04); }
 
+    /* ── AI Chef Chat ─────────────────────────────────────────────────── */
+    .chatFab {
+      position: fixed; bottom: 22px; right: 18px; z-index: 900;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: var(--accent); color: #fff; border: none;
+      box-shadow: 0 6px 24px rgba(200,105,14,0.45);
+      font-size: 1.5rem; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .chatFab:hover { transform: scale(1.08); box-shadow: 0 8px 32px rgba(200,105,14,0.55); }
+    .chatFab.open  { background: var(--accent2); }
+    .chatFabBadge {
+      position: absolute; top: -2px; right: -2px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #ef4444; border: 2px solid #fff;
+      display: none;
+    }
+    .chatFabBadge.show { display: block; }
+
+    .chatPanel {
+      position: fixed; bottom: 0; right: 0; z-index: 1050;
+      width: min(420px, 100vw); height: min(600px, 82vh);
+      background: var(--bg0); border-radius: 24px 24px 0 0;
+      box-shadow: -4px -4px 40px rgba(50,20,5,0.18);
+      display: flex; flex-direction: column;
+      transform: translateY(100%); transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+      overflow: hidden; border-top: 1px solid var(--border);
+    }
+    .chatPanel.open { transform: translateY(0); }
+    @media (min-width: 768px) {
+      .chatPanel { right: 18px; border-radius: 24px; bottom: 88px; height: min(560px, 80vh); }
+      .chatPanel.open { transform: translateY(0); }
+    }
+    .chatHeader {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 16px 10px; border-bottom: 1px solid var(--border);
+      flex-shrink: 0; background: var(--bg0);
+    }
+    .chatHeaderAvatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+    }
+    .chatHeaderInfo { flex: 1; min-width: 0; }
+    .chatHeaderName { font-weight: 800; font-size: 0.9rem; line-height: 1.2; }
+    .chatHeaderStatus { font-size: 0.72rem; color: var(--positive); font-weight: 600; }
+    .chatHeaderClose {
+      background: none; border: none; color: var(--muted2); cursor: pointer;
+      font-size: 1.1rem; padding: 6px; border-radius: 8px; flex-shrink: 0;
+    }
+    .chatHeaderClose:hover { background: var(--goldBg); color: var(--ink); }
+    .chatHeaderClear {
+      background: none; border: none; color: var(--muted2); cursor: pointer;
+      font-size: 0.72rem; padding: 4px 8px; border-radius: 8px;
+      font-weight: 700; flex-shrink: 0;
+    }
+    .chatHeaderClear:hover { color: var(--danger); }
+
+    .chatMessages {
+      flex: 1; overflow-y: auto; padding: 12px 14px;
+      display: flex; flex-direction: column; gap: 10px;
+      scroll-behavior: smooth;
+    }
+    .chatBubble {
+      max-width: 88%; padding: 10px 13px; border-radius: 16px;
+      font-size: 0.86rem; line-height: 1.5; animation: fadeIn 0.2s ease;
+    }
+    .chatBubble.user {
+      align-self: flex-end;
+      background: var(--accent); color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+    .chatBubble.ai {
+      align-self: flex-start;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-bottom-left-radius: 4px; color: var(--ink);
+    }
+    .chatBubble.thinking {
+      align-self: flex-start;
+      background: var(--bg1); border: 1px solid var(--border);
+      color: var(--muted2); font-style: italic;
+      border-bottom-left-radius: 4px;
+    }
+    .chatSuggestBtn {
+      display: inline-flex; align-items: center; gap: 5px;
+      margin-top: 8px; padding: 7px 12px; font-size: 0.8rem; font-weight: 800;
+      background: var(--goldBg); color: var(--accent);
+      border: 1px solid var(--goldBorder); border-radius: 10px;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .chatSuggestBtn:hover { background: #fde8c8; }
+
+    .chatQuickChips {
+      display: flex; gap: 6px; padding: 8px 14px 4px;
+      overflow-x: auto; flex-shrink: 0;
+      scrollbar-width: none;
+    }
+    .chatQuickChips::-webkit-scrollbar { display: none; }
+    .chatQuickChip {
+      flex-shrink: 0; background: var(--bg1); border: 1px solid var(--border);
+      border-radius: 20px; padding: 5px 11px; font-size: 0.76rem; font-weight: 700;
+      color: var(--muted); cursor: pointer; white-space: nowrap;
+      transition: background 0.12s, color 0.12s;
+    }
+    .chatQuickChip:hover { background: var(--goldBg); color: var(--accent); border-color: var(--goldBorder); }
+
+    .chatInputRow {
+      display: flex; gap: 8px; padding: 10px 14px 16px;
+      border-top: 1px solid var(--border); flex-shrink: 0; align-items: flex-end;
+    }
+    .chatInputWrap { flex: 1; position: relative; }
+    .chatInput {
+      width: 100%; background: var(--bg1); border: 1.5px solid var(--border);
+      border-radius: 14px; padding: 10px 14px; font-size: 0.88rem;
+      font-family: inherit; color: var(--ink); resize: none; outline: none;
+      line-height: 1.4; max-height: 100px; overflow-y: auto;
+      transition: border-color 0.15s;
+    }
+    .chatInput:focus { border-color: var(--accent); }
+    .chatSendBtn {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: var(--accent); color: #fff; border: none;
+      font-size: 1.1rem; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: filter 0.15s; align-self: flex-end;
+    }
+    .chatSendBtn:hover { filter: brightness(1.1); }
+    .chatSendBtn:disabled { opacity: 0.45; cursor: default; filter: none; }
+    [data-theme="dark"] .chatPanel { background: #1a0d05; border-color: rgba(255,255,255,0.08); }
+    [data-theme="dark"] .chatBubble.ai { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); }
+    [data-theme="dark"] .chatInput { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.12); color: #f5e6d8; }
+
     .cookAgainWrap {
       display: none;
       grid-column: 1 / -1;
@@ -18420,6 +18554,201 @@
     document.getElementById("moreMyRecipesBtn")?.addEventListener("click", () => { closeMoreSheet(); openMyRecipesSheet(); });
 
     // ══════════════════════════════════════════════════════════════════════
+    // AI CHEF CHAT
+    // ══════════════════════════════════════════════════════════════════════
+    let _chatOpen     = false;
+    let _chatHistory  = [];   // [{role:"user"|"ai", text}]
+    let _chatBusy     = false;
+    let _chatGreeted  = false;
+
+    const CHAT_GREETINGS = [
+      "Hey! I'm Chef Simmer 👨‍🍳 Ask me anything — recipe ideas, substitutions, techniques, or what to cook with your pantry ingredients.",
+      "Hello! Ready to cook something amazing? I can help with recipe ideas, cooking tips, or substitutions. What's on your mind?",
+      "Hi there! I'm your AI cooking assistant. Ask me about any dish, ingredient swap, or cooking technique!",
+    ];
+
+    // ── Helpers ─────────────────────────────────────────────────────────────
+    function _chatMd(text) {
+      // Minimal markdown: **bold**, *italic*, `code`, line breaks
+      return escapeHtml(text)
+        .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+        .replace(/\*(.+?)\*/g,     "<em>$1</em>")
+        .replace(/`(.+?)`/g,       "<code style='background:rgba(0,0,0,0.07);padding:1px 4px;border-radius:4px'>$1</code>")
+        .replace(/\n/g,            "<br>");
+    }
+
+    function _chatScrollBottom() {
+      const msgs = document.getElementById("chatMessages");
+      if (msgs) msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function _chatRenderMessages() {
+      const msgs = document.getElementById("chatMessages");
+      if (!msgs) return;
+      if (!_chatHistory.length) {
+        msgs.innerHTML = `<div style="text-align:center;padding:28px 16px;color:var(--muted2);font-size:0.84rem">
+          <div style="font-size:2rem;margin-bottom:8px">👨‍🍳</div>
+          <div style="font-weight:700;margin-bottom:4px">Ask Chef Simmer anything</div>
+          <div>Substitutions, techniques, what to cook tonight…</div>
+        </div>`;
+        return;
+      }
+      msgs.innerHTML = _chatHistory.map(m => {
+        const cls = m.role === "user" ? "user" : (m.thinking ? "thinking" : "ai");
+        const inner = m.thinking
+          ? `Thinking<span class="dotPulse"></span>`
+          : _chatMd(m.text);
+        const suggest = m.role === "ai" && m.recipeQuery
+          ? `<div><button class="chatSuggestBtn" data-query="${escapeHtml(m.recipeQuery)}">🔍 See recipes →</button></div>`
+          : "";
+        return `<div class="chatBubble ${cls}">${inner}${suggest}</div>`;
+      }).join("");
+
+      // Wire suggest buttons
+      msgs.querySelectorAll(".chatSuggestBtn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const q = btn.dataset.query;
+          if (!q) return;
+          closeChatPanel();
+          setTimeout(() => commitSearch(q), 200);
+        });
+      });
+      _chatScrollBottom();
+    }
+
+    function _chatSetStatus(text, color) {
+      const s = document.getElementById("chatStatus");
+      if (!s) return;
+      s.textContent = text;
+      s.style.color = color || "";
+    }
+
+    // ── Send ─────────────────────────────────────────────────────────────────
+    async function sendChatMessage(text) {
+      text = (text || "").trim();
+      if (!text || _chatBusy) return;
+
+      _chatHistory.push({ role: "user", text });
+      _chatHistory.push({ role: "ai",   text: "", thinking: true });
+      _chatBusy = true;
+
+      const sendBtn   = document.getElementById("chatSendBtn");
+      const chatInput = document.getElementById("chatInput");
+      if (sendBtn)   sendBtn.disabled = true;
+      if (chatInput) { chatInput.value = ""; chatInput.style.height = ""; }
+
+      _chatRenderMessages();
+      _chatSetStatus("● Thinking…", "var(--muted2)");
+
+      // Build history for API (exclude current thinking placeholder)
+      const history = _chatHistory.slice(0, -1).map(m => ({
+        role: m.role, text: m.text || "", thinking: false,
+      }));
+
+      const prefs = getPrefs();
+      try {
+        const res = await fetch(`${API_BASE_URL}/ai-chat`, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message:     text,
+            history:     history.slice(-8),
+            diet:        prefs.diet || "",
+            category:    prefs.category || "",
+            ingredients: getPantryItems().slice(0, 10),
+          }),
+          signal: AbortSignal.timeout(30000),
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const reply       = (data.reply || "").trim() || "I'm not sure about that — could you rephrase?";
+        const recipeQuery = (data.recipe_query || "").trim();
+
+        // Replace thinking placeholder with real reply
+        _chatHistory[_chatHistory.length - 1] = { role: "ai", text: reply, recipeQuery, thinking: false };
+        document.getElementById("chatFabBadge")?.classList.add("show");
+
+      } catch {
+        _chatHistory[_chatHistory.length - 1] = {
+          role: "ai",
+          text: "The kitchen's a bit busy right now 🍳 Please try again in a moment.",
+          thinking: false,
+        };
+      }
+
+      _chatBusy = false;
+      if (sendBtn) sendBtn.disabled = false;
+      _chatSetStatus("● Ready to cook", "var(--positive)");
+      _chatRenderMessages();
+    }
+
+    // ── Open / Close ────────────────────────────────────────────────────────
+    function openChatPanel() {
+      _chatOpen = true;
+      document.getElementById("chatPanel")?.classList.add("open");
+      document.getElementById("chatFab")?.classList.add("open");
+      document.getElementById("chatFabBadge")?.classList.remove("show");
+
+      if (!_chatGreeted) {
+        _chatGreeted = true;
+        const greeting = CHAT_GREETINGS[Math.floor(Math.random() * CHAT_GREETINGS.length)];
+        _chatHistory = [{ role: "ai", text: greeting, recipeQuery: "" }];
+      }
+      _chatRenderMessages();
+      setTimeout(() => document.getElementById("chatInput")?.focus(), 100);
+    }
+
+    function closeChatPanel() {
+      _chatOpen = false;
+      document.getElementById("chatPanel")?.classList.remove("open");
+      document.getElementById("chatFab")?.classList.remove("open");
+    }
+
+    function toggleChatPanel() {
+      if (_chatOpen) closeChatPanel(); else openChatPanel();
+    }
+
+    // ── Wire up ──────────────────────────────────────────────────────────────
+    document.getElementById("chatFab")?.addEventListener("click",     toggleChatPanel);
+    document.getElementById("chatCloseBtn")?.addEventListener("click", closeChatPanel);
+
+    document.getElementById("chatClearBtn")?.addEventListener("click", () => {
+      _chatHistory  = [];
+      _chatGreeted  = false;
+      _chatRenderMessages();
+    });
+
+    document.getElementById("chatSendBtn")?.addEventListener("click", () => {
+      const val = document.getElementById("chatInput")?.value;
+      sendChatMessage(val);
+    });
+
+    document.getElementById("chatInput")?.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendChatMessage(e.target.value);
+      }
+    });
+
+    // Auto-resize textarea
+    document.getElementById("chatInput")?.addEventListener("input", function() {
+      this.style.height = "auto";
+      this.style.height = Math.min(this.scrollHeight, 100) + "px";
+    });
+
+    // Quick chips
+    document.getElementById("chatQuickChips")?.querySelectorAll(".chatQuickChip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        if (!_chatOpen) openChatPanel();
+        const text = chip.textContent.replace(/^[^\s]+\s/, "").trim(); // strip emoji
+        sendChatMessage(chip.textContent.trim());
+      });
+    });
+
+    // ── end AI Chef Chat ──────────────────────────────────────────────────────
+
+    // ══════════════════════════════════════════════════════════════════════
     // WEEK PLANNER
     // ══════════════════════════════════════════════════════════════════════
     const WP_KEY        = "simmer_week_planner_v1";
@@ -18739,6 +19068,40 @@
   <!-- Add Your Own Recipe overlay -->
   <div class="addRecipeOverlay hidden" id="addRecipeOverlay" role="dialog" aria-modal="true" aria-label="Add your own recipe">
     <div class="addRecipeSheet" id="addRecipeSheet"><!-- injected by JS --></div>
+  </div>
+
+  <!-- AI Chef Chat -->
+  <button class="chatFab" id="chatFab" type="button" aria-label="Open AI Chef chat" title="Ask the AI Chef">
+    👨‍🍳
+    <span class="chatFabBadge" id="chatFabBadge"></span>
+  </button>
+  <div class="chatPanel" id="chatPanel" role="dialog" aria-modal="true" aria-label="AI Chef Chat">
+    <div class="chatHeader">
+      <div class="chatHeaderAvatar">👨‍🍳</div>
+      <div class="chatHeaderInfo">
+        <div class="chatHeaderName">Chef Simmer</div>
+        <div class="chatHeaderStatus" id="chatStatus">● Ready to cook</div>
+      </div>
+      <button class="chatHeaderClear" id="chatClearBtn" type="button" title="Clear conversation">Clear</button>
+      <button class="chatHeaderClose" id="chatCloseBtn" type="button" aria-label="Close chat">✕</button>
+    </div>
+    <div class="chatMessages" id="chatMessages"></div>
+    <div class="chatQuickChips" id="chatQuickChips">
+      <button class="chatQuickChip" type="button">🔄 Substitute an ingredient</button>
+      <button class="chatQuickChip" type="button">⚡ Quick 15-min idea</button>
+      <button class="chatQuickChip" type="button">🥗 Healthy tonight</button>
+      <button class="chatQuickChip" type="button">🌶 Make it spicier</button>
+      <button class="chatQuickChip" type="button">🥩 High protein meal</button>
+      <button class="chatQuickChip" type="button">🍛 What's in my pantry?</button>
+    </div>
+    <div class="chatInputRow">
+      <div class="chatInputWrap">
+        <textarea class="chatInput" id="chatInput" rows="1"
+          placeholder="Ask anything — substitutions, techniques, ideas…"
+          aria-label="Chat with AI Chef"></textarea>
+      </div>
+      <button class="chatSendBtn" id="chatSendBtn" type="button" aria-label="Send message">↑</button>
+    </div>
   </div>
 
   <!-- Week Planner overlay -->
