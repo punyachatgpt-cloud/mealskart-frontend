@@ -7138,14 +7138,14 @@
             onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
             Sign in
           </a>
-          <button id="authAvatarBtn" type="button" title="View your profile"
+          <button id="authAvatarBtn" type="button" title="View your profile" aria-label="View your profile"
             onclick="window.location.href='/profile.html'"
             style="display:none;width:32px;height:32px;border-radius:50%;background:var(--accent);border:2px solid var(--accent);color:#fff;font-size:0.8rem;font-weight:700;cursor:pointer;transition:opacity 0.15s"
             onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
           </button>
           <div class="microcopy" id="microcopy">Dinner ready in 15 mins &#9889;</div>
         </div>
-        <button id="weeklyReportBtn" type="button"
+        <button id="weeklyReportBtn" type="button" aria-label="View your weekly cooking report"
           style="background:none;border:1px solid var(--border);border-radius:999px;padding:4px 12px;font-family:inherit;font-size:0.72rem;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all 0.15s"
           onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
           onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
@@ -7168,7 +7168,7 @@
             <div class="notifRowSub">Get nudged before you forget to cook</div>
           </div>
           <label class="notifToggle">
-            <input type="checkbox" id="notifMasterToggle">
+            <input type="checkbox" id="notifMasterToggle" aria-label="Enable all cooking reminders">
             <span class="notifToggleTrack"></span>
           </label>
         </div>
@@ -7187,7 +7187,7 @@
                 <option value="20">8 PM</option>
               </select>
               <label class="notifToggle">
-                <input type="checkbox" id="notifDinnerToggle" checked>
+                <input type="checkbox" id="notifDinnerToggle" checked aria-label="Enable dinner reminder">
                 <span class="notifToggleTrack"></span>
               </label>
             </div>
@@ -7199,7 +7199,7 @@
               <div class="notifRowSub">Don't break your cooking streak</div>
             </div>
             <label class="notifToggle">
-              <input type="checkbox" id="notifStreakToggle" checked>
+              <input type="checkbox" id="notifStreakToggle" checked aria-label="Enable streak nudge">
               <span class="notifToggleTrack"></span>
             </label>
           </div>
@@ -7210,7 +7210,7 @@
               <div class="notifRowSub">Monday morning summary</div>
             </div>
             <label class="notifToggle">
-              <input type="checkbox" id="notifWeeklyToggle" checked>
+              <input type="checkbox" id="notifWeeklyToggle" checked aria-label="Enable weekly report summary">
               <span class="notifToggleTrack"></span>
             </label>
           </div>
@@ -7270,58 +7270,58 @@
         <div style="font-size:0.75rem;color:var(--muted2);margin:-2px 0 6px 4px;display:flex;align-items:center;gap:5px">
           ⚡ Results appear as you type — no button needed
         </div>
-        <button class="browseAllBtn" id="browseAllBtn" type="button">🗂 Browse all 500+ recipes →</button>
+        <button class="browseAllBtn" id="browseAllBtn" type="button" aria-label="Browse all five hundred plus recipes">🗂 Browse all 500+ recipes →</button>
         <div class="stack">
           <div class="section" id="timePanel">
             <div class="label">Time <span class="hint">how long do you have</span></div>
             <div class="seg" role="group" aria-label="Time">
-              <button class="chip selected" data-group="time" data-value="999">Any time</button>
-              <button class="chip" data-group="time" data-value="15">15 min</button>
-              <button class="chip" data-group="time" data-value="30">30 min</button>
+              <button class="chip selected" aria-pressed="true" data-group="time" data-value="999">Any time</button>
+              <button class="chip" aria-pressed="false" data-group="time" data-value="15">15 min</button>
+              <button class="chip" aria-pressed="false" data-group="time" data-value="30">30 min</button>
             </div>
           </div>
 
           <div class="section" id="moodPanel">
             <div class="label">Mood <span class="hint">match the vibe</span></div>
             <div class="seg" role="group" aria-label="Mood">
-              <button class="chip selected" data-group="mood" data-value="">Any</button>
-              <button class="chip" data-group="mood" data-value="quick">quick</button>
-              <button class="chip" data-group="mood" data-value="healthy">healthy</button>
-              <button class="chip" data-group="mood" data-value="comfort">comfort</button>
+              <button class="chip selected" aria-pressed="true" data-group="mood" data-value="">Any</button>
+              <button class="chip" aria-pressed="false" data-group="mood" data-value="quick">quick</button>
+              <button class="chip" aria-pressed="false" data-group="mood" data-value="healthy">healthy</button>
+              <button class="chip" aria-pressed="false" data-group="mood" data-value="comfort">comfort</button>
             </div>
           </div>
 
           <div class="section" id="categoryPanel">
             <div class="label">Craving <span class="hint">cuisine or type</span></div>
             <div class="seg scroll" role="group" aria-label="Category">
-              <button class="chip selected" data-group="category" data-value="all">all</button>
-              <button class="chip" data-group="category" data-value="north-indian">north indian</button>
-              <button class="chip" data-group="category" data-value="south-indian">south indian</button>
-              <button class="chip" data-group="category" data-value="continental">continental</button>
-              <button class="chip" data-group="category" data-value="chinese">chinese</button>
-              <button class="chip" data-group="category" data-value="salad">salad</button>
-              <button class="chip" data-group="category" data-value="drinks">drinks</button>
-              <button class="chip" data-group="category" data-value="snacks">snacks</button>
-              <button class="chip" data-group="category" data-value="sweets">sweets</button>
-              <button class="chip" data-group="category" data-value="other">other</button>
+              <button class="chip selected" aria-pressed="true" data-group="category" data-value="all">all</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="north-indian">north indian</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="south-indian">south indian</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="continental">continental</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="chinese">chinese</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="salad">salad</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="drinks">drinks</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="snacks">snacks</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="sweets">sweets</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="other">other</button>
             </div>
           </div>
 
           <div class="section" id="dietPanel">
             <div class="label">Diet <span class="hint">always respected</span></div>
             <div class="seg" role="group" aria-label="Diet">
-              <button class="chip selected" data-group="diet" data-value="">All</button>
-              <button class="chip" data-group="diet" data-value="veg">veg</button>
-              <button class="chip" data-group="diet" data-value="non-veg">non-veg</button>
+              <button class="chip selected" aria-pressed="true" data-group="diet" data-value="">All</button>
+              <button class="chip" aria-pressed="false" data-group="diet" data-value="veg">veg</button>
+              <button class="chip" aria-pressed="false" data-group="diet" data-value="non-veg">non-veg</button>
             </div>
           </div>
 
           <div class="section" id="budgetPanel">
             <div class="label">Budget <span class="hint">shapes suggestions</span></div>
             <div class="seg" role="group" aria-label="Budget">
-              <button class="chip" data-group="budget" data-value="economical">💚 Economical</button>
-              <button class="chip selected" data-group="budget" data-value="any">✨ Any</button>
-              <button class="chip" data-group="budget" data-value="premium">💰 Premium</button>
+              <button class="chip" aria-pressed="false" data-group="budget" data-value="economical">💚 Economical</button>
+              <button class="chip selected" aria-pressed="true" data-group="budget" data-value="any">✨ Any</button>
+              <button class="chip" aria-pressed="false" data-group="budget" data-value="premium">💰 Premium</button>
             </div>
           </div>
 
@@ -8471,7 +8471,9 @@
 
     function setSelected(group, value) {
       document.querySelectorAll(`[data-group="${group}"]`).forEach((btn) => {
-        btn.classList.toggle("selected", btn.dataset.value === value);
+        const isSelected = btn.dataset.value === value;
+        btn.classList.toggle("selected", isSelected);
+        btn.setAttribute("aria-pressed", isSelected ? "true" : "false");
       });
     }
 
@@ -11334,6 +11336,7 @@
       document.querySelectorAll("[data-group]").forEach((btn) => {
         btn.addEventListener("click", (e) => {
           if (btn.closest(".btn")) return;
+          if (navigator.vibrate) navigator.vibrate(40);
           const group = btn.dataset.group;
           const value = btn.dataset.value;
 
