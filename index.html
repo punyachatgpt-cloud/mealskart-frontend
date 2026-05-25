@@ -2174,6 +2174,24 @@
       margin-bottom: 1px;
     }
 
+    /* ── Metric / Imperial unit toggle ───────────────────────────────── */
+    .unitToggleBtn {
+      display: inline-flex; align-items: center; gap: 3px;
+      background: var(--bg2); border: 1.5px solid var(--border);
+      border-radius: 999px; padding: 4px 11px;
+      font-family: inherit; font-size: 0.72rem; font-weight: 800;
+      color: var(--muted); cursor: pointer;
+      transition: border-color 0.18s, color 0.18s, background 0.18s;
+      text-transform: lowercase; letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+    .unitToggleBtn:hover { border-color: var(--accent); color: var(--accent); }
+    .unitToggleBtn.imperial {
+      border-color: rgba(200,105,14,0.45);
+      color: var(--accent);
+      background: rgba(200,105,14,0.07);
+    }
+
     .modalSectionTitle {
       margin: 0 0 7px;
       color: rgba(11, 18, 32, 0.9);
@@ -7703,7 +7721,14 @@
       </div>
       <div class="macroGrid" id="macroGrid"></div>
       <div class="myNotesBox" id="myNotesBox" style="display:none"></div>
-      <p class="modalSectionTitle">Ingredient checklist</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px">
+        <p class="modalSectionTitle" style="margin:0">Ingredient checklist</p>
+        <div class="unitToggleWrap" id="unitToggleWrap">
+          <button class="unitToggleBtn" id="unitToggleBtn" type="button" title="Switch units">
+            <span id="unitToggleLabel">metric</span> <span style="opacity:0.45;font-size:0.7em">⇄</span>
+          </button>
+        </div>
+      </div>
       <div class="ingredientChecklist" id="modalIngredients"></div>
       <div class="missingBox" id="missingBox"></div>
       <div class="substitutionBox" id="substitutionBox"></div>
@@ -10534,13 +10559,183 @@
       return `${whole}${fracStr}`;   // e.g. "1½", "2¼"
     }
 
+    // ══════════════════════════════════════════════
+    // UNIT CONVERSION — Metric ⇄ Imperial
+    // ══════════════════════════════════════════════
+    const UNIT_PREF_KEY = "simmer_unit_pref_v1";
+
+    // Default: metric for non-US locales, imperial for en-US
+    let _unitPref = (() => {
+      try {
+        const saved = localStorage.getItem(UNIT_PREF_KEY);
+        if (saved === "metric" || saved === "imperial") return saved;
+      } catch {}
+      const loc = (navigator.language || "").toLowerCase();
+      return (loc === "en-us" || loc === "en_us") ? "imperial" : "metric";
+    })();
+
+    function saveUnitPref(pref) {
+      _unitPref = pref;
+      try { localStorage.setItem(UNIT_PREF_KEY, pref); } catch {}
+    }
+
+    // Canonical unit names → conversion data
+    // Each entry: { toMetric: fn, fromMetric: fn, metricUnit, imperialUnit }
+    const _UNIT_MAP = {
+      // Volume — imperial → ml
+      "tsp":      { ml: v => v * 4.93,   fromMl: v => v / 4.93,   mU: "ml",  iU: "tsp"  },
+      "teaspoon": { ml: v => v * 4.93,   fromMl: v => v / 4.93,   mU: "ml",  iU: "tsp"  },
+      "tbsp":     { ml: v => v * 14.79,  fromMl: v => v / 14.79,  mU: "ml",  iU: "tbsp" },
+      "tablespoon":{ ml: v => v * 14.79, fromMl: v => v / 14.79,  mU: "ml",  iU: "tbsp" },
+      "cup":      { ml: v => v * 240,    fromMl: v => v / 240,    mU: "ml",  iU: "cup"  },
+      "cups":     { ml: v => v * 240,    fromMl: v => v / 240,    mU: "ml",  iU: "cups" },
+      "fl oz":    { ml: v => v * 29.57,  fromMl: v => v / 29.57,  mU: "ml",  iU: "fl oz"},
+      "fluid ounce":{ ml: v => v * 29.57,fromMl: v => v / 29.57,  mU: "ml",  iU: "fl oz"},
+      "pt":       { ml: v => v * 473,    fromMl: v => v / 473,    mU: "ml",  iU: "pt"   },
+      "pint":     { ml: v => v * 473,    fromMl: v => v / 473,    mU: "ml",  iU: "pt"   },
+      "qt":       { ml: v => v * 946,    fromMl: v => v / 946,    mU: "L",   iU: "qt"   },
+      "quart":    { ml: v => v * 946,    fromMl: v => v / 946,    mU: "L",   iU: "qt"   },
+      "gal":      { ml: v => v * 3785,   fromMl: v => v / 3785,   mU: "L",   iU: "gal"  },
+      "gallon":   { ml: v => v * 3785,   fromMl: v => v / 3785,   mU: "L",   iU: "gal"  },
+      // Weight — imperial → g
+      "oz":       { g: v => v * 28.35,   fromG: v => v / 28.35,   mU: "g",   iU: "oz"   },
+      "ounce":    { g: v => v * 28.35,   fromG: v => v / 28.35,   mU: "g",   iU: "oz"   },
+      "lb":       { g: v => v * 453.59,  fromG: v => v / 453.59,  mU: "g",   iU: "lb"   },
+      "lbs":      { g: v => v * 453.59,  fromG: v => v / 453.59,  mU: "g",   iU: "lbs"  },
+      "pound":    { g: v => v * 453.59,  fromG: v => v / 453.59,  mU: "g",   iU: "lb"   },
+      "pounds":   { g: v => v * 453.59,  fromG: v => v / 453.59,  mU: "g",   iU: "lbs"  },
+    };
+
+    // Metric volume units that might arrive in recipe data
+    const _METRIC_VOL = new Set(["ml", "milliliter", "millilitre", "l", "liter", "litre"]);
+    const _METRIC_WT  = new Set(["g", "gram", "kg", "kilogram"]);
+
+    // Round to sensible precision for display
+    function _roundUnit(val, unit) {
+      if (unit === "g" || unit === "ml") {
+        if (val < 10)  return Math.round(val * 2) / 2;   // 0.5g steps
+        if (val < 100) return Math.round(val);             // 1g steps
+        return Math.round(val / 5) * 5;                    // 5g steps
+      }
+      if (unit === "kg" || unit === "L") {
+        return Math.round(val * 10) / 10;                  // 1 decimal
+      }
+      // Imperial: 2 decimal max
+      return Math.round(val * 4) / 4; // ¼ steps
+    }
+
+    // Smart ml → human-readable metric unit
+    function _mlToDisplay(ml) {
+      if (ml >= 950)  return { val: Math.round(ml / 100) / 10, unit: "L" };
+      return { val: Math.round(ml), unit: "ml" };
+    }
+
+    // Smart g → human-readable metric unit
+    function _gToDisplay(g) {
+      if (g >= 950) return { val: Math.round(g / 100) / 10, unit: "kg" };
+      return { val: Math.round(g), unit: "g" };
+    }
+
+    // Core converter: given a quantity + unit, return { qty, unit } in target system
+    function convertUnit(qty, rawUnit, targetSystem) {
+      const u = (rawUnit || "").trim().toLowerCase();
+      if (!u || !qty) return { qty, unit: rawUnit };
+
+      const entry = _UNIT_MAP[u];
+
+      if (targetSystem === "metric") {
+        // Convert imperial → metric
+        if (entry) {
+          if (entry.ml) {
+            const ml = entry.ml(qty);
+            const d  = _mlToDisplay(ml);
+            return { qty: _roundUnit(d.val, d.unit), unit: d.unit };
+          }
+          if (entry.g) {
+            const g = entry.g(qty);
+            const d = _gToDisplay(g);
+            return { qty: _roundUnit(d.val, d.unit), unit: d.unit };
+          }
+        }
+        // Already metric — pass through
+        return { qty, unit: rawUnit };
+      }
+
+      if (targetSystem === "imperial") {
+        // Convert metric → imperial
+        if (_METRIC_VOL.has(u)) {
+          const ml = u === "l" || u === "liter" || u === "litre" ? qty * 1000 : qty;
+          // Choose most readable imperial unit
+          if (ml < 14)  return { qty: _roundUnit(ml / 4.93,  4), unit: "tsp"  };
+          if (ml < 59)  return { qty: _roundUnit(ml / 14.79, 4), unit: "tbsp" };
+          if (ml < 600) return { qty: _roundUnit(ml / 240,   4), unit: "cup"  };
+          return             { qty: _roundUnit(ml / 946,  4), unit: "qt"   };
+        }
+        if (_METRIC_WT.has(u)) {
+          const g = u === "kg" || u === "kilogram" ? qty * 1000 : qty;
+          if (g < 340)  return { qty: _roundUnit(g / 28.35,  4), unit: "oz" };
+          return            { qty: _roundUnit(g / 453.59, 4), unit: "lb" };
+        }
+        // Already imperial — pass through
+        return { qty, unit: rawUnit };
+      }
+
+      return { qty, unit: rawUnit };
+    }
+
+    // Convert temperature strings in step text ("350°F" ↔ "177°C", "180°C" ↔ "356°F")
+    function convertTempsInText(text, targetSystem) {
+      if (!text) return text;
+      if (targetSystem === "metric") {
+        // °F → °C
+        return text.replace(/(\d+)\s*°?\s*F\b/g, (_, f) => {
+          const c = Math.round((Number(f) - 32) * 5 / 9);
+          return `${c}°C`;
+        });
+      }
+      if (targetSystem === "imperial") {
+        // °C → °F
+        return text.replace(/(\d+)\s*°?\s*C\b/g, (_, c) => {
+          const f = Math.round(Number(c) * 9 / 5 + 32);
+          return `${f}°F`;
+        });
+      }
+      return text;
+    }
+
+    function initUnitToggle() {
+      const btn   = document.getElementById("unitToggleBtn");
+      const label = document.getElementById("unitToggleLabel");
+      if (!btn) return;
+
+      function applyUnitPref() {
+        label.textContent = _unitPref;
+        btn.classList.toggle("imperial", _unitPref === "imperial");
+        // Re-render ingredients with current unit pref
+        renderRecipeModalDetails();
+      }
+
+      btn.addEventListener("click", () => {
+        saveUnitPref(_unitPref === "metric" ? "imperial" : "metric");
+        applyUnitPref();
+      });
+
+      // Set initial state
+      label.textContent = _unitPref;
+      btn.classList.toggle("imperial", _unitPref === "imperial");
+    }
+
     function scaledIngredientText(item) {
       const name = titleCase(item?.name || "");
-      const quantity = Number(item?.quantity);
-      const unit = String(item?.unit || "").trim();
-      if (!Number.isFinite(quantity) || quantity === 0) return name;
-      const scaled = formatQuantity(quantity * servingMultiplier);
-      return `${scaled}${unit ? ` ${unit}` : ""} ${name}`;
+      const rawQty  = Number(item?.quantity);
+      const rawUnit = String(item?.unit || "").trim();
+      if (!Number.isFinite(rawQty) || rawQty === 0) return name;
+      const scaledQty = rawQty * servingMultiplier;
+
+      // Convert to preferred unit system
+      const { qty: finalQty, unit: finalUnit } = convertUnit(scaledQty, rawUnit, _unitPref);
+      const qtyStr = formatQuantity(finalQty);
+      return `${qtyStr}${finalUnit ? ` ${finalUnit}` : ""} ${name}`;
     }
 
     function scaleMacro(value) {
@@ -10845,17 +11040,23 @@
     }
 
     function highlightStepText(text) {
+      // Apply unit preference: convert temperatures in step text
+      let processed = convertTempsInText(text, _unitPref);
+
       // Bold ingredient names that appear in the current recipe
       const ingredientNames = (activeRecipe?.ingredients || [])
         .map(i => (typeof i === "string" ? i : i.name || "").trim())
         .filter(n => n.length > 2)
         .sort((a, b) => b.length - a.length); // longest first to avoid partial matches
 
-      let html = escapeHtml(text);
+      let html = escapeHtml(processed);
 
       // Highlight time expressions first (so they don't get ingredient-wrapped)
       html = html.replace(/(\d+[–\-]?\d*\s*(?:minute|minutes|min|mins|second|seconds|sec|secs|hour|hours|hr|hrs)s?)/gi,
         '<span class="stepTime">$1</span>');
+
+      // Highlight temperature expressions
+      html = html.replace(/(\d+\s*°[CF])/g, '<span class="stepTime">$1</span>');
 
       // Highlight ingredient names (case-insensitive, whole-word)
       for (const name of ingredientNames) {
@@ -11075,6 +11276,11 @@
         servingMultiplier = 1;
         _subAICache = null;  // clear AI sub cache for new recipe
         el.modalDishName.textContent = recipe.name || "Recipe";
+        // Sync unit toggle label to current pref
+        const _utl = document.getElementById("unitToggleLabel");
+        const _utb = document.getElementById("unitToggleBtn");
+        if (_utl) _utl.textContent = _unitPref;
+        if (_utb) _utb.classList.toggle("imperial", _unitPref === "imperial");
         renderRecipeModalDetails();
         modalSteps = Array.isArray(recipe.steps) ? recipe.steps : [];
         currentStepIndex = 0;
@@ -14630,8 +14836,12 @@
           ? activeRecipe.ingredients_with_quantities
           : (activeRecipe.ingredients || []).map(n => ({ name: n }));
         listEl.innerHTML = ings.map(i => {
-          const qty  = i.quantity ? `${formatQuantity(i.quantity * servingMultiplier)}${i.unit ? " " + i.unit : ""}` : "";
-          return `<div class="cmIngItem"><span class="cmIngQty">${escapeHtml(qty)}</span><span>${escapeHtml(i.name || String(i))}</span></div>`;
+          let qtyStr = "";
+          if (i.quantity) {
+            const { qty: cQty, unit: cUnit } = convertUnit(i.quantity * servingMultiplier, i.unit || "", _unitPref);
+            qtyStr = `${formatQuantity(cQty)}${cUnit ? " " + cUnit : ""}`;
+          }
+          return `<div class="cmIngItem"><span class="cmIngQty">${escapeHtml(qtyStr)}</span><span>${escapeHtml(i.name || String(i))}</span></div>`;
         }).join("") || "<div style='color:rgba(255,255,255,0.38);font-size:.85rem;padding:8px 0'>No ingredient data.</div>";
       }
       drawer.classList.add("cmIngOpen");
@@ -18789,6 +18999,7 @@
     initChefChat();
     initFabIdlePulse();
     initCookLog();
+    initUnitToggle();
     initTabBar();
     initModalRemix();
     applyTimeContext();
