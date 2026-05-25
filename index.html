@@ -2132,6 +2132,29 @@
       text-align: right;
       white-space: nowrap;
     }
+    /* AI nutrition estimate badge */
+    .nutAiBadge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 0.67rem; font-weight: 700; color: var(--accent);
+      background: rgba(200,105,14,0.09); border: 1px solid rgba(200,105,14,0.22);
+      border-radius: 20px; padding: 2px 8px; margin-bottom: 6px;
+    }
+    /* Skeleton shimmer for loading macros */
+    .macroSkeleton {
+      display: flex; flex-direction: column; gap: 7px; margin: 0 0 14px;
+    }
+    .macroSkeletonRow {
+      display: grid; grid-template-columns: 52px 1fr 34px; align-items: center; gap: 8px;
+    }
+    .skeletonPill {
+      height: 8px; border-radius: 999px;
+      background: linear-gradient(90deg, rgba(15,23,42,0.07) 25%, rgba(15,23,42,0.13) 50%, rgba(15,23,42,0.07) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .skeletonLabel { height: 8px; border-radius: 4px; width: 40px; }
+    .skeletonVal   { height: 8px; border-radius: 4px; width: 28px; }
     /* Keep .macroItem in case legacy code references it */
     .macroItem {
       border-radius: 12px;
@@ -10342,27 +10365,39 @@
         ${cookCount > 0 ? `<div class="modalMetaItem" style="color:#15803d"><span style="color:#15803d">🍳 Cooked</span>${cookCount}×</div>` : ""}
       `;
 
-      // Only show macros if at least one has a real value
+      // ── Macros: show real data or trigger AI estimation ──────────────────────
       const macroVals = [nutrition.protein_g, nutrition.carbs_g, nutrition.fat_g, nutrition.fiber_g];
       const hasMacros = macroVals.some(v => Number(v) > 0);
-      el.macroGrid.style.display = hasMacros ? "flex" : "none";
+      const _snapshotRecipeId = String(activeRecipe.id); // capture for async guard
+
       if (hasMacros) {
-        const mp = scaleMacro(nutrition.protein_g);
-        const mc = scaleMacro(nutrition.carbs_g);
-        const mf = scaleMacro(nutrition.fat_g);
-        const mfi = scaleMacro(nutrition.fiber_g);
-        const maxMacro = Math.max(mp, mc, mf, mfi, 1);
-        const macroRow = (label, val, color) =>
-          `<div class="macroRow">
-            <span class="macroLabel">${label}</span>
-            <div class="macroBarTrack"><div class="macroBarFill" style="width:${Math.round(val/maxMacro*100)}%;background:${color}"></div></div>
-            <span class="macroVal">${val}g</span>
-          </div>`;
-        el.macroGrid.innerHTML =
-          macroRow("Protein", mp,  "#f97316") +
-          macroRow("Carbs",   mc,  "#3b82f6") +
-          macroRow("Fat",     mf,  "#f59e0b") +
-          macroRow("Fiber",   mfi, "#22c55e");
+        // Recipe already has nutrition data — render immediately (no badge)
+        renderMacroGrid(nutrition, false);
+      } else {
+        // Check cache synchronously first for instant display
+        const _cachedNut = getNutCache()[_snapshotRecipeId];
+        if (_cachedNut && _cachedNut.calories > 0) {
+          renderMacroGrid(_cachedNut, true);
+          // Also patch the calories chip in modalMeta
+          const calChip = el.modalMeta.querySelector(".modalMetaItem:nth-child(2)");
+          if (calChip) calChip.innerHTML = `<span>🔥 Calories</span>${_cachedNut.calories} cal`;
+        } else {
+          // Show skeleton while AI fetches
+          showMacroSkeleton();
+          // Fire AI estimation in background (non-blocking)
+          estimateNutrition(activeRecipe).then(nut => {
+            // Guard: ignore if user navigated away
+            if (!activeRecipe || String(activeRecipe.id) !== _snapshotRecipeId) return;
+            if (!nut || !nut.calories) {
+              if (el.macroGrid) el.macroGrid.style.display = "none";
+              return;
+            }
+            renderMacroGrid(nut, true);
+            // Patch calories chip in modalMeta to show estimated value
+            const calChipLive = el.modalMeta.querySelector(".modalMetaItem:nth-child(2)");
+            if (calChipLive) calChipLive.innerHTML = `<span>🔥 Calories</span>~${nut.calories} cal`;
+          });
+        }
       }
       const hasQtyData = Array.isArray(activeRecipe.ingredients_with_quantities) && activeRecipe.ingredients_with_quantities.length > 0;
       const scaleBadge = (!hasQtyData && servingMultiplier > 1)
@@ -12564,6 +12599,156 @@
 
     // ══════════════════════════════════════════════
     // PERSONALISATION MEMORY
+    // ══════════════════════════════════════════════
+    // AI NUTRITION ESTIMATION
+    // ══════════════════════════════════════════════
+    const NUT_CACHE_KEY = "simmer_nut_cache_v1";
+    const NUT_CACHE_MAX = 150; // entries
+
+    function getNutCache() {
+      try { return JSON.parse(localStorage.getItem(NUT_CACHE_KEY) || "{}"); }
+      catch { return {}; }
+    }
+
+    function setNutCache(recipeId, data) {
+      try {
+        const cache = getNutCache();
+        cache[String(recipeId)] = { ...data, _ts: Date.now() };
+        // Prune oldest entries if over limit
+        const keys = Object.keys(cache);
+        if (keys.length > NUT_CACHE_MAX) {
+          keys.sort((a, b) => (cache[a]._ts || 0) - (cache[b]._ts || 0));
+          keys.slice(0, keys.length - NUT_CACHE_MAX).forEach(k => delete cache[k]);
+        }
+        localStorage.setItem(NUT_CACHE_KEY, JSON.stringify(cache));
+      } catch {}
+    }
+
+    // In-flight dedup: if AI is already fetching nutrition for a recipe, reuse that promise
+    const _nutInFlight = new Map();
+
+    // Returns estimated nutrition {calories, protein_g, carbs_g, fat_g, fiber_g}
+    // Checks localStorage cache first; falls back to AI estimation.
+    async function estimateNutrition(recipe) {
+      if (!recipe) return null;
+      const rid = String(recipe.id || recipe.name);
+
+      // 1. Return cached result instantly
+      const cached = getNutCache()[rid];
+      if (cached && cached.calories > 0) return cached;
+
+      // 2. Build ingredient list for the prompt
+      const ingLines = (() => {
+        if (Array.isArray(recipe.ingredients_with_quantities) && recipe.ingredients_with_quantities.length) {
+          return recipe.ingredients_with_quantities
+            .map(i => {
+              const qty  = i.quantity ? `${formatQuantity(i.quantity)}${i.unit ? " " + i.unit : ""}` : "";
+              return (qty ? qty + " " : "") + (i.name || String(i));
+            })
+            .join(", ");
+        }
+        if (Array.isArray(recipe.ingredients)) return recipe.ingredients.join(", ");
+        return "";
+      })();
+
+      if (!ingLines) return null;
+
+      // Return existing in-flight promise to avoid duplicate AI calls
+      if (_nutInFlight.has(rid)) return _nutInFlight.get(rid);
+
+      const servings = Number(recipe.servings) || 2;
+      const prompt =
+        `Estimate nutrition per serving (${servings} servings total) for this recipe:\n` +
+        `Name: ${recipe.name}\n` +
+        `Cuisine: ${recipe.cuisine || "International"}\n` +
+        `Ingredients: ${ingLines}\n\n` +
+        `Reply with ONLY valid JSON on one line, no text before or after:\n` +
+        `{"calories":350,"protein_g":28,"carbs_g":45,"fat_g":12,"fiber_g":5}`;
+
+      const fetchPromise = (async () => {
+        try {
+          const res = await fetch(`${API_BASE_URL}/ai-chat`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: prompt, history: [], diet: "" }),
+            signal: AbortSignal.timeout(20000),
+          });
+          if (!res.ok) return null;
+          const data = await res.json();
+          const reply = (data.reply || "").trim();
+
+          // Parse the JSON — handle markdown code fences if the AI adds them
+          const jsonStr = reply.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+          const match = jsonStr.match(/\{[\s\S]*\}/);
+          if (!match) return null;
+          const nut = JSON.parse(match[0]);
+
+          if (!nut.calories || nut.calories < 10) return null;
+          const result = {
+            calories:   Math.round(nut.calories   || 0),
+            protein_g:  Math.round(nut.protein_g  || 0),
+            carbs_g:    Math.round(nut.carbs_g    || 0),
+            fat_g:      Math.round(nut.fat_g      || 0),
+            fiber_g:    Math.round(nut.fiber_g    || 0),
+          };
+          setNutCache(rid, result);
+          return result;
+        } catch {
+          return null;
+        } finally {
+          _nutInFlight.delete(rid);
+        }
+      })();
+
+      _nutInFlight.set(rid, fetchPromise);
+      return fetchPromise;
+    }
+
+    // Renders the macro grid for a given nutrition object (with AI badge if estimated)
+    function renderMacroGrid(nutrition, isEstimated) {
+      const grid = el.macroGrid;
+      if (!grid) return;
+
+      const mp  = scaleMacro(nutrition.protein_g);
+      const mc  = scaleMacro(nutrition.carbs_g);
+      const mf  = scaleMacro(nutrition.fat_g);
+      const mfi = scaleMacro(nutrition.fiber_g);
+      const maxMacro = Math.max(mp, mc, mf, mfi, 1);
+
+      const macroRow = (label, val, color) =>
+        `<div class="macroRow">
+          <span class="macroLabel">${label}</span>
+          <div class="macroBarTrack"><div class="macroBarFill" style="width:${Math.round(val / maxMacro * 100)}%;background:${color}"></div></div>
+          <span class="macroVal">${val}g</span>
+        </div>`;
+
+      const badge = isEstimated
+        ? `<div class="nutAiBadge">✨ AI estimated · per serving</div>` : "";
+
+      grid.style.display = "flex";
+      grid.innerHTML =
+        badge +
+        macroRow("Protein", mp,  "#f97316") +
+        macroRow("Carbs",   mc,  "#3b82f6") +
+        macroRow("Fat",     mf,  "#f59e0b") +
+        macroRow("Fiber",   mfi, "#22c55e");
+    }
+
+    // Show a shimmer skeleton while AI fetches nutrition
+    function showMacroSkeleton() {
+      const grid = el.macroGrid;
+      if (!grid) return;
+      const skRow = () =>
+        `<div class="macroSkeletonRow">
+          <div class="skeletonPill skeletonLabel"></div>
+          <div class="skeletonPill" style="flex:1"></div>
+          <div class="skeletonPill skeletonVal"></div>
+        </div>`;
+      grid.style.display = "flex";
+      grid.innerHTML =
+        `<div class="macroSkeleton">${skRow()}${skRow()}${skRow()}${skRow()}</div>`;
+    }
+
     // ══════════════════════════════════════════════
     const COOK_LOG_KEY    = "simmer_cook_log_v1";
     const REPORT_LAST_KEY = "simmer_report_last";
