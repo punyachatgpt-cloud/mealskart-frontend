@@ -6908,6 +6908,120 @@
     [data-theme="dark"] .myRecipeCard:hover { background: rgba(255,255,255,0.04); }
     [data-theme="dark"] .customRecipeBadge { background: rgba(3,105,161,0.2); color: #7dd3fc; }
 
+    /* ── URL Import modal ───────────────────────────────────────────── */
+    .urlImportOverlay {
+      position: fixed; inset: 0; z-index: 1600;
+      background: rgba(15,10,5,0.55);
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .urlImportOverlay.hidden { display: none; }
+    .urlImportSheet {
+      width: 100%; max-width: 540px;
+      background: var(--bg0);
+      border-radius: 24px 24px 0 0;
+      padding: 24px 22px 36px;
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.18);
+      animation: slideUp 0.32s cubic-bezier(0.34,1.08,0.64,1) both;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    [data-theme="dark"] .urlImportSheet { background: var(--bg1); }
+    .urlImportHead {
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .urlImportTitle {
+      font-family: 'Fraunces', serif;
+      font-size: 1.15rem; font-weight: 900; color: var(--ink);
+    }
+    .urlImportHint {
+      font-size: 0.8rem; color: var(--muted);
+      line-height: 1.5; margin: 0;
+    }
+    .urlImportRow {
+      display: flex; gap: 8px; align-items: stretch;
+    }
+    .urlImportInput {
+      flex: 1;
+      background: var(--bg2); border: 1.5px solid var(--border);
+      border-radius: 12px; padding: 11px 14px;
+      font-family: inherit; font-size: 0.9rem; color: var(--ink);
+      outline: none;
+    }
+    .urlImportInput:focus { border-color: var(--accent); }
+    .urlImportInput::placeholder { color: var(--muted2); }
+    .urlImportBtn {
+      background: var(--ember-gradient); color: #fff;
+      border: none; border-radius: 12px;
+      padding: 11px 18px; font-family: inherit;
+      font-size: 0.88rem; font-weight: 800;
+      cursor: pointer; white-space: nowrap;
+      transition: opacity 0.18s;
+    }
+    .urlImportBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .urlImportStatus {
+      font-size: 0.82rem; font-weight: 600;
+      min-height: 20px; transition: color 0.2s;
+    }
+    .urlImportStatus.ok  { color: #16a34a; }
+    .urlImportStatus.err { color: #dc2626; }
+
+    /* Parsed recipe preview card inside the import sheet */
+    .urlPreviewCard {
+      background: var(--bg2);
+      border: 1.5px solid var(--border);
+      border-radius: 16px; padding: 16px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .urlPreviewCard.hidden { display: none; }
+    .urlPreviewImg {
+      width: 100%; height: 140px;
+      object-fit: cover; border-radius: 10px;
+      background: rgba(200,105,14,0.08);
+    }
+    .urlPreviewImg.hidden { display: none; }
+    .urlPreviewName {
+      font-family: 'Fraunces', serif;
+      font-size: 1.05rem; font-weight: 900; color: var(--ink);
+    }
+    .urlPreviewMeta {
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .urlPreviewChip {
+      font-size: 0.72rem; font-weight: 700;
+      background: rgba(200,105,14,0.10);
+      border: 1px solid rgba(200,105,14,0.20);
+      color: var(--accent); border-radius: 999px;
+      padding: 3px 10px;
+    }
+    .urlPreviewIngCount {
+      font-size: 0.78rem; color: var(--muted);
+    }
+    .urlPreviewActions {
+      display: flex; gap: 8px;
+    }
+    .urlPreviewSave {
+      flex: 1; background: var(--ember-gradient); color: #fff;
+      border: none; border-radius: 12px; padding: 11px;
+      font-family: inherit; font-size: 0.9rem; font-weight: 800;
+      cursor: pointer;
+    }
+    .urlPreviewEdit {
+      background: var(--bg2); border: 1.5px solid var(--border);
+      color: var(--muted); border-radius: 12px; padding: 11px 16px;
+      font-family: inherit; font-size: 0.88rem; cursor: pointer;
+    }
+    /* Entry button in "Add Recipe" sheet */
+    .arImportUrlBtn {
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      width: 100%;
+      background: rgba(200,105,14,0.07);
+      border: 1.5px dashed rgba(200,105,14,0.40);
+      border-radius: 14px; padding: 12px;
+      font-family: inherit; font-size: 0.88rem; font-weight: 800;
+      color: var(--accent); cursor: pointer;
+      transition: background 0.18s, border-color 0.18s;
+    }
+    .arImportUrlBtn:hover { background: rgba(200,105,14,0.12); border-color: rgba(200,105,14,0.60); }
+
     /* 5 ── Toast notifications ───────────────────── */
     .simmerToast {
       position: fixed;
@@ -7624,6 +7738,10 @@
               <span>✏️ My Recipes</span>
               <span class="collectionsLinkCount" id="myRecipesBadge" style="display:none">0</span>
             </button>
+            <button class="collectionsLink" id="urlImportBtn" type="button">
+              <span>🔗 Import Recipe</span>
+              <span style="font-size:0.7rem;color:var(--accent);font-weight:700">URL</span>
+            </button>
             <button class="collectionsLink" id="weekPlannerBtn" type="button">
               <span>📅 Week Planner</span>
               <span style="font-size:0.7rem;color:var(--accent);font-weight:700">→</span>
@@ -8204,6 +8322,7 @@
         <button class="moreBtn" id="moreSavedBtn" type="button"><span class="moreBtnIcon">📌</span>Saved <span id="savedCountBadge" style="font-size:0.7rem;opacity:0.7"></span></button>
         <button class="moreBtn" id="moreMyRecipesBtn" type="button"><span class="moreBtnIcon">✏️</span>My Recipes</button>
         <button class="moreBtn" id="moreWeekPlannerBtn" type="button"><span class="moreBtnIcon">📅</span>Week Planner</button>
+        <button class="moreBtn" id="moreUrlImportBtn" type="button"><span class="moreBtnIcon">🔗</span>Import URL</button>
         <a class="moreBtn" href="/profile.html" style="text-decoration:none;display:flex;align-items:center;gap:8px"><span class="moreBtnIcon">👤</span>My Profile</a>
       </div>
       <div class="themePickerRow">
@@ -12099,6 +12218,8 @@
     // Global Escape key — closes the frontmost open dialog
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape") return;
+      const urlImportOv = document.getElementById("urlImportOverlay");
+      if (urlImportOv && !urlImportOv.classList.contains("hidden")) { closeUrlImport(); return; }
       const pantryOverlay = document.getElementById("pantryOverlay");
       if (pantryOverlay && !pantryOverlay.classList.contains("hidden")) { closePantryDrawer(); return; }
       if (el.recipeModal.classList.contains("open")) { closeRecipeModal(); return; }
@@ -16779,6 +16900,7 @@
 
       // More sheet buttons
       document.getElementById("moreCookLogBtn")?.addEventListener("click",     () => { closeMoreSheet(); openCookLog(); });
+      document.getElementById("moreUrlImportBtn")?.addEventListener("click",   () => { closeMoreSheet(); openUrlImport(); });
       document.getElementById("moreCollectionsBtn")?.addEventListener("click", () => { closeMoreSheet(); openCollectionsSheet(); });
       document.getElementById("moreGoalBtn")?.addEventListener("click",        () => { closeMoreSheet(); openGoalSetup(); });
       document.getElementById("moreExploreBtn")?.addEventListener("click",     () => { closeMoreSheet(); openCuisineExplorer(); });
@@ -19182,6 +19304,166 @@
       };
     }
 
+    // ══════════════════════════════════════════════
+    // RECIPE URL IMPORT
+    // ══════════════════════════════════════════════
+    let _importedRecipeData = null; // holds the last successfully parsed recipe
+
+    function openUrlImport() {
+      const overlay = document.getElementById("urlImportOverlay");
+      if (!overlay) return;
+      overlay.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+      // Reset state
+      document.getElementById("urlImportInput").value = "";
+      document.getElementById("urlImportStatus").textContent = "";
+      document.getElementById("urlImportStatus").className = "urlImportStatus";
+      document.getElementById("urlPreviewCard")?.classList.add("hidden");
+      document.getElementById("urlImportFetchBtn").disabled = false;
+      _importedRecipeData = null;
+      setTimeout(() => document.getElementById("urlImportInput")?.focus(), 120);
+    }
+
+    function closeUrlImport() {
+      document.getElementById("urlImportOverlay")?.classList.add("hidden");
+      document.body.style.overflow = "";
+    }
+
+    async function triggerUrlImport() {
+      const input  = document.getElementById("urlImportInput");
+      const status = document.getElementById("urlImportStatus");
+      const btn    = document.getElementById("urlImportFetchBtn");
+      const url    = (input?.value || "").trim();
+
+      if (!url || !url.startsWith("http")) {
+        status.textContent = "⚠️ Please enter a valid recipe URL starting with http";
+        status.className = "urlImportStatus err";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Importing…";
+      status.textContent = "🔍 Fetching the page…";
+      status.className = "urlImportStatus";
+      document.getElementById("urlPreviewCard")?.classList.add("hidden");
+      _importedRecipeData = null;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/import-recipe`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+          signal: AbortSignal.timeout(35000),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ detail: "Unknown error" }));
+          throw new Error(err.detail || `HTTP ${res.status}`);
+        }
+
+        const recipe = await res.json();
+        if (!recipe.name || !recipe.steps?.length) throw new Error("No recipe found on that page");
+
+        _importedRecipeData = recipe;
+
+        // Show preview
+        status.textContent = "✅ Recipe found!";
+        status.className = "urlImportStatus ok";
+
+        const card    = document.getElementById("urlPreviewCard");
+        const imgEl   = document.getElementById("urlPreviewImg");
+        const nameEl  = document.getElementById("urlPreviewName");
+        const metaEl  = document.getElementById("urlPreviewMeta");
+        const cntEl   = document.getElementById("urlPreviewIngCount");
+
+        nameEl.textContent = recipe.name;
+
+        // Meta chips
+        const chips = [];
+        if (recipe.cuisine)      chips.push(recipe.cuisine);
+        if (recipe.time_minutes) chips.push(`⏱ ${recipe.time_minutes} min`);
+        if (recipe.calories)     chips.push(`🔥 ${recipe.calories} cal`);
+        if (recipe.difficulty)   chips.push(recipe.difficulty);
+        metaEl.innerHTML = chips.map(c => `<span class="urlPreviewChip">${escapeHtml(c)}</span>`).join("");
+
+        cntEl.textContent = recipe.ingredients?.length
+          ? `${recipe.ingredients.length} ingredients · ${recipe.steps.length} steps`
+          : `${recipe.steps.length} steps`;
+
+        if (recipe.image_url) {
+          imgEl.src = recipe.image_url;
+          imgEl.classList.remove("hidden");
+          imgEl.onerror = () => imgEl.classList.add("hidden");
+        } else {
+          imgEl.classList.add("hidden");
+        }
+
+        card.classList.remove("hidden");
+
+      } catch (err) {
+        status.textContent = `❌ ${err.message || "Could not import recipe. Try another URL."}`;
+        status.className = "urlImportStatus err";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Import";
+      }
+    }
+
+    function saveImportedRecipe() {
+      if (!_importedRecipeData) return;
+      const recipe = {
+        ..._importedRecipeData,
+        id:     "custom_" + Date.now(),
+        reason: "Imported from web",
+        custom: true,
+        tags:   ["custom", "imported"],
+      };
+      const list = getCustomRecipes();
+      list.push(recipe);
+      saveCustomRecipesList(list);
+      updateCustomRecipesBadge();
+      closeUrlImport();
+      showToast(`"${recipe.name}" saved to My Recipes! 🎉`, "ok");
+    }
+
+    function editImportedRecipe() {
+      if (!_importedRecipeData) return;
+      const r = _importedRecipeData;
+      // Pre-fill the Add Recipe sheet with the imported data
+      const ingLines = (r.ingredients_with_quantities || []).map(i => {
+        const qty  = i.quantity ? formatQuantity(i.quantity) : "";
+        const unit = i.unit || "";
+        return [qty, unit, i.name].filter(Boolean).join(" ");
+      }).join("\n") || (r.ingredients || []).join("\n");
+
+      closeUrlImport();
+      setTimeout(() => {
+        openAddRecipeSheet({
+          name:       r.name,
+          cuisine:    r.cuisine,
+          time:       r.time_minutes,
+          servings:   r.servings,
+          difficulty: r.difficulty,
+          calories:   r.calories,
+          imageUrl:   r.image_url,
+          ingredients: ingLines,
+          steps:      (r.steps || []).join("\n"),
+        });
+      }, 300);
+    }
+
+    // Wire Enter key on URL input
+    document.addEventListener("DOMContentLoaded", () => {}, { once: true });
+    // (Inline wiring happens after overlay HTML is parsed — use event delegation)
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const overlay = document.getElementById("urlImportOverlay");
+        if (overlay && !overlay.classList.contains("hidden")) {
+          if (document.activeElement?.id === "urlImportInput") triggerUrlImport();
+        }
+      }
+    });
+
     function closeAddRecipeSheet() {
       document.getElementById("addRecipeOverlay")?.classList.add("hidden");
     }
@@ -19211,6 +19493,9 @@
           <button class="closeBtn" id="addRecipeCloseBtn" type="button">✕ Close</button>
         </div>
         <div class="addRecipeBody">
+          <button class="arImportUrlBtn" type="button" onclick="closeAddRecipeSheet();setTimeout(openUrlImport,120)">
+            🔗 Import from a URL instead (AllRecipes, NYT Cooking, any food blog…)
+          </button>
           <div class="arFieldGroup">
             <label class="arLabel" for="arName">Recipe Name *</label>
             <input class="arInput" id="arName" type="text" placeholder="e.g. Grandma's Dal Tadka" maxlength="80" value="${escapeHtml(pf.name||"")}" autocomplete="off" />
@@ -19381,6 +19666,9 @@
     document.getElementById("addRecipeOverlay")?.addEventListener("click", e => {
       if (e.target === document.getElementById("addRecipeOverlay")) closeAddRecipeSheet();
     });
+
+    // Wire URL import sidebar button
+    document.getElementById("urlImportBtn")?.addEventListener("click", openUrlImport);
 
     // ── Patch openRecipeModal to handle custom_ IDs ──────────────────────────
     (function patchOpenRecipeModalForCustom() {
@@ -19941,6 +20229,40 @@
   <!-- Add Your Own Recipe overlay -->
   <div class="addRecipeOverlay hidden" id="addRecipeOverlay" role="dialog" aria-modal="true" aria-label="Add your own recipe">
     <div class="addRecipeSheet" id="addRecipeSheet"><!-- injected by JS --></div>
+  </div>
+
+  <!-- URL Import overlay -->
+  <div class="urlImportOverlay hidden" id="urlImportOverlay" role="dialog" aria-modal="true" aria-label="Import recipe from URL"
+       onclick="if(event.target===this)closeUrlImport()">
+    <div class="urlImportSheet">
+      <div class="urlImportHead">
+        <span class="urlImportTitle">🔗 Import from URL</span>
+        <button class="closeBtn" type="button" onclick="closeUrlImport()" style="font-size:0.8rem;padding:6px 12px">✕ Close</button>
+      </div>
+      <p class="urlImportHint">Paste any recipe URL — AllRecipes, NYT Cooking, BBC Food, food blogs, anywhere. Simmer's AI extracts the recipe automatically.</p>
+      <div class="urlImportRow">
+        <input class="urlImportInput" id="urlImportInput" type="url"
+               placeholder="https://www.allrecipes.com/recipe/…"
+               autocomplete="off" autocorrect="off" spellcheck="false" />
+        <button class="urlImportBtn" id="urlImportFetchBtn" type="button"
+                onclick="triggerUrlImport()">Import</button>
+      </div>
+      <div class="urlImportStatus" id="urlImportStatus"></div>
+
+      <!-- Parsed preview — hidden until import succeeds -->
+      <div class="urlPreviewCard hidden" id="urlPreviewCard">
+        <img class="urlPreviewImg hidden" id="urlPreviewImg" alt="Recipe photo" />
+        <div class="urlPreviewName" id="urlPreviewName"></div>
+        <div class="urlPreviewMeta" id="urlPreviewMeta"></div>
+        <div class="urlPreviewIngCount" id="urlPreviewIngCount"></div>
+        <div class="urlPreviewActions">
+          <button class="urlPreviewSave" id="urlPreviewSave" type="button"
+                  onclick="saveImportedRecipe()">💾 Save to My Recipes</button>
+          <button class="urlPreviewEdit" id="urlPreviewEdit" type="button"
+                  onclick="editImportedRecipe()">✏️ Edit first</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Week Planner overlay -->
