@@ -1,0 +1,3 @@
+## 2025-05-15 - [Accessibility & Feedback for Dynamic Controls]
+**Learning:** Icon-only buttons for incremental changes (like serving sizes) are inaccessible without `aria-label` and `title`. Furthermore, dynamic text updates (like '1 serving' to '2 servings') are not announced by screen readers unless the container has `aria-live="polite"`. Visual feedback for boundary states (min/max limits) must be explicitly styled via `:disabled` to prevent 'dead-click' frustration.
+**Action:** Always pair `aria-label`/`title` on icon buttons, use `aria-live` for dynamic counters, and provide clear CSS `:disabled` states for bounded controls.
