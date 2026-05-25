@@ -6945,8 +6945,10 @@
     .pantryTitle { font-size: 1.1rem; font-weight: 800; color: var(--text1); }
     .pantryCloseBtn {
       background: none; border: none; cursor: pointer;
-      font-size: 1.1rem; color: var(--muted); padding: 4px 8px;
-      border-radius: 8px; line-height: 1;
+      font-size: 1.2rem; color: var(--muted);
+      min-width: 44px; min-height: 44px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 8px; line-height: 1; flex-shrink: 0;
     }
     .pantryCloseBtn:hover { background: var(--bg2); }
     .pantryHint { font-size: 0.82rem; color: var(--muted); margin: 0 0 14px; }
@@ -17477,6 +17479,7 @@
       const overlay = document.getElementById("pantryOverlay");
       if (!overlay) return;
       overlay.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
       renderPantryChips();
       updatePantryBtn();
       setTimeout(() => document.getElementById("pantryInput")?.focus(), 100);
@@ -17484,6 +17487,7 @@
 
     function closePantryDrawer() {
       document.getElementById("pantryOverlay")?.classList.add("hidden");
+      document.body.style.overflow = "";
     }
 
     function addPantryItem(raw) {
@@ -18995,11 +18999,13 @@
     // ─────────────────────────────────────────────────────────────────────────
   </script>
   <!-- Pantry Drawer -->
-  <div class="pantryOverlay hidden" id="pantryOverlay" role="dialog" aria-modal="true" aria-label="My Pantry">
+  <div class="pantryOverlay hidden" id="pantryOverlay" role="dialog" aria-modal="true" aria-label="My Pantry"
+       onclick="if(event.target===this)closePantryDrawer()">
     <div class="pantrySheet">
       <div class="pantryHeader">
         <span class="pantryTitle">🥫 My Pantry</span>
-        <button class="pantryCloseBtn" id="pantryCloseBtn" type="button" aria-label="Close pantry">✕</button>
+        <button class="pantryCloseBtn" id="pantryCloseBtn" type="button" aria-label="Close pantry"
+                onclick="closePantryDrawer()">✕</button>
       </div>
       <p class="pantryHint">Add ingredients you have at home. Tap 📅 on any item to set an expiry date.</p>
       <div class="pantryInputRow">
@@ -19016,6 +19022,23 @@
       </div>
     </div>
   </div>
+  <!-- Pantry close wiring — must run AFTER pantry HTML is parsed -->
+  <script>
+    (function() {
+      var _closeBtn = document.getElementById("pantryCloseBtn");
+      var _overlay  = document.getElementById("pantryOverlay");
+      if (_closeBtn && !_closeBtn._pantryWired) {
+        _closeBtn.addEventListener("click", function() { closePantryDrawer(); });
+        _closeBtn._pantryWired = true;
+      }
+      if (_overlay && !_overlay._pantryWired) {
+        _overlay.addEventListener("click", function(e) {
+          if (e.target === _overlay) closePantryDrawer();
+        });
+        _overlay._pantryWired = true;
+      }
+    })();
+  </script>
 
   <!-- Add Your Own Recipe overlay -->
   <div class="addRecipeOverlay hidden" id="addRecipeOverlay" role="dialog" aria-modal="true" aria-label="Add your own recipe">
