@@ -5775,7 +5775,194 @@
       background: #E8A020;
       box-shadow: 0 0 12px rgba(232,160,32,0.55);
     }
-    .cmDot.cmDotDone { background: rgba(200,105,14,0.50); }
+    .cmDot.cmDotDone {
+      background: #22c55e;
+      box-shadow: 0 0 6px rgba(34,197,94,0.50);
+    }
+    .cmDot.cmDotDone::after {
+      content: "✓"; position: absolute;
+      font-size: 4px; color: #fff; font-weight: 900;
+      inset: 0; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Ingredient quick-glance drawer ────────────────────────────── */
+    .cmIngDrawer {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      z-index: 30;
+      background: rgba(8, 4, 1, 0.94);
+      backdrop-filter: blur(32px) saturate(1.5);
+      -webkit-backdrop-filter: blur(32px) saturate(1.5);
+      border-radius: 24px 24px 0 0;
+      border-top: 1px solid rgba(200,105,14,0.28);
+      transform: translateY(100%);
+      transition: transform 0.38s cubic-bezier(0.34,1.08,0.64,1);
+      max-height: 62vh;
+      display: flex; flex-direction: column;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .cmIngDrawer.cmIngOpen { transform: translateY(0); }
+    .cmIngDrawerHandle {
+      width: 36px; height: 4px; border-radius: 99px;
+      background: rgba(255,255,255,0.18);
+      margin: 12px auto 0;
+      flex-shrink: 0; cursor: pointer;
+    }
+    .cmIngDrawerHead {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 20px 8px;
+      flex-shrink: 0;
+    }
+    .cmIngDrawerTitle {
+      font-size: 0.78rem; font-weight: 900; color: rgba(255,255,255,0.55);
+      text-transform: uppercase; letter-spacing: 0.10em;
+    }
+    .cmIngDrawerClose {
+      background: none; border: none; cursor: pointer;
+      color: rgba(255,255,255,0.38); font-size: 0.85rem;
+      padding: 4px 8px;
+    }
+    .cmIngList {
+      overflow-y: auto; padding: 0 20px 16px;
+      flex: 1;
+    }
+    .cmIngList::-webkit-scrollbar { width: 3px; }
+    .cmIngList::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
+    .cmIngItem {
+      display: flex; align-items: baseline; gap: 8px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.88rem; color: rgba(255,255,255,0.82);
+    }
+    .cmIngItem:last-child { border-bottom: none; }
+    .cmIngQty {
+      font-weight: 900; color: #E8A020;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .cmIngToggleBtn {
+      position: absolute; right: 18px; bottom: 90px;
+      z-index: 25;
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 999px; color: rgba(255,255,255,0.72);
+      font-family: inherit; font-size: 0.75rem; font-weight: 800;
+      padding: 7px 14px; cursor: pointer;
+      transition: all 0.18s;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .cmIngToggleBtn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+    /* ── Elapsed time + scale badge in top bar ─────────────────────── */
+    .cmTopMeta {
+      display: flex; align-items: center; gap: 6px;
+    }
+    .cmElapsedBadge, .cmScaleBadge {
+      font-size: 0.68rem; font-weight: 800;
+      border-radius: 999px; padding: 3px 9px;
+      letter-spacing: 0.04em;
+    }
+    .cmElapsedBadge {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.45);
+    }
+    .cmScaleBadge {
+      background: rgba(200,105,14,0.20);
+      border: 1px solid rgba(200,105,14,0.40);
+      color: #E8A020;
+    }
+
+    /* ── Custom timer modal ────────────────────────────────────────── */
+    .cmCustomTimerModal {
+      position: absolute; inset: 0; z-index: 40;
+      background: rgba(0,0,0,0.72);
+      display: flex; align-items: center; justify-content: center;
+      animation: obFadeIn 0.18s ease both;
+    }
+    .cmCustomTimerModal.hidden { display: none; }
+    .cmCustomTimerCard {
+      background: rgba(14,7,2,0.97);
+      border: 1px solid rgba(200,105,14,0.35);
+      border-radius: 24px; padding: 28px 24px;
+      width: min(320px, 88vw);
+      display: flex; flex-direction: column; gap: 16px;
+      align-items: center;
+    }
+    .cmCustomTimerTitle {
+      font-family: 'Fraunces', serif;
+      font-size: 1.15rem; font-weight: 900; color: #fff;
+    }
+    .cmCustomTimerInputs {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .cmCustomTimerInput {
+      width: 64px; text-align: center;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 12px; color: #fff;
+      font-family: 'Fraunces', serif;
+      font-size: 1.6rem; font-weight: 900;
+      padding: 8px 4px;
+    }
+    .cmCustomTimerInput:focus { outline: none; border-color: rgba(200,105,14,0.6); }
+    .cmCustomTimerSep { color: rgba(255,255,255,0.4); font-size: 1.4rem; font-weight: 900; }
+    .cmCustomTimerLabel { font-size: 0.65rem; color: rgba(255,255,255,0.3); text-align: center; }
+    .cmCustomTimerActions { display: flex; gap: 10px; width: 100%; }
+    .cmCustomTimerStart {
+      flex: 1; background: var(--ember-gradient); color: #fff;
+      border: none; border-radius: 14px; padding: 12px;
+      font-family: inherit; font-size: 0.9rem; font-weight: 800; cursor: pointer;
+    }
+    .cmCustomTimerCancel {
+      background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6);
+      border: 1px solid rgba(255,255,255,0.14); border-radius: 14px; padding: 12px 16px;
+      font-family: inherit; font-size: 0.9rem; cursor: pointer;
+    }
+
+    /* ── Resume banner (shown on re-open) ─────────────────────────── */
+    .cmResumeBanner {
+      position: absolute; top: 68px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 35;
+      background: rgba(200,105,14,0.22);
+      border: 1px solid rgba(200,105,14,0.45);
+      border-radius: 999px; padding: 8px 18px;
+      display: flex; align-items: center; gap: 10px;
+      font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.88);
+      white-space: nowrap;
+      animation: obFadeIn 0.3s ease both;
+    }
+    .cmResumeBanner.hidden { display: none; }
+    .cmResumeBtn {
+      background: rgba(200,105,14,0.45); border: none; border-radius: 999px;
+      color: #fff; font-family: inherit; font-size: 0.75rem; font-weight: 800;
+      padding: 4px 12px; cursor: pointer;
+    }
+    .cmResumeDismiss {
+      background: none; border: none; color: rgba(255,255,255,0.4);
+      font-size: 0.8rem; cursor: pointer; padding: 2px 4px;
+    }
+
+    /* ── Auto-start toggle chip ───────────────────────────────────── */
+    .cmAutoStartChip {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.65rem; font-weight: 700;
+      color: rgba(255,255,255,0.32);
+      cursor: pointer; user-select: none;
+      padding: 4px 2px;
+    }
+    .cmAutoStartChip input[type="checkbox"] {
+      accent-color: #E8A020; width: 13px; height: 13px; cursor: pointer;
+    }
+
+    /* ── + Custom timer button ────────────────────────────────────── */
+    .cmAddTimerBtn {
+      background: none; border: 1px dashed rgba(255,255,255,0.18);
+      border-radius: 999px; color: rgba(255,255,255,0.38);
+      font-family: inherit; font-size: 0.72rem; font-weight: 800;
+      padding: 5px 14px; cursor: pointer; transition: all 0.18s;
+      margin-top: 2px;
+    }
+    .cmAddTimerBtn:hover { border-color: rgba(200,105,14,0.5); color: #E8A020; }
 
     /* ── Directional slide animations ──────────────────────────────── */
     @keyframes cmSlideInFwd {
@@ -7689,7 +7876,11 @@
     <div class="cookModeBg" id="cookModeBg"></div>
 
     <div class="cookModeTop">
-      <div class="cookModeDishName" id="cookModeDishName"></div>
+      <div class="cmTopMeta">
+        <div class="cookModeDishName" id="cookModeDishName"></div>
+        <span class="cmElapsedBadge" id="cmElapsedBadge" style="display:none">0 min</span>
+        <span class="cmScaleBadge" id="cmScaleBadge" style="display:none"></span>
+      </div>
       <div class="cookModeTopRight">
         <div class="genieLangWrap" id="genieLangWrap">
           <button class="genieLangBtn" id="genieLangBtn" type="button" aria-haspopup="true" aria-expanded="false">
@@ -7704,6 +7895,13 @@
       </div>
     </div>
 
+    <!-- Resume banner (shown when re-entering a recipe mid-cook) -->
+    <div class="cmResumeBanner hidden" id="cmResumeBanner">
+      <span id="cmResumeText">Resume from step 1?</span>
+      <button class="cmResumeBtn" id="cmResumeBtn" type="button">Resume</button>
+      <button class="cmResumeDismiss" id="cmResumeDismiss" type="button">✕</button>
+    </div>
+
     <div class="cookModeMain">
       <div class="cookModeRingWrap" id="cookModeRingWrap">
         <!-- SVG injected by JS -->
@@ -7713,6 +7911,9 @@
       <div class="cookModeStepCard" id="cookModeStepCard">
         <span class="cmStepTypeBadge" id="cmStepTypeBadge">🔪 Prep</span>
         <p class="cookModeStepText" id="cookModeStepText">Loading...</p>
+        <label class="cmAutoStartChip" id="cmAutoStartChip" title="Auto-start detected timers">
+          <input type="checkbox" id="cmAutoStartToggle"> Auto-start timers
+        </label>
         <span class="cmTapHint">tap card · swipe · or say "hey simmer next"</span>
       </div>
 
@@ -7722,6 +7923,9 @@
         </div>
         <button class="cookModeTimerBtn" id="cookModeTimerBtn" type="button">▶ Start Timer</button>
       </div>
+
+      <!-- + Custom timer button -->
+      <button class="cmAddTimerBtn" id="cmAddTimerBtn" type="button">＋ Custom Timer</button>
 
       <!-- Step dots -->
       <div class="cookModeStepDots" id="cookModeStepDots"></div>
@@ -7736,7 +7940,7 @@
     <div class="cookModeDoneScreen hidden" id="cookModeDoneScreen">
       <div class="cookModeDoneEmoji">🎉</div>
       <div class="cookModeDoneName" id="cookModeDoneName"></div>
-      <div class="cookModeDoneSubtitle">is ready to serve!</div>
+      <div class="cookModeDoneSubtitle" id="cookModeDoneSubtitle">is ready to serve!</div>
       <button class="cookModeNavBtn primary cookModeDoneIMT" id="cookModeDoneRateBtn" type="button">📸 I Made This!</button>
       <button class="cookModeNavBtn secondary cookModeDoneSkip" id="cookModeDoneSkipBtn" type="button">Maybe later</button>
     </div>
@@ -7749,6 +7953,41 @@
       <button class="cookModeAIDismiss" id="cookModeAIDismiss" type="button" aria-label="Dismiss">✕</button>
     </div>
     <button class="cookModeAskBtn" id="cookModeAskBtn" type="button" aria-label="Ask the AI chef">💬</button>
+
+    <!-- Ingredient quick-glance button -->
+    <button class="cmIngToggleBtn" id="cmIngToggleBtn" type="button">📋 Ingredients</button>
+
+    <!-- Ingredient quick-glance drawer -->
+    <div class="cmIngDrawer" id="cmIngDrawer">
+      <div class="cmIngDrawerHandle" id="cmIngDrawerHandle"></div>
+      <div class="cmIngDrawerHead">
+        <span class="cmIngDrawerTitle">Ingredients</span>
+        <button class="cmIngDrawerClose" id="cmIngDrawerClose" type="button">✕</button>
+      </div>
+      <div class="cmIngList" id="cmIngList"></div>
+    </div>
+
+    <!-- Custom timer modal -->
+    <div class="cmCustomTimerModal hidden" id="cmCustomTimerModal">
+      <div class="cmCustomTimerCard">
+        <div class="cmCustomTimerTitle">⏱ Custom Timer</div>
+        <div class="cmCustomTimerInputs">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <input class="cmCustomTimerInput" id="cmCtMins" type="number" min="0" max="99" value="5" placeholder="00">
+            <span class="cmCustomTimerLabel">MIN</span>
+          </div>
+          <span class="cmCustomTimerSep">:</span>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+            <input class="cmCustomTimerInput" id="cmCtSecs" type="number" min="0" max="59" value="0" placeholder="00">
+            <span class="cmCustomTimerLabel">SEC</span>
+          </div>
+        </div>
+        <div class="cmCustomTimerActions">
+          <button class="cmCustomTimerCancel" id="cmCtCancel" type="button">Cancel</button>
+          <button class="cmCustomTimerStart" id="cmCtStart" type="button">▶ Start</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Cook Genie assistant bar -->
     <div class="genieBar" id="genieBar">
@@ -14252,10 +14491,12 @@
       const dotsEl = document.getElementById("cookModeStepDots");
       if (!dotsEl || !modalSteps.length) return;
       dotsEl.innerHTML = modalSteps.map((_, i) => {
-        const cls = i < currentStepIndex ? "cmDot cmDotDone"
-                  : i === currentStepIndex ? "cmDot cmDotActive"
-                  : "cmDot";
-        return `<span class="${cls}" data-step="${i}"></span>`;
+        let cls;
+        if (i === currentStepIndex) cls = "cmDot cmDotActive";
+        else if (_completedSteps.has(i)) cls = "cmDot cmDotDone"; // explicit done
+        else if (i < currentStepIndex) cls = "cmDot cmDotDone";   // passed through
+        else cls = "cmDot";
+        return `<span class="${cls}" data-step="${i}" title="Step ${i + 1}"></span>`;
       }).join("");
       // Tap a dot to jump to that step
       dotsEl.querySelectorAll(".cmDot").forEach(dot => {
@@ -14263,42 +14504,254 @@
           const target = Number(e.currentTarget.dataset.step);
           if (target === currentStepIndex) return;
           const dir = target > currentStepIndex ? "forward" : "backward";
+          if (target > currentStepIndex) _completedSteps.add(currentStepIndex);
           currentStepIndex = target;
           updateCookModeUI(dir);
         });
       });
     }
 
+    // ── Cook Mode enhancements ───────────────────────────────────────────────
     let _cmSwipeStartX = 0, _cmSwipeStartY = 0;
+    let _cmGesturesInited = false; // guard against duplicate listeners
+    let _completedSteps = new Set(); // tracks which step indices are done
+    let _cookStartTime = null;       // epoch ms when cooking started
+    let _cmElapsedInterval = null;   // interval for elapsed time display
+    let _cmAutoStart = false;        // auto-start detected timers?
+
+    // ── Audio chime (Web Audio API, no files needed) ─────────────────────────
+    function playTimerChime() {
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        const ctx = new AC();
+        // 3-tone ascending chime: C5 → E5 → G5
+        [[523, 0], [659, 0.22], [784, 0.44]].forEach(([freq, when]) => {
+          const osc  = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = "sine";
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0, ctx.currentTime + when);
+          gain.gain.linearRampToValueAtTime(0.28, ctx.currentTime + when + 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + when + 0.75);
+          osc.start(ctx.currentTime + when);
+          osc.stop(ctx.currentTime + when + 0.75);
+        });
+        setTimeout(() => { try { ctx.close(); } catch {} }, 2500);
+      } catch {}
+    }
+
+    // ── Elapsed cooking time ──────────────────────────────────────────────────
+    function startCookElapsed() {
+      _cookStartTime = Date.now();
+      const badge = document.getElementById("cmElapsedBadge");
+      if (badge) badge.style.display = "";
+      clearInterval(_cmElapsedInterval);
+      _cmElapsedInterval = setInterval(() => {
+        const mins = Math.floor((Date.now() - _cookStartTime) / 60000);
+        const el = document.getElementById("cmElapsedBadge");
+        if (el) el.textContent = mins < 1 ? "< 1 min" : `${mins} min`;
+      }, 30000);
+    }
+
+    function stopCookElapsed() {
+      clearInterval(_cmElapsedInterval);
+      _cmElapsedInterval = null;
+      const badge = document.getElementById("cmElapsedBadge");
+      if (badge) badge.style.display = "none";
+    }
+
+    // ── Serving scale reminder badge ─────────────────────────────────────────
+    function updateCmScaleBadge() {
+      const badge = document.getElementById("cmScaleBadge");
+      if (!badge) return;
+      if (servingMultiplier > 1) {
+        badge.textContent = `🔁 ×${servingMultiplier}`;
+        badge.style.display = "";
+      } else {
+        badge.style.display = "none";
+      }
+    }
+
+    // ── Progress resume (sessionStorage) ─────────────────────────────────────
+    function saveCookProgress(recipeId, stepIndex) {
+      try {
+        sessionStorage.setItem("simmer_cook_progress", JSON.stringify({
+          id: String(recipeId), step: stepIndex, ts: Date.now()
+        }));
+      } catch {}
+    }
+
+    function loadCookProgress(recipeId) {
+      try {
+        const raw = sessionStorage.getItem("simmer_cook_progress");
+        if (!raw) return null;
+        const obj = JSON.parse(raw);
+        // Only valid for same recipe and within 4 hours
+        if (String(obj.id) !== String(recipeId)) return null;
+        if (Date.now() - obj.ts > 4 * 60 * 60 * 1000) return null;
+        return obj.step;
+      } catch { return null; }
+    }
+
+    function clearCookProgress() {
+      try { sessionStorage.removeItem("simmer_cook_progress"); } catch {}
+    }
+
+    function showResumeBanner(savedStep) {
+      const banner = document.getElementById("cmResumeBanner");
+      const text   = document.getElementById("cmResumeText");
+      if (!banner || !text) return;
+      text.textContent = `Resume from step ${savedStep + 1}?`;
+      banner.classList.remove("hidden");
+      document.getElementById("cmResumeBtn").onclick = () => {
+        currentStepIndex = savedStep;
+        updateCookModeUI();
+        banner.classList.add("hidden");
+      };
+      document.getElementById("cmResumeDismiss").onclick = () => {
+        clearCookProgress();
+        banner.classList.add("hidden");
+      };
+      // Auto-dismiss after 8s
+      setTimeout(() => banner.classList.add("hidden"), 8000);
+    }
+
+    // ── Ingredient drawer ─────────────────────────────────────────────────────
+    function openCmIngDrawer() {
+      const drawer = document.getElementById("cmIngDrawer");
+      if (!drawer) return;
+      // Populate ingredient list
+      const listEl = document.getElementById("cmIngList");
+      if (listEl && activeRecipe) {
+        const ings = activeRecipe.ingredients_with_quantities?.length
+          ? activeRecipe.ingredients_with_quantities
+          : (activeRecipe.ingredients || []).map(n => ({ name: n }));
+        listEl.innerHTML = ings.map(i => {
+          const qty  = i.quantity ? `${formatQuantity(i.quantity * servingMultiplier)}${i.unit ? " " + i.unit : ""}` : "";
+          return `<div class="cmIngItem"><span class="cmIngQty">${escapeHtml(qty)}</span><span>${escapeHtml(i.name || String(i))}</span></div>`;
+        }).join("") || "<div style='color:rgba(255,255,255,0.38);font-size:.85rem;padding:8px 0'>No ingredient data.</div>";
+      }
+      drawer.classList.add("cmIngOpen");
+    }
+
+    function closeCmIngDrawer() {
+      document.getElementById("cmIngDrawer")?.classList.remove("cmIngOpen");
+    }
+
+    // ── Custom timer modal ────────────────────────────────────────────────────
+    function openCmCustomTimer() {
+      const modal = document.getElementById("cmCustomTimerModal");
+      if (!modal) return;
+      document.getElementById("cmCtMins").value = "5";
+      document.getElementById("cmCtSecs").value = "0";
+      modal.classList.remove("hidden");
+      document.getElementById("cmCtMins").focus();
+    }
+
+    function closeCmCustomTimer() {
+      document.getElementById("cmCustomTimerModal")?.classList.add("hidden");
+    }
+
+    function startCmCustomTimer() {
+      const mins = Math.max(0, parseInt(document.getElementById("cmCtMins")?.value || 0));
+      const secs = Math.max(0, Math.min(59, parseInt(document.getElementById("cmCtSecs")?.value || 0)));
+      const total = mins * 60 + secs;
+      if (!total) return;
+      closeCmCustomTimer();
+
+      // Add as a parallel timer
+      const id = _parallelTimerNextId++;
+      const label = `Custom (${mins > 0 ? mins + "m" : ""}${secs > 0 ? secs + "s" : ""})`;
+      let remaining = total;
+      const intervalId = setInterval(() => {
+        remaining = Math.max(0, remaining - 1);
+        const entry = parallelTimers.find(t => t.id === id);
+        if (entry) entry.remaining = remaining;
+        renderParallelTimers();
+        if (remaining === 0) {
+          clearInterval(intervalId);
+          parallelTimers = parallelTimers.filter(t => t.id !== id);
+          renderParallelTimers();
+          playTimerChime();
+          if (navigator.vibrate) navigator.vibrate([120, 80, 120, 80, 120]);
+          showCookModeAIBubble("Timer", `⏱ ${label} timer is done!`);
+        }
+      }, 1000);
+      parallelTimers.push({ id, label, remaining: total, intervalId });
+      renderParallelTimers();
+      if (_genie.active) genieOnTimerStart(total);
+    }
+
     function initCookModeGestures() {
+      // Guard: only attach once per overlay lifetime
+      if (_cmGesturesInited) return;
+      _cmGesturesInited = true;
+
       const overlay = document.getElementById("cookModeOverlay");
       if (!overlay) return;
 
-      // Touch swipe left/right
+      // Touch swipe left/right on overlay (but not when drawer is open)
       overlay.addEventListener("touchstart", e => {
         _cmSwipeStartX = e.touches[0].clientX;
         _cmSwipeStartY = e.touches[0].clientY;
       }, { passive: true });
       overlay.addEventListener("touchend", e => {
+        // Don't swipe-navigate if ingredient drawer is open
+        if (document.getElementById("cmIngDrawer")?.classList.contains("cmIngOpen")) return;
         const dx = e.changedTouches[0].clientX - _cmSwipeStartX;
         const dy = Math.abs(e.changedTouches[0].clientY - _cmSwipeStartY);
-        if (Math.abs(dx) < 55 || dy > 70) return; // too short or vertical scroll
+        if (Math.abs(dx) < 55 || dy > 70) return;
         if (dx < 0 && currentStepIndex < modalSteps.length - 1) {
+          _completedSteps.add(currentStepIndex);
           currentStepIndex++; updateCookModeUI("forward");
         } else if (dx > 0 && currentStepIndex > 0) {
           currentStepIndex--; updateCookModeUI("backward");
         }
       }, { passive: true });
 
-      // Tap the step card to advance
+      // Tap the step card to advance (but not buttons inside it)
       const card = document.getElementById("cookModeStepCard");
       if (card) {
-        card.addEventListener("click", () => {
+        card.addEventListener("click", (e) => {
+          if (e.target.closest("button, input, label, a")) return;
           if (currentStepIndex < modalSteps.length - 1) {
+            _completedSteps.add(currentStepIndex);
             currentStepIndex++; updateCookModeUI("forward");
           }
         });
       }
+
+      // Ingredient drawer
+      document.getElementById("cmIngToggleBtn")?.addEventListener("click", openCmIngDrawer);
+      document.getElementById("cmIngDrawerClose")?.addEventListener("click", closeCmIngDrawer);
+      document.getElementById("cmIngDrawerHandle")?.addEventListener("click", closeCmIngDrawer);
+
+      // Swipe down on drawer to close
+      let _drawerSwipeY = 0;
+      const drawer = document.getElementById("cmIngDrawer");
+      if (drawer) {
+        drawer.addEventListener("touchstart", e => { _drawerSwipeY = e.touches[0].clientY; }, { passive: true });
+        drawer.addEventListener("touchend", e => {
+          const dy = e.changedTouches[0].clientY - _drawerSwipeY;
+          if (dy > 60) closeCmIngDrawer();
+        }, { passive: true });
+      }
+
+      // Custom timer
+      document.getElementById("cmAddTimerBtn")?.addEventListener("click", openCmCustomTimer);
+      document.getElementById("cmCtCancel")?.addEventListener("click", closeCmCustomTimer);
+      document.getElementById("cmCtStart")?.addEventListener("click", startCmCustomTimer);
+      document.getElementById("cmCustomTimerModal")?.addEventListener("click", e => {
+        if (e.target === document.getElementById("cmCustomTimerModal")) closeCmCustomTimer();
+      });
+
+      // Auto-start toggle
+      document.getElementById("cmAutoStartToggle")?.addEventListener("change", e => {
+        _cmAutoStart = e.target.checked;
+      });
     }
 
     function updateCookModeUI(direction = "forward") {
@@ -14361,6 +14814,8 @@
           updateCookModeTimerRing();
           const btn = document.getElementById("cookModeTimerBtn");
           if (btn) btn.textContent = "▶ Start Timer";
+          // Auto-start if toggle is on
+          if (_cmAutoStart) startCookModeTimer();
         } else {
           timerWrap.style.display = "none";
         }
@@ -14371,6 +14826,9 @@
       const nextBtn = document.getElementById("cookModeNextBtn");
       if (prevBtn) prevBtn.disabled = currentStepIndex <= 0;
       if (nextBtn) nextBtn.textContent = stepNo >= total ? "🎉 Done!" : "Next Step →";
+
+      // Save progress to sessionStorage
+      if (activeRecipe) saveCookProgress(activeRecipe.id, currentStepIndex);
 
       // Haptic feedback
       if (navigator.vibrate) navigator.vibrate(40);
@@ -14426,7 +14884,8 @@
           clearInterval(intervalId);
           parallelTimers = parallelTimers.filter(t => t.id !== id);
           renderParallelTimers();
-          if (navigator.vibrate) navigator.vibrate([120, 80, 120]);
+          playTimerChime();
+          if (navigator.vibrate) navigator.vibrate([120, 80, 120, 80, 120]);
           showCookModeAIBubble(`Timer done`, `⏱ Timer for ${label} just finished!`);
         }
       }, 1000);
@@ -14448,7 +14907,8 @@
         if (btn) btn.textContent = cookModeTimerRemaining > 0 ? "⏸ Pause" : "✅ Done!";
         if (cookModeTimerRemaining === 0) {
           clearCookModeTimer();
-          if (navigator.vibrate) navigator.vibrate([100, 80, 100]);
+          playTimerChime();
+          if (navigator.vibrate) navigator.vibrate([100, 80, 100, 80, 100]);
         }
       }, 1000);
       const btn = document.getElementById("cookModeTimerBtn");
@@ -14505,12 +14965,21 @@
       // ① Hide the recipe modal so it doesn't show behind Cook Mode
       el.recipeModal.classList.remove("open");
 
+      // Reset completed steps tracking
+      _completedSteps = new Set();
+
       // Set dish name
       const dishEl = document.getElementById("cookModeDishName");
       if (dishEl) dishEl.textContent = activeRecipe?.name || "Recipe";
 
       overlay.classList.remove("hidden");
       _acquireWakeLock();   // keep screen on while cooking
+
+      // Start elapsed time counter
+      startCookElapsed();
+
+      // Show serving scale badge if scaled
+      updateCmScaleBadge();
 
       // Set blurred food background from recipe image
       const bgEl = document.getElementById("cookModeBg");
@@ -14521,7 +14990,7 @@
         bgEl.style.opacity = "0";
       }
 
-      // Attach swipe + tap-card gestures (once per open)
+      // Attach swipe + tap-card gestures (guarded — only wires once)
       initCookModeGestures();
 
       // Launch the Cook Genie
@@ -14533,7 +15002,18 @@
       if (cookMain)   cookMain.style.display = "";
       if (doneScreen) doneScreen.classList.add("hidden");
 
+      // Close ingredient drawer if left open
+      closeCmIngDrawer();
+
       updateCookModeUI();
+
+      // Offer to resume progress if re-entering mid-cook
+      if (activeRecipe) {
+        const saved = loadCookProgress(activeRecipe.id);
+        if (saved && saved > 0 && saved < modalSteps.length) {
+          showResumeBanner(saved);
+        }
+      }
 
       // Start voice (fresh instance each time)
       if (cookModeVoiceRecog) {
@@ -14550,11 +15030,22 @@
 
     function closeCookMode() {
       _releaseWakeLock();   // allow screen to sleep again
+      stopCookElapsed();
       genieClose();
       clearCookModeTimer();
       parallelTimers.forEach(t => clearInterval(t.intervalId));
       parallelTimers = [];
       renderParallelTimers();
+      closeCmIngDrawer();
+      closeCmCustomTimer();
+
+      // Save progress so user can resume on re-entry
+      if (activeRecipe && currentStepIndex > 0 && currentStepIndex < modalSteps.length) {
+        saveCookProgress(activeRecipe.id, currentStepIndex);
+      } else {
+        clearCookProgress();
+      }
+
       if (cookModeVoiceRecog) {
         try { cookModeVoiceRecog.stop(); } catch (e) {}
         cookModeVoiceRecog = null;
@@ -14712,6 +15203,7 @@
       document.getElementById("cookModeNextBtn")?.addEventListener("click", () => {
         clearCookModeTimer();
         if (currentStepIndex < modalSteps.length - 1) {
+          _completedSteps.add(currentStepIndex);
           currentStepIndex++;
           updateCookModeUI("forward");
           updateModalStep();
@@ -14729,8 +15221,18 @@
           const doneScreen = document.getElementById("cookModeDoneScreen");
           const doneNameEl = document.getElementById("cookModeDoneName");
           if (cookMain)   cookMain.style.display   = "none";
-          if (doneNameEl) doneNameEl.textContent    = recipeName;
+          if (doneNameEl) doneNameEl.textContent = recipeName;
+          // Show elapsed cooking time on done screen
+          const doneSubEl = document.getElementById("cookModeDoneSubtitle");
+          if (doneSubEl && _cookStartTime) {
+            const totalMins = Math.round((Date.now() - _cookStartTime) / 60000);
+            doneSubEl.textContent = totalMins > 0
+              ? `is ready to serve! · 🕐 ${totalMins} min`
+              : "is ready to serve!";
+          }
           if (doneScreen) doneScreen.classList.remove("hidden");
+          // Clear saved progress since cooking is complete
+          clearCookProgress();
 
           // 3. "I Made This!" button (one-shot)
           const rateBtn = document.getElementById("cookModeDoneRateBtn");
