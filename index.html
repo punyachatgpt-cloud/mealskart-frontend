@@ -2255,6 +2255,10 @@
     .myNotesEditBtn { background: none; border: none; cursor: pointer; font-size: 0.78rem;
       color: var(--muted); text-decoration: underline; padding: 0; flex-shrink: 0; align-self: flex-start; }
     .myNotesEditBtn:hover { color: var(--accent); }
+    .myNotesCookPhoto {
+      width: 56px; height: 56px; border-radius: 10px; object-fit: cover; flex-shrink: 0;
+      border: 2px solid var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
     [data-theme="dark"] .myNotesBox { background: rgba(251,191,36,0.06); border-color: rgba(251,191,36,0.16); }
     [data-theme="dark"] .myNotesTag { background: rgba(251,191,36,0.12); color: #fbbf24; }
 
@@ -3419,6 +3423,10 @@
       width: 48px; height: 48px; border-radius: 10px; flex-shrink: 0;
       background-size: cover; background-position: center;
       background-color: rgba(200,105,14,0.10);
+    }
+    .cookLogThumb.cookLogThumbUser {
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 0 2px rgba(200,105,14,0.14);
     }
     .cookLogBody { flex: 1; min-width: 0; }
     .cookLogName { font-size: 0.88rem; font-weight: 800; color: var(--ink); }
@@ -9375,7 +9383,7 @@
         if (photo) entry.photo = photo;   // base64 JPEG thumbnail
         existing[String(recipeId)] = entry;
         localStorage.setItem("foodai_ratings", JSON.stringify(existing));
-        updateCookLogRating(recipeId, stars, note, tags);
+        updateCookLogRating(recipeId, stars, note, tags, photo);
         updateCookLogCount();
       } catch {}
     }
@@ -10981,7 +10989,7 @@
         try {
           const allRatings = JSON.parse(localStorage.getItem("foodai_ratings") || "{}");
           const saved = allRatings[String(activeRecipe.id)];
-          if (saved && (saved.stars || saved.note || (saved.tags && saved.tags.length))) {
+          if (saved && (saved.stars || saved.note || saved.photo || (saved.tags && saved.tags.length))) {
             const starStr = saved.stars
               ? "★".repeat(saved.stars) + "☆".repeat(5 - saved.stars)
               : "";
@@ -10989,9 +10997,13 @@
               ? `<div class="myNotesTags">${saved.tags.map(t => `<span class="myNotesTag">${escapeHtml(t)}</span>`).join("")}</div>`
               : "";
             el.myNotesBox.innerHTML = `
-              ${starStr ? `<span class="myNotesStar">${starStr}</span>` : ""}
+              ${saved.photo
+                ? `<img class="myNotesCookPhoto" src="${saved.photo}" alt="Your cook photo">`
+                : (starStr ? `<span class="myNotesStar">${starStr}</span>` : "")
+              }
               <div class="myNotesBody">
-                <div class="myNotesLabel">Your notes</div>
+                <div class="myNotesLabel">You cooked this</div>
+                ${saved.photo && starStr ? `<div class="myNotesStar" style="font-size:0.78rem;margin-bottom:2px">${starStr}</div>` : ""}
                 ${saved.note ? `<div class="myNotesText">"${escapeHtml(saved.note)}"</div>` : ""}
                 ${tagsHTML}
               </div>
@@ -13351,7 +13363,7 @@
       } catch {}
     }
 
-    function updateCookLogRating(recipeId, stars, note = "", tags = []) {
+    function updateCookLogRating(recipeId, stars, note = "", tags = [], photo = null) {
       try {
         const log = getCookLog();
         for (let i = log.length - 1; i >= 0; i--) {
@@ -13359,6 +13371,7 @@
             log[i].stars = stars;
             log[i].note  = note;
             log[i].tags  = tags;
+            if (photo) log[i].photo = photo;   // persist cook photo to log entry
             break;
           }
         }
@@ -16478,7 +16491,7 @@
               : "";
             return `
               <div class="cookLogEntry" data-id="${entry.id}">
-                <div class="cookLogThumb" style="background-image:url('${recipeImg(entry)}')"></div>
+                <div class="cookLogThumb${entry.photo ? ' cookLogThumbUser' : ''}" style="background-image:url('${entry.photo || recipeImg(entry)}')"></div>
                 <div class="cookLogBody">
                   <div class="cookLogName">${entry.name}</div>
                   ${stars ? `<div class="cookLogStars">${stars}</div>` : ""}
