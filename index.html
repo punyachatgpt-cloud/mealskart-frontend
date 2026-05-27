@@ -7840,9 +7840,9 @@
       <div class="servingRow">
         <div class="servingLabel">Servings</div>
         <div class="servingControls" aria-label="Serving controls">
-          <button class="servingBtn" id="servingMinusBtn" type="button">-</button>
-          <span class="servingCount" id="servingCount">1x</span>
-          <button class="servingBtn" id="servingPlusBtn" type="button">+</button>
+          <button class="servingBtn" id="servingMinusBtn" type="button" aria-label="Decrease servings" title="Decrease servings">-</button>
+          <span class="servingCount" id="servingCount" aria-live="polite" aria-atomic="true">1x</span>
+          <button class="servingBtn" id="servingPlusBtn" type="button" aria-label="Increase servings" title="Increase servings">+</button>
         </div>
       </div>
       <div class="macroGrid" id="macroGrid"></div>
@@ -8887,7 +8887,9 @@
 
     function setSelected(group, value) {
       document.querySelectorAll(`[data-group="${group}"]`).forEach((btn) => {
-        btn.classList.toggle("selected", btn.dataset.value === value);
+        const isSelected = btn.dataset.value === value;
+        btn.classList.toggle("selected", isSelected);
+        btn.setAttribute("aria-pressed", isSelected ? "true" : "false");
       });
     }
 
@@ -12087,13 +12089,19 @@
     });
 
     el.servingMinusBtn.addEventListener("click", () => {
-      servingMultiplier = Math.max(1, servingMultiplier - 1);
-      renderRecipeModalDetails();
+      if (servingMultiplier > 1) {
+        servingMultiplier--;
+        if (navigator.vibrate) navigator.vibrate(40);
+        renderRecipeModalDetails();
+      }
     });
 
     el.servingPlusBtn.addEventListener("click", () => {
-      servingMultiplier = Math.min(8, servingMultiplier + 1);
-      renderRecipeModalDetails();
+      if (servingMultiplier < 8) {
+        servingMultiplier++;
+        if (navigator.vibrate) navigator.vibrate(40);
+        renderRecipeModalDetails();
+      }
     });
 
     el.timerBtn.addEventListener("click", () => {
