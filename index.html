@@ -713,7 +713,7 @@
 
     @media (max-width: 620px) {
       .shell {
-        width: calc(100vw - 72px);
+        width: calc(100vw - 32px);   /* tighter gutters → near-full-width immersive feed */
         margin-top: 18px;
         padding: 0;
       }
@@ -739,11 +739,13 @@
       }
       .results,
       .results.hasHero,
-      .loadingGrid { grid-template-columns: 1fr; }
+      .loadingGrid { grid-template-columns: 1fr; gap: 20px; }
       .statusRow { align-items: flex-start; flex-direction: column; }
-      .foodCard.heroCard .foodImg,
-      .foodCard.decideCard .foodImg,
-      .foodImg { height: 230px; }
+      /* Immersive full-width food imagery on mobile (Instagram/TikTok feel) */
+      .foodImg { height: 280px; }
+      .foodCard.decideCard .foodImg { height: 280px; }
+      .foodCard.heroCard .foodImg { height: 300px; }
+      .imageTitle { font-size: 1.55rem; }
       .topbar { align-items: flex-start; flex-direction: column; }
     }
 
