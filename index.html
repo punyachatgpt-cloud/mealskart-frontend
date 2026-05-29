@@ -3954,41 +3954,50 @@
     .trendingBar {
       display: flex;
       align-items: center;
-      gap: 10px;
-      background: transparent;
+      gap: 14px;
+      background:
+        linear-gradient(90deg, rgba(200,105,14,0.06), rgba(200,105,14,0) 38%);
       border-bottom: 1px solid var(--border);
-      padding: 7px 20px;
+      padding: 9px 20px;
       overflow: hidden;
     }
     .trendingLabel {
       font-size: var(--t-xs);
-      font-weight: var(--fw-med);
-      color: var(--ink-lo);
+      font-weight: var(--fw-bold);
+      color: var(--accent2);
       white-space: nowrap;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      padding-right: 8px;
+      padding-right: 12px;
       border-right: 1px solid var(--border);
     }
     .trendingTrack {
       overflow: hidden;
       flex: 1;
+      /* Edge-fade mask — the hallmark of a polished marquee */
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 40px), transparent);
+              mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 40px), transparent);
     }
     .trendingInner {
       display: inline-flex;
       align-items: center;
-      gap: 14px;
+      gap: 18px;
       white-space: nowrap;
       animation: tickerScroll 36s linear infinite;
-      font-size: var(--t-xs);
+      font-size: var(--t-sm);
       font-weight: var(--fw-med);
       color: var(--ink);
     }
+    .trendingInner > span:not(.tDot) {
+      letter-spacing: -0.01em;
+      transition: color var(--dur-fast) var(--ease-out);
+    }
     .trendingInner:hover { animation-play-state: paused; }
     .tDot {
-      color: var(--ink-faint);
-      opacity: 0.6;
-      font-size: 0.6rem;
+      color: var(--accent);
+      opacity: 0.5;
+      font-size: 0.5rem;
+      transform: translateY(-1px);
     }
     @keyframes tickerScroll {
       0%   { transform: translateX(0); }
@@ -5072,34 +5081,51 @@
        COMMUNITY FEED
        ══════════════════════════════════════════════ */
     .communityBar {
-      padding: 7px 20px;
-      display: flex; align-items: center; gap: 12px;
+      padding: 9px 20px;
+      display: flex; align-items: center; gap: 14px;
       border-bottom: 1px solid var(--border);
       overflow: hidden;
     }
     .communityLabel {
-      font-size: var(--t-xs); font-weight: var(--fw-med);
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: var(--t-xs); font-weight: var(--fw-bold);
       color: var(--ink-lo); white-space: nowrap;
-      text-transform: uppercase; letter-spacing: 0.05em;
-      padding-right: 10px; border-right: 1px solid var(--border);
+      text-transform: uppercase; letter-spacing: 0.12em;
+      padding-right: 12px; border-right: 1px solid var(--border);
     }
-    .communityFeedTrack { overflow: hidden; flex: 1; }
+    /* Honest "sample" tag — premium look, but not pretending to be live */
+    .communitySampleTag {
+      text-transform: none; letter-spacing: 0;
+      font-size: 0.62rem; font-weight: var(--fw-med);
+      color: var(--ink-faint);
+      background: var(--goldBg);
+      border: 1px solid var(--goldBorder);
+      padding: 1px 7px; border-radius: 999px;
+    }
+    .communityFeedTrack {
+      overflow: hidden; flex: 1;
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 40px), transparent);
+              mask-image: linear-gradient(90deg, transparent, #000 32px, #000 calc(100% - 40px), transparent);
+    }
     .communityFeedInner {
-      display: inline-flex; gap: 10px; white-space: nowrap;
+      display: inline-flex; gap: 8px; white-space: nowrap;
       animation: tickerScroll 44s linear infinite;
     }
     .communityFeedInner:hover { animation-play-state: paused; }
     .communityPill {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: transparent; border: none;
-      border-radius: 0; padding: 4px 8px 4px 0;
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--surfaceStrong);
+      border: 1px solid var(--border);
+      border-radius: 999px; padding: 4px 12px 4px 4px;
       font-size: var(--t-xs); font-weight: var(--fw-reg); color: var(--ink);
+      box-shadow: var(--shadow-card);
     }
     .communityAvatar {
-      width: 20px; height: 20px; border-radius: 999px;
+      width: 22px; height: 22px; border-radius: 999px;
       background: linear-gradient(135deg, #C8690E, #9E4E08);
+      box-shadow: 0 0 0 2px var(--bg1), 0 0 0 3px rgba(200,105,14,0.25);
       display: grid; place-items: center;
-      font-size: 0.58rem; font-weight: 900; color: #fff; flex: 0 0 auto;
+      font-size: 0.6rem; font-weight: 900; color: #fff; flex: 0 0 auto;
     }
     .communityTime { color: var(--ink-faint); font-weight: var(--fw-reg); }
 
@@ -7644,7 +7670,7 @@
     </div>
 
     <div class="communityBar" id="communityBar" aria-label="Community activity">
-      <span class="communityLabel"><span class="communityLiveDot" aria-hidden="true"></span>👥 Live</span>
+      <span class="communityLabel"><span class="communityLiveDot" aria-hidden="true"></span>👥 Community<span class="communitySampleTag">sample</span></span>
       <div class="communityFeedTrack">
         <div class="communityFeedInner" id="communityFeed"><!-- injected by JS --></div>
       </div>
