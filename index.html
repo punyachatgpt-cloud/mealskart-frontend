@@ -438,7 +438,13 @@
       .chip:hover { transform: translateY(-1px); }
     }
 
-    .btn:active { transform: scale(0.97); transition-duration: 80ms; filter: brightness(0.96); }
+    /* Ember press — strike-a-match warmth instead of a dull darken */
+    .btn:active {
+      transform: scale(0.97);
+      transition-duration: 70ms;
+      filter: brightness(1.09) saturate(1.1);
+      box-shadow: 0 2px 10px rgba(200,105,14,0.45), 0 0 22px rgba(255,170,80,0.40);
+    }
 
     .btn:focus-visible,
     .chip:focus-visible,
@@ -707,7 +713,7 @@
 
     @media (max-width: 620px) {
       .shell {
-        width: calc(100vw - 72px);
+        width: calc(100vw - 32px);   /* tighter gutters → near-full-width immersive feed */
         margin-top: 18px;
         padding: 0;
       }
@@ -733,11 +739,13 @@
       }
       .results,
       .results.hasHero,
-      .loadingGrid { grid-template-columns: 1fr; }
+      .loadingGrid { grid-template-columns: 1fr; gap: 20px; }
       .statusRow { align-items: flex-start; flex-direction: column; }
-      .foodCard.heroCard .foodImg,
-      .foodCard.decideCard .foodImg,
-      .foodImg { height: 230px; }
+      /* Immersive full-width food imagery on mobile (Instagram/TikTok feel) */
+      .foodImg { height: 280px; }
+      .foodCard.decideCard .foodImg { height: 280px; }
+      .foodCard.heroCard .foodImg { height: 300px; }
+      .imageTitle { font-size: 1.55rem; }
       .topbar { align-items: flex-start; flex-direction: column; }
     }
 
@@ -4011,7 +4019,14 @@
     }
     .trendingInner > span:not(.tDot) {
       letter-spacing: -0.01em;
-      transition: color var(--dur-fast) var(--ease-out);
+      transition: color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-spring);
+      cursor: default;
+      display: inline-block;
+    }
+    /* Lift-on-pause — the ticker feels interactive, not just decorative */
+    .trendingInner > span:not(.tDot):hover {
+      color: var(--accent);
+      transform: scale(1.08);
     }
     .trendingInner:hover { animation-play-state: paused; }
     .tDot {
@@ -9116,24 +9131,24 @@
       fried:      "photo-1603133872878-684f208fb84b",  // fried rice, stir-fried
       rice:       "photo-1536304929831-ee1ca9d44906",
       pulao:      "photo-1563379091339-03b21ab4a4f8",
-      khichdi:    "photo-1546833998-877b37c2e5c6",
-      khichri:    "photo-1546833998-877b37c2e5c6",
+      khichdi:    "photo-1585937421612-70a008356fbe",
+      khichri:    "photo-1585937421612-70a008356fbe",
       congee:     "photo-1536304929831-ee1ca9d44906",
 
       // ── Lentils & legumes ──────────────────────────────────────────────────
-      dal:        "photo-1546833998-877b37c2e5c6",
-      daal:       "photo-1546833998-877b37c2e5c6",
-      lentil:     "photo-1546833998-877b37c2e5c6",
-      lentils:    "photo-1546833998-877b37c2e5c6",
-      sambar:     "photo-1546833998-877b37c2e5c6",
-      chole:      "photo-1546833998-877b37c2e5c6",
-      rajma:      "photo-1546833998-877b37c2e5c6",
-      chana:      "photo-1546833998-877b37c2e5c6",
-      beans:      "photo-1546833998-877b37c2e5c6",
-      bean:       "photo-1546833998-877b37c2e5c6",
-      moong:      "photo-1546833998-877b37c2e5c6",
-      soya:       "photo-1546833998-877b37c2e5c6",
-      soy:        "photo-1546833998-877b37c2e5c6",
+      dal:        "photo-1585937421612-70a008356fbe",
+      daal:       "photo-1585937421612-70a008356fbe",
+      lentil:     "photo-1585937421612-70a008356fbe",
+      lentils:    "photo-1585937421612-70a008356fbe",
+      sambar:     "photo-1585937421612-70a008356fbe",
+      chole:      "photo-1585937421612-70a008356fbe",
+      rajma:      "photo-1585937421612-70a008356fbe",
+      chana:      "photo-1585937421612-70a008356fbe",
+      beans:      "photo-1585937421612-70a008356fbe",
+      bean:       "photo-1585937421612-70a008356fbe",
+      moong:      "photo-1585937421612-70a008356fbe",
+      soya:       "photo-1585937421612-70a008356fbe",
+      soy:        "photo-1585937421612-70a008356fbe",
 
       // ── Paneer & vegetarian protein ────────────────────────────────────────
       paneer:     "photo-1567188040759-fb8a883dc6d8",
@@ -16005,7 +16020,7 @@
       if (!("Notification" in window) || Notification.permission !== "granted") return;
       const n = new Notification(title, {
         body,
-        icon: "https://images.unsplash.com/photo-1546833998-877b37c2e5c6?w=192&h=192&fit=crop",
+        icon: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=192&h=192&fit=crop",
         tag: "simmer-reminder",
         renotify: true,
         requireInteraction: false
