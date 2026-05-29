@@ -5398,7 +5398,11 @@
        ════════════════════════════════════════════════════ */
     .cookModeOverlay {
       position: fixed; inset: 0; z-index: 500;
-      background: #0a0501;
+      /* Oven-lit warmth, not a hospital void */
+      background:
+        radial-gradient(120% 80% at 50% 0%, rgba(200,105,14,0.10), transparent 60%),
+        radial-gradient(100% 100% at 50% 120%, rgba(124,53,18,0.18), transparent 55%),
+        #0B0703;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       padding: 24px 20px 88px;
@@ -5409,16 +5413,21 @@
     }
     .cookModeOverlay.hidden { display: none; pointer-events: none; }
 
-    /* Subtle ambient glow in background */
+    /* Slow drifting ambient ember — the screenshot-worthy warmth */
     .cookModeOverlay::before {
       content: "";
       position: absolute;
-      width: 600px; height: 600px;
+      width: 680px; height: 680px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(200,105,14,0.08) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(200,105,14,0.14) 0%, transparent 70%);
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       pointer-events: none;
+      animation: emberDrift 14s var(--ease-in-out) infinite alternate;
+    }
+    @keyframes emberDrift {
+      from { transform: translate(-54%, -52%) scale(1); opacity: 0.85; }
+      to   { transform: translate(-46%, -48%) scale(1.12); opacity: 1; }
     }
 
     .cookModeTop {
@@ -5479,11 +5488,13 @@
 
     /* Step text */
     .cookModeStepText {
-      font-size: clamp(1.12rem, 3.8vw, 1.38rem);
-      font-weight: 600; line-height: 1.68;
-      color: rgba(255,255,255,0.93);
+      font-family: 'Fraunces', serif;   /* cookbook, not chatbot */
+      font-size: clamp(1.3rem, 4.5vw, 1.7rem);
+      font-weight: 600; line-height: 1.5;
+      letter-spacing: -0.01em;
+      color: rgba(255,255,255,0.96);
       text-align: center;
-      max-width: 42ch;
+      max-width: 30ch;
       margin: 0;
     }
     @keyframes cmStepIn {
@@ -5867,8 +5878,9 @@
     .cookModeBg {
       position: absolute; inset: 0;
       background-size: cover; background-position: center;
-      filter: blur(48px) brightness(0.18) saturate(1.6);
-      transform: scale(1.12);
+      filter: blur(44px) brightness(0.34) saturate(1.5);  /* dish glows through, not pitch black */
+      transform: scale(1.15);
+      opacity: 0.5;
       z-index: 0;
       transition: opacity 0.6s;
     }
@@ -5894,10 +5906,12 @@
 
     /* ── Glassmorphism step card ───────────────────────────────────── */
     .cookModeStepCard {
-      background: rgba(255,255,255,0.06);
+      /* Warm-tinted real glass with an inset top sheen (not cold neutral) */
+      background: linear-gradient(165deg, rgba(255,247,236,0.10), rgba(255,255,255,0.04));
       backdrop-filter: blur(24px) saturate(1.4);
       -webkit-backdrop-filter: blur(24px) saturate(1.4);
-      border: 1px solid rgba(255,255,255,0.11);
+      border: 1px solid rgba(255,235,210,0.14);
+      box-shadow: 0 24px 60px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
       border-radius: 28px;
       padding: 28px 26px 22px;
       width: 100%;
