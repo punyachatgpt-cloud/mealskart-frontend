@@ -21,14 +21,19 @@
   <style>
     :root {
       /* ── Palette ─────────────────────────────────────────── */
-      --bg0: #FAFAF6;
-      --bg1: #ffffff;
-      --ink: #1C1008;
+      --bg0: #F7F4EC;            /* warm paper base (was clinical #FAFAF6)        */
+      --bg1: #FFFDF9;            /* card surface: warm white, not pure #fff       */
+      --ink: #1A0F07;
       --muted: #6B4C2A;
-      --muted2: #9B7553;
+      --muted2: #927152;         /* lighter — better contrast balance            */
       --surface: rgba(250, 250, 246, 0.90);
       --surfaceStrong: rgba(255, 255, 255, 0.97);
-      --border: rgba(200, 160, 110, 0.38);
+      /* Warm elevation ramp — gives the UI real depth instead of flat boxes */
+      --surface-1: #FFFFFF;      /* raised: modals / sheets                       */
+      --surface-2: #FCF7EF;      /* sunken: input wells, sidebar rail            */
+      --border: rgba(120, 75, 30, 0.18);        /* softened from 0.38 — editorial */
+      --border-strong: rgba(120, 75, 30, 0.30); /* inputs, selected, definition  */
+      --hairline: rgba(120, 75, 30, 0.08);      /* quiet section dividers         */
       --borderSoft: rgba(255, 255, 255, 0.55);
       --shadow: 0 20px 50px -12px rgba(60, 25, 5, 0.13);
       --shadow-hover: 0 32px 64px -12px rgba(60, 25, 5, 0.20);
@@ -4691,7 +4696,12 @@
       --muted2:       #8A6035;   /* medium amber */
       --surface:      rgba(22, 12, 5, 0.95);
       --surfaceStrong:rgba(13,  7, 2, 0.98);
-      --border:       rgba(180, 110, 45, 0.28);
+      --muted2:       #A6794A;   /* lifted for contrast on ristretto base */
+      --border:       rgba(180, 110, 45, 0.22);
+      --border-strong:rgba(180, 110, 45, 0.40);
+      --hairline:     rgba(180, 110, 45, 0.14);
+      --surface-1:    #1E1209;   /* raised */
+      --surface-2:    #120A04;   /* sunken */
       --borderSoft:   rgba(255, 255, 255, 0.07);
       --shadow:       0 20px 50px -12px rgba(0, 0, 0, 0.65);
       --shadow-hover: 0 32px 64px -12px rgba(0, 0, 0, 0.75);
