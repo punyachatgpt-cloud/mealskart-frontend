@@ -5434,7 +5434,7 @@
       position: absolute; top: 0; left: 0; right: 0;
       display: flex; align-items: center; justify-content: space-between;
       padding: 18px 22px;
-      z-index: 2;
+      z-index: 15;  /* top controls (lang/voice/mute/exit) always above centered main content */
     }
     .cookModeDishName {
       font-family: 'Fraunces', serif;
@@ -8214,6 +8214,7 @@
           </button>
           <div class="genieLangDropdown hidden" id="genieLangDropdown" role="listbox"></div>
         </div>
+        <button class="genieMuteBtn" id="genieVoiceBtn" type="button" title="Voice: female / male / auto" aria-label="Voice gender preference">♀</button>
         <button class="genieMuteBtn" id="genieMuteBtn" type="button" title="Toggle voice">🔊</button>
         <button class="cookModeCloseBtn" id="cookModeCloseBtn" type="button">✕ Exit</button>
       </div>
@@ -14419,8 +14420,10 @@
 
     const _genie = {
       active:           false,
-      ttsEnabled:       true,
-      lang:             "en",
+      // Persisted preferences (saved across sessions in the user's profile)
+      ttsEnabled:       localStorage.getItem("simmer_genie_tts") !== "0",
+      lang:             localStorage.getItem("simmer_genie_lang") || "en",
+      voiceGender:      localStorage.getItem("simmer_genie_voice") || "auto",  // 'female' | 'male' | 'auto'
       engageTimer:      null,
       bubbleTimer:      null,
       noiseCtx:         null,
@@ -14542,22 +14545,47 @@
       "it":    ["Google italiano", "Alice", "Luca"],
     };
 
+    // Keyword hints used to bias voice selection toward the user's gender preference
+    const _VOICE_GENDER_HINTS = {
+      female: ["female", "woman", "samantha", "victoria", "karen", "moira", "tessa", "fiona", "veena", "rishi", "joana", "luciana", "alice", "milena", "amelie", "anna", "google uk english female", "zira", "susan"],
+      male:   ["male", "man", "daniel", "alex", "fred", "rishi", "oliver", "thomas", "luca", "yuri", "diego", "jorge", "google uk english male", "david", "mark"],
+    };
+
+    function _voiceMatchesGender(voice, gender) {
+      if (gender !== "female" && gender !== "male") return true;  // 'auto' = no preference
+      const n = (voice.name || "").toLowerCase();
+      const hints  = _VOICE_GENDER_HINTS[gender] || [];
+      const others = _VOICE_GENDER_HINTS[gender === "female" ? "male" : "female"] || [];
+      if (hints.some(h => n.includes(h)))  return true;
+      if (others.some(h => n.includes(h))) return false;
+      return false;  // unknown gender → don't force; caller falls back
+    }
+
     function _pickVoice(langCode) {
       const synth = window.speechSynthesis;
       if (!synth) return null;
       const voices = synth.getVoices();
       if (!voices.length) return null;
-      // 1. Try preferred names
+      const gender = _genie.voiceGender || "auto";
+      const target = _BCP47[langCode] || langCode;
+      const prefix = target.slice(0, 2).toLowerCase();
+      const langVoices = voices.filter(v => v.lang.toLowerCase().startsWith(prefix));
+
+      // 0. If a gender is preferred, try to honour it within the right language first
+      if (gender === "female" || gender === "male") {
+        const g = langVoices.filter(v => _voiceMatchesGender(v, gender));
+        const pick = g.find(v => !v.localService) || g[0];
+        if (pick) return pick;
+      }
+      // 1. Try preferred names (curated, natural-sounding)
       for (const name of (_VOICE_PREF[langCode] || [])) {
         const v = voices.find(v => v.name === name);
         if (v) return v;
       }
       // 2. Any voice whose lang starts with our BCP-47 prefix
-      const target = _BCP47[langCode] || langCode;
-      const prefix = target.slice(0, 2).toLowerCase();
       // Prefer remote (neural) voices on Chrome, then local
-      return voices.find(v => !v.localService && v.lang.toLowerCase().startsWith(prefix))
-          || voices.find(v =>  v.lang.toLowerCase().startsWith(prefix))
+      return langVoices.find(v => !v.localService)
+          || langVoices[0]
           || null;
     }
 
@@ -14866,12 +14894,34 @@
         // Mute toggle
         document.getElementById("genieMuteBtn")?.addEventListener("click", () => {
           _genie.ttsEnabled = !_genie.ttsEnabled;
+          localStorage.setItem("simmer_genie_tts", _genie.ttsEnabled ? "1" : "0");
           const btn = document.getElementById("genieMuteBtn");
           if (btn) {
             btn.textContent = _genie.ttsEnabled ? "🔊" : "🔇";
             btn.classList.toggle("muted", !_genie.ttsEnabled);
           }
           if (!_genie.ttsEnabled) _genieStopTTS();
+        });
+
+        // Voice gender preference (cycles female → male → auto, persisted)
+        const _applyVoiceBtn = () => {
+          const vb = document.getElementById("genieVoiceBtn");
+          if (!vb) return;
+          const g = _genie.voiceGender;
+          vb.textContent = g === "female" ? "♀" : g === "male" ? "♂" : "🎙";
+          vb.title = `Voice: ${g} (tap to change)`;
+        };
+        _applyVoiceBtn();
+        document.getElementById("genieVoiceBtn")?.addEventListener("click", () => {
+          const order = ["female", "male", "auto"];
+          const next = order[(order.indexOf(_genie.voiceGender) + 1) % order.length];
+          _genie.voiceGender = next;
+          localStorage.setItem("simmer_genie_voice", next);
+          _applyVoiceBtn();
+          // Re-speak current bar text in the newly chosen voice as instant feedback
+          const barText = document.getElementById("genieBarText");
+          _genieStopTTS();
+          if (_genie.ttsEnabled && barText?.textContent) _genieTTS(barText.textContent);
         });
 
         // Language picker
@@ -14896,6 +14946,7 @@
             if (!opt) return;
             const code = opt.dataset.lcode;
             _genie.lang = code;
+            localStorage.setItem("simmer_genie_lang", code);
             _genie.translationCache = {};
             _genie.voiceCache        = {};
             const cfg = _GENIE_LANGS.find(l => l.code === code);
