@@ -7663,14 +7663,14 @@
             onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
             Sign in
           </a>
-          <button id="authAvatarBtn" type="button" title="View your profile"
+          <button id="authAvatarBtn" type="button" title="View your profile" aria-label="View your profile"
             onclick="window.location.href='/profile.html'"
             style="display:none;width:32px;height:32px;border-radius:50%;background:var(--accent);border:2px solid var(--accent);color:#fff;font-size:0.8rem;font-weight:700;cursor:pointer;transition:opacity 0.15s"
             onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
           </button>
           <div class="microcopy" id="microcopy">Dinner ready in 15 mins &#9889;</div>
         </div>
-        <button id="weeklyReportBtn" type="button"
+        <button id="weeklyReportBtn" type="button" title="View weekly cooking report" aria-label="View weekly cooking report"
           style="background:none;border:1px solid var(--border);border-radius:999px;padding:4px 12px;font-family:inherit;font-size:0.72rem;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all 0.15s"
           onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'"
           onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
@@ -7795,12 +7795,12 @@
         <div style="font-size:0.75rem;color:var(--muted2);margin:-2px 0 6px 4px;display:flex;align-items:center;gap:5px">
           ⚡ Results appear as you type — no button needed
         </div>
-        <button class="browseAllBtn" id="browseAllBtn" type="button">🗂 Browse all 500+ recipes →</button>
+        <button class="browseAllBtn" id="browseAllBtn" type="button" title="Browse all 500 plus recipes" aria-label="Browse all 500 plus recipes">🗂 Browse all 500+ recipes →</button>
         <div class="stack">
           <div class="section" id="timePanel">
             <div class="label">Time <span class="hint">how long do you have</span></div>
             <div class="seg" role="group" aria-label="Time">
-              <button class="chip selected" data-group="time" data-value="999">Any time</button>
+              <button class="chip selected" data-group="time" data-value="999" aria-pressed="true">Any time</button>
               <button class="chip" data-group="time" data-value="15">15 min</button>
               <button class="chip" data-group="time" data-value="30">30 min</button>
             </div>
@@ -7809,7 +7809,7 @@
           <div class="section" id="moodPanel">
             <div class="label">Mood <span class="hint">match the vibe</span></div>
             <div class="seg" role="group" aria-label="Mood">
-              <button class="chip selected" data-group="mood" data-value="">Any</button>
+              <button class="chip selected" data-group="mood" data-value="" aria-pressed="true">Any</button>
               <button class="chip" data-group="mood" data-value="quick">quick</button>
               <button class="chip" data-group="mood" data-value="healthy">healthy</button>
               <button class="chip" data-group="mood" data-value="comfort">comfort</button>
@@ -7819,7 +7819,7 @@
           <div class="section" id="categoryPanel">
             <div class="label">Craving <span class="hint">cuisine or type</span></div>
             <div class="seg scroll" role="group" aria-label="Category">
-              <button class="chip selected" data-group="category" data-value="all">all</button>
+              <button class="chip selected" data-group="category" data-value="all" aria-pressed="true">all</button>
               <button class="chip" data-group="category" data-value="north-indian">north indian</button>
               <button class="chip" data-group="category" data-value="south-indian">south indian</button>
               <button class="chip" data-group="category" data-value="continental">continental</button>
@@ -7835,7 +7835,7 @@
           <div class="section" id="dietPanel">
             <div class="label">Diet <span class="hint">always respected</span></div>
             <div class="seg" role="group" aria-label="Diet">
-              <button class="chip selected" data-group="diet" data-value="">All</button>
+              <button class="chip selected" data-group="diet" data-value="" aria-pressed="true">All</button>
               <button class="chip" data-group="diet" data-value="veg">veg</button>
               <button class="chip" data-group="diet" data-value="non-veg">non-veg</button>
             </div>
@@ -7845,7 +7845,7 @@
             <div class="label">Budget <span class="hint">shapes suggestions</span></div>
             <div class="seg" role="group" aria-label="Budget">
               <button class="chip" data-group="budget" data-value="economical">💚 Economical</button>
-              <button class="chip selected" data-group="budget" data-value="any">✨ Any</button>
+              <button class="chip selected" data-group="budget" data-value="any" aria-pressed="true">✨ Any</button>
               <button class="chip" data-group="budget" data-value="premium">💰 Premium</button>
             </div>
           </div>
@@ -9062,7 +9062,9 @@
 
     function setSelected(group, value) {
       document.querySelectorAll(`[data-group="${group}"]`).forEach((btn) => {
-        btn.classList.toggle("selected", btn.dataset.value === value);
+        const isSelected = btn.dataset.value === value;
+        btn.classList.toggle("selected", isSelected);
+        btn.setAttribute("aria-pressed", isSelected ? "true" : "false");
       });
     }
 
@@ -11152,7 +11154,7 @@
           <label class="ingredientCheck${pantryActive2 ? (inPantry ? " pantryHave" : " pantryNeed") : ""}">
             <input type="checkbox" ${isChecked ? "checked" : ""} />
             <span class="ingredientCheckLabel">${escapeHtml(scaledIngredientText(item))}</span>${pantryActive2 ? (inPantry ? `<span class="pantryNeedIcon" title="Need to buy">○</span>` : `<span class="pantryHaveIcon" title="You have this">✓</span>`) : ""}${buyLink}
-            <button class="subBtn" type="button" data-ing="${escapeHtml(item.name || String(item))}" title="Find substitutes">🔄</button>
+            <button class="subBtn" type="button" data-ing="${escapeHtml(item.name || String(item))}" title="Find substitutes" aria-label="Find substitutes">🔄</button>
           </label>
         `;
       }).join("") + scaleBadge;
