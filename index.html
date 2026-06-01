@@ -5500,6 +5500,7 @@
        COOK MODE 2.0 — FULL-SCREEN CINEMATIC STYLES
        ════════════════════════════════════════════════════ */
     .cookModeOverlay {
+      --cm-genie-h: 132px;           /* reserved band for the genie bottom sheet */
       position: fixed; inset: 0; z-index: 500;
       /* Oven-lit warmth, not a hospital void */
       background:
@@ -5507,10 +5508,10 @@
         radial-gradient(100% 100% at 50% 120%, rgba(124,53,18,0.18), transparent 55%),
         #0B0703;
       display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 24px 20px 88px;
+      align-items: center; justify-content: safe center;
+      padding: 24px 20px env(safe-area-inset-bottom, 0px);
       animation: obFadeIn 0.4s ease both;
-      overflow: hidden;
+      overflow-y: auto;
       /* Ensures nothing behind the overlay receives pointer events */
       isolation: isolate;
     }
@@ -5557,11 +5558,12 @@
     }
     .cookModeCloseBtn:hover { background: rgba(255,255,255,0.14); color: #fff; }
 
-    /* Main content area */
+    /* Main content area. Sits in the centered group above the in-flow genie bar. */
     .cookModeMain {
       display: flex; flex-direction: column;
       align-items: center; gap: 28px;
       width: 100%; max-width: 540px;
+      flex: 0 0 auto;
       position: relative; z-index: 2;
     }
 
@@ -5724,7 +5726,8 @@
     }
 
     .cookModeVoice {
-      position: absolute; bottom: 86px; left: 50%;
+      position: absolute; left: 50%;
+      bottom: calc(var(--cm-genie-h) + 12px + env(safe-area-inset-bottom, 0px));
       transform: translateX(-50%);
       display: flex; align-items: center; gap: 8px;
       font-size: 0.74rem; font-weight: 700;
@@ -5810,17 +5813,21 @@
 
     /* ── Genie Bar — fixed bottom panel ───────────────────────────── */
     .genieBar {
-      position: absolute; bottom: 0; left: 0; right: 0;
+      /* In normal flow at the bottom of the cook-mode column: when it opens it
+         PUSHES the centered controls up by its real height, so its expanding
+         bubble/chips can never cover the nav (works on any screen size). */
+      position: relative;
       z-index: 20;
-      transform: translateY(105%);
-      transition: transform 0.50s cubic-bezier(0.34, 1.18, 0.64, 1);
+      width: 100%;
       padding-bottom: env(safe-area-inset-bottom, 0px);
       display: none;
+      flex-direction: column;      /* bubble → opts → track, grows upward */
     }
     .genieBar.genieOpen {
-      transform: translateY(0);
-      display: block;
+      display: flex;
+      animation: genieRise 0.4s cubic-bezier(0.34, 1.18, 0.64, 1) both;
     }
+    @keyframes genieRise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
 
     .genieBarTrack {
       display: flex; align-items: center; gap: 14px;
@@ -5987,11 +5994,11 @@
     .genieOptBtn:hover  { background: rgba(200,105,14,0.26); }
     .genieOptBtn:active { transform: scale(0.93); }
 
-    /* AI response bubble (slides up above bar) */
+    /* AI response bubble — in-flow at the top of the genie sheet (stacks above
+       the opts row + track), so it grows the sheet upward instead of floating
+       over the centered nav controls. */
     .genieBubble {
-      position: absolute;
-      bottom: calc(100% + 10px);
-      left: 16px; right: 16px;
+      margin: 0 16px 8px;
       background: rgba(10,5,2,0.95);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
@@ -6155,9 +6162,12 @@
       font-weight: 900; color: #E8A020;
       white-space: nowrap; flex-shrink: 0;
     }
+    /* Top-right utility cluster — Ingredients + Ask sit together, no overlap */
+    .cmUtilCluster {
+      position: absolute; top: 60px; right: 18px; z-index: 15;
+      display: flex; align-items: center; gap: 8px;
+    }
     .cmIngToggleBtn {
-      position: absolute; right: 18px; bottom: 90px;
-      z-index: 25;
       background: rgba(255,255,255,0.09);
       border: 1px solid rgba(255,255,255,0.16);
       border-radius: 999px; color: rgba(255,255,255,0.72);
@@ -6426,15 +6436,25 @@
     }
     .cookModeAIDismiss:hover { color: rgba(255,255,255,0.7); }
     .cookModeAskBtn {
-      position: absolute; bottom: 92px; right: 20px;
-      width: 44px; height: 44px; border-radius: 50%;
+      width: 40px; height: 40px; border-radius: 50%;
       background: rgba(200,105,14,0.18); border: 1.5px solid rgba(200,105,14,0.4);
-      color: #fff; font-size: 1.1rem; cursor: pointer;
+      color: #fff; font-size: 1.05rem; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       transition: background 0.15s, transform 0.1s;
-      z-index: 3;
+      flex-shrink: 0;
     }
     .cookModeAskBtn:hover { background: rgba(200,105,14,0.32); transform: scale(1.08); }
+
+    /* ── Cook Mode: mobile — tighter clusters, full-width nav, safe areas ── */
+    @media (max-width: 640px) {
+      .cookModeOverlay { --cm-genie-h: 120px; }
+      .cmUtilCluster { top: 74px; right: 12px; gap: 6px; }
+      .cmIngToggleBtn { font-size: 0.72rem; padding: 6px 11px; }
+      .cookModeAskBtn { width: 38px; height: 38px; font-size: 1rem; }
+      .cookModeNav { width: 100%; max-width: 360px; }
+      .cookModeNavBtn { min-width: 0; flex: 1; }
+      .genieBubble { margin: 0 10px 8px; max-height: 200px; }
+    }
 
     /* Parallel timers bar */
     .cookModeTimersBar {
@@ -8338,6 +8358,12 @@
       </div>
     </div>
 
+    <!-- Utility cluster: Ingredients + Ask, docked top-right (no bottom-band collisions) -->
+    <div class="cmUtilCluster">
+      <button class="cmIngToggleBtn" id="cmIngToggleBtn" type="button">📋 Ingredients</button>
+      <button class="cookModeAskBtn" id="cookModeAskBtn" type="button" aria-label="Ask the AI chef">💬</button>
+    </div>
+
     <!-- Resume banner (shown when re-entering a recipe mid-cook) -->
     <div class="cmResumeBanner hidden" id="cmResumeBanner">
       <span id="cmResumeText">Resume from step 1?</span>
@@ -8396,10 +8422,6 @@
       <div class="cookModeAIAnswer" id="cookModeAIAnswer"></div>
       <button class="cookModeAIDismiss" id="cookModeAIDismiss" type="button" aria-label="Dismiss">✕</button>
     </div>
-    <button class="cookModeAskBtn" id="cookModeAskBtn" type="button" aria-label="Ask the AI chef">💬</button>
-
-    <!-- Ingredient quick-glance button -->
-    <button class="cmIngToggleBtn" id="cmIngToggleBtn" type="button">📋 Ingredients</button>
 
     <!-- Ingredient quick-glance drawer -->
     <div class="cmIngDrawer" id="cmIngDrawer">
