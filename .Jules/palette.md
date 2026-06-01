@@ -1,0 +1,3 @@
+## 2026-06-01 - Tactile Accessibility & State Synchronization
+**Learning:** For interactive elements like filter chips and toggle buttons (e.g., Favorites), visual-only states (like a '.selected' class) are insufficient for screen readers. Using 'aria-pressed' is essential for communicating the toggle state. Additionally, consistent tactile feedback (navigator.vibrate) across all primary interaction points (chips, list additions, favorites) significantly enhances the 'premium' feel and accessibility for users with certain sensory needs.
+**Action:** Always pair visual toggle classes with 'aria-pressed' and descriptive dynamic 'aria-label' updates. Implement standardized tactile feedback (40ms vibration) for all primary non-navigational interactions.

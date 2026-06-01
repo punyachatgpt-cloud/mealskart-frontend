@@ -9215,7 +9215,9 @@
 
     function setSelected(group, value) {
       document.querySelectorAll(`[data-group="${group}"]`).forEach((btn) => {
-        btn.classList.toggle("selected", btn.dataset.value === value);
+        const isSelected = btn.dataset.value === value;
+        btn.classList.toggle("selected", isSelected);
+        btn.setAttribute("aria-pressed", isSelected);
       });
     }
 
@@ -10831,7 +10833,7 @@
               </div>
               <div style="display:flex;gap:6px;align-items:center">
                 <button class="saveBtn ${getRecipeCollections(item.id).length ? "saved" : ""}" type="button" aria-label="Save to collection">🔖</button>
-                <button class="heartBtn" type="button" aria-label="Toggle favorite">
+                <button class="heartBtn" type="button" aria-label="${isFav ? "Remove from favorites" : "Add to favorites"}" aria-pressed="${isFav}">
                   <span class="heart">${isFav ? "&#10084;" : "&#9825;"}</span>
                 </button>
               </div>
@@ -10868,11 +10870,16 @@
           e.stopPropagation();
           const id = String(item.id);
           const next = loadFavorites();
+          const isNowFav = !next.has(id);
           if (next.has(id)) next.delete(id);
           else next.add(id);
           saveFavorites(next);
+
+          if (navigator.vibrate) navigator.vibrate(40);
+          heartBtn.setAttribute("aria-pressed", isNowFav);
+          heartBtn.setAttribute("aria-label", isNowFav ? "Remove from favorites" : "Add to favorites");
           const heart = heartBtn.querySelector(".heart");
-          heart.innerHTML = next.has(id) ? "&#10084;" : "&#9825;";
+          heart.innerHTML = isNowFav ? "&#10084;" : "&#9825;";
         });
 
         // Save button → collection picker
@@ -10911,6 +10918,7 @@
         // Shopping list button — uses card._item so remix swaps are respected
         card.querySelector(".cardShopBtn")?.addEventListener("click", (e) => {
           e.stopPropagation();
+          if (navigator.vibrate) navigator.vibrate(40);
           const count = addRecipeToShoppingList(card._item);
           const btn = e.currentTarget;
           btn.textContent = count > 0 ? `✓ ${count} item${count !== 1 ? "s" : ""} added` : "✓ Already in list";
@@ -12284,6 +12292,7 @@
           if (group === "category") state.category = value;
           if (group === "budget")   state.budget = value;
 
+          if (navigator.vibrate) navigator.vibrate(40);
           setSelected(group, value);
           savePreferences();
           updateMicrocopy();
@@ -12384,6 +12393,7 @@
     });
 
     el.decideBtn.addEventListener("click", async (e) => {
+      if (navigator.vibrate) navigator.vibrate(40);
       addRipple(el.decideBtn, e);
       if (!(await checkLimit("decide_for_me"))) return;
       getSuggestions("decide");
@@ -12415,11 +12425,13 @@
     });
 
     el.servingMinusBtn.addEventListener("click", () => {
+      if (navigator.vibrate) navigator.vibrate(40);
       servingMultiplier = Math.max(1, servingMultiplier - 1);
       renderRecipeModalDetails();
     });
 
     el.servingPlusBtn.addEventListener("click", () => {
+      if (navigator.vibrate) navigator.vibrate(40);
       servingMultiplier = Math.min(8, servingMultiplier + 1);
       renderRecipeModalDetails();
     });
@@ -12627,12 +12639,14 @@
     // Mobile bottom bar — mirrors desktop CTAs
     if (el.decideBtnMobile) {
       el.decideBtnMobile.addEventListener("click", (e) => {
+        if (navigator.vibrate) navigator.vibrate(40);
         addRipple(el.decideBtnMobile, e);
         getSuggestions("decide");
       });
     }
     if (el.suggestBtnMobile) {
       el.suggestBtnMobile.addEventListener("click", (e) => {
+        if (navigator.vibrate) navigator.vibrate(40);
         addRipple(el.suggestBtnMobile, e);
         getSuggestions("normal");
       });
@@ -19459,6 +19473,7 @@
       if (!btn) return;
       btn.addEventListener("click", async () => {
         if (btn.disabled) return;
+        if (navigator.vibrate) navigator.vibrate(40);
         btn.disabled = true;
 
         // Spin the dice emoji
