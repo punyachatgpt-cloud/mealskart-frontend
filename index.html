@@ -5599,7 +5599,22 @@
       display: flex; flex-direction: column;
       align-items: center; gap: 10px;
     }
-    .cookModeTimerRingWrap { position: relative; }
+    .cookModeTimerRingWrap { position: relative; transition: transform var(--dur-fast) var(--ease-out); }
+    /* Final-10s urgency — the ring breathes and glows red, building tension */
+    .cookModeTimerRingWrap.urgent {
+      animation: timerUrgentPulse 1s var(--ease-in-out) infinite;
+    }
+    @keyframes timerUrgentPulse {
+      0%, 100% { transform: scale(1);    filter: drop-shadow(0 0 6px rgba(225,29,72,0.25)); }
+      50%      { transform: scale(1.06); filter: drop-shadow(0 0 22px rgba(225,29,72,0.6)); }
+    }
+    /* Completion bounce */
+    .cookModeTimerRingWrap.timerDone {
+      animation: timerDoneBounce 0.5s var(--ease-spring);
+    }
+    @keyframes timerDoneBounce {
+      0% { transform: scale(1); } 40% { transform: scale(1.18); } 100% { transform: scale(1); }
+    }
     .cookModeTimerDisplay {
       position: absolute; inset: 0;
       display: flex; align-items: center; justify-content: center;
@@ -15498,7 +15513,12 @@
 
     function updateCookModeTimerRing() {
       const wrap = document.getElementById("cookModeTimerRingWrap");
-      if (wrap) wrap.innerHTML = buildTimerRingSVG(cookModeTimerRemaining, cookModeTimerTotal);
+      if (wrap) {
+        wrap.innerHTML = buildTimerRingSVG(cookModeTimerRemaining, cookModeTimerTotal);
+        // Final-10s urgency: ring tightens + pulses (delight signature)
+        wrap.classList.toggle("urgent", cookModeTimerRemaining > 0 && cookModeTimerRemaining <= 10);
+        wrap.classList.toggle("timerDone", cookModeTimerRemaining === 0 && cookModeTimerTotal > 0);
+      }
     }
 
     function clearCookModeTimer() {
@@ -15904,6 +15924,12 @@
               : "is ready to serve!";
           }
           if (doneScreen) doneScreen.classList.remove("hidden");
+          // Celebration ambiance — force the warm "finish" glow regardless of last step type
+          const _cmOverlay = document.getElementById("cookModeOverlay");
+          if (_cmOverlay) {
+            _cmOverlay.classList.remove("cmTypePrep", "cmTypeCook", "cmTypeRest");
+            _cmOverlay.classList.add("cmTypeFinish");
+          }
           // Clear saved progress since cooking is complete
           clearCookProgress();
 
