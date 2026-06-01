@@ -347,6 +347,53 @@
       transition: background 200ms ease, border-color 200ms ease;
     }
     .theme-toggle:hover { border-color: var(--accent); }
+
+    /* ── Segmented Phone ⇄ Email toggle ─────────────────────────── */
+    .seg-toggle { position:relative; display:grid; grid-template-columns:1fr 1fr; padding:4px; background:var(--bg0); border:1.5px solid var(--border); border-radius:14px; isolation:isolate; }
+    .seg-indicator { position:absolute; z-index:-1; top:4px; bottom:4px; left:4px; width:calc(50% - 4px); border-radius:10px; background:var(--surface); border:1px solid var(--border); box-shadow:0 2px 8px -2px rgba(50,20,5,0.20); transition:transform 280ms cubic-bezier(0.34,1.56,0.64,1); }
+    .seg-toggle[data-active="email"] .seg-indicator { transform:translateX(100%); }
+    .seg-btn { appearance:none; border:none; background:none; cursor:pointer; padding:10px 0; font-family:inherit; font-size:var(--t-sm); font-weight:var(--fw-bold); color:var(--ink-faint); transition:color 200ms ease; }
+    .seg-btn.is-active { color:var(--ink); }
+    .seg-btn:active { transform:scale(0.97); }
+    .seg-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:10px; }
+    .method-pane { display:flex; flex-direction:column; gap:var(--sp-md); }
+    .method-pane[hidden] { display:none; }
+    .method-pane.entering { animation:paneIn 280ms cubic-bezier(0.34,1.56,0.64,1) both; }
+    @keyframes paneIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+    .input-wrap { display:flex; align-items:center; border:1.5px solid var(--border); border-radius:12px; background:var(--bg0); transition:border-color 160ms ease, box-shadow 160ms ease; overflow:hidden; }
+    .input-wrap:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px var(--accentGlow); }
+    .input-wrap.error { border-color:var(--danger); box-shadow:0 0 0 3px rgba(220,38,38,0.12); }
+    .input-icon { padding:14px 4px 14px 14px; font-size:var(--t-base); color:var(--ink-faint); display:flex; align-items:center; user-select:none; }
+    .input-field { flex:1; border:none; background:transparent; padding:14px 16px 14px 8px; font-size:var(--t-base); font-weight:var(--fw-med); color:var(--ink); font-family:inherit; outline:none; -webkit-appearance:none; min-width:0; }
+    .input-field::placeholder { color:var(--ink-faint); font-weight:var(--fw-reg); }
+    .input-eye { appearance:none; border:none; background:none; cursor:pointer; padding:0 14px; display:flex; align-items:center; color:var(--ink-faint); font-size:1rem; }
+    .input-eye:hover { color:var(--ink-lo); }
+
+    .pw-strength { display:grid; grid-template-columns:repeat(4,1fr) auto; align-items:center; gap:6px; margin-top:2px; }
+    .pw-bar { height:4px; border-radius:2px; background:var(--border); transition:background 240ms ease; }
+    .pw-label { grid-column:5; font-style:normal; font-size:var(--t-xs); font-weight:var(--fw-med); color:var(--ink-faint); min-width:64px; text-align:right; }
+    .pw-strength[data-level="1"] .pw-bar:nth-child(-n+1),
+    .pw-strength[data-level="2"] .pw-bar:nth-child(-n+2),
+    .pw-strength[data-level="3"] .pw-bar:nth-child(-n+3),
+    .pw-strength[data-level="4"] .pw-bar:nth-child(-n+4) { background:currentColor; }
+    .pw-strength[data-level="1"] { color:var(--danger); }
+    .pw-strength[data-level="2"] { color:#E0A106; }
+    .pw-strength[data-level="3"] { color:var(--accent); }
+    .pw-strength[data-level="4"] { color:var(--positive); }
+
+    /* "Check your inbox" success state */
+    .inbox-state { display:flex; flex-direction:column; align-items:center; gap:var(--sp-lg); text-align:center; }
+    .inbox-art { position:relative; width:72px; height:72px; display:grid; place-items:center; }
+    .inbox-glyph { font-size:2.6rem; animation:popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .inbox-pulse { position:absolute; inset:0; border-radius:50%; border:1.5px solid var(--accent); animation:inboxPulse 2.4s ease-out infinite; }
+    @keyframes inboxPulse { 0%{transform:scale(0.6);opacity:0.5;} 70%{transform:scale(1.25);opacity:0;} 100%{opacity:0;} }
+    .inbox-addr { color:var(--ink); font-weight:var(--fw-bold); }
+    .inbox-resend { font-size:var(--t-sm); color:var(--ink-lo); }
+    .inbox-resend button { appearance:none; border:none; background:none; font:inherit; font-weight:var(--fw-med); color:var(--accent); cursor:pointer; padding:0; }
+    .inbox-resend button:disabled { color:var(--ink-faint); cursor:default; }
+    .field-hint-link { align-self:flex-end; margin-top:calc(-1 * var(--sp-sm)); font-size:var(--t-xs); font-weight:var(--fw-med); color:var(--accent); text-decoration:none; }
+    @media (prefers-reduced-motion: reduce) { .seg-indicator, .method-pane.entering, .inbox-pulse, .inbox-glyph { animation:none !important; transition:none !important; } }
   </style>
 </head>
 <body>
@@ -363,49 +410,93 @@
       </div>
 
       <!-- Heading -->
-      <div class="auth-heading">
+      <div class="auth-heading" id="authHead">
         <h2>Your kitchen,<br>your craving.</h2>
-        <p>Sign up free — takes 20 seconds.</p>
+        <p id="authSub">Sign up free — takes 20 seconds.</p>
+      </div>
+
+      <div class="seg-toggle" id="segToggle" role="tablist" aria-label="Sign up method" data-active="phone">
+        <span class="seg-indicator" aria-hidden="true"></span>
+        <button type="button" class="seg-btn is-active" role="tab" aria-selected="true"  data-method="phone">Phone</button>
+        <button type="button" class="seg-btn"           role="tab" aria-selected="false" data-method="email">Email</button>
       </div>
 
       <!-- Form -->
       <form class="auth-form" id="signupForm" novalidate>
-        <div class="field-group">
-          <label class="field-label" for="phoneInput">Mobile number</label>
-          <div class="phone-input-wrap" id="phoneWrap">
-            <span class="phone-prefix">🇮🇳 +91</span>
-            <input
-              class="phone-input"
-              id="phoneInput"
-              type="tel"
-              inputmode="numeric"
-              autocomplete="tel-national"
-              placeholder="98765 43210"
-              maxlength="10"
-              aria-describedby="phoneError"
-              required
-            />
+        <!-- Phone pane -->
+        <div class="method-pane" data-method="phone">
+          <div class="field-group">
+            <label class="field-label" for="phoneInput">Mobile number</label>
+            <div class="phone-input-wrap" id="phoneWrap">
+              <span class="phone-prefix">🇮🇳 +91</span>
+              <input class="phone-input" id="phoneInput" type="tel" inputmode="numeric"
+                     autocomplete="tel-national" placeholder="98765 43210" maxlength="10" aria-describedby="phoneError" />
+            </div>
+            <span class="field-error" id="phoneError" role="alert" aria-live="polite"></span>
           </div>
-          <span class="field-error" id="phoneError" role="alert" aria-live="polite"></span>
         </div>
 
-        <button type="submit" class="btn-cta" id="sendOtpBtn">
+        <!-- Email pane -->
+        <div class="method-pane" data-method="email" hidden>
+          <div class="field-group">
+            <label class="field-label" for="emailInput">Email address</label>
+            <div class="input-wrap" id="emailWrap">
+              <span class="input-icon" aria-hidden="true">✉️</span>
+              <input class="input-field" id="emailInput" type="email" inputmode="email" autocomplete="email" placeholder="you@kitchen.com" aria-describedby="emailError" />
+            </div>
+            <span class="field-error" id="emailError" role="alert" aria-live="polite"></span>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="pwInput">Password</label>
+            <div class="input-wrap" id="pwWrap">
+              <span class="input-icon" aria-hidden="true">🔒</span>
+              <input class="input-field" id="pwInput" type="password" autocomplete="new-password" placeholder="At least 8 characters" aria-describedby="pwError" />
+              <button type="button" class="input-eye" id="pwEye" aria-label="Show password" aria-pressed="false">👁️</button>
+            </div>
+            <div class="pw-strength" id="pwStrength" data-level="0" aria-hidden="true">
+              <span class="pw-bar"></span><span class="pw-bar"></span><span class="pw-bar"></span><span class="pw-bar"></span>
+              <em class="pw-label">Too short</em>
+            </div>
+            <span class="field-error" id="pwError" role="alert" aria-live="polite"></span>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="pw2Input">Confirm password</label>
+            <div class="input-wrap" id="pw2Wrap">
+              <span class="input-icon" aria-hidden="true">🔒</span>
+              <input class="input-field" id="pw2Input" type="password" autocomplete="new-password" placeholder="••••••••" aria-describedby="pw2Error" />
+              <button type="button" class="input-eye" id="pw2Eye" aria-label="Show password" aria-pressed="false">👁️</button>
+            </div>
+            <span class="field-error" id="pw2Error" role="alert" aria-live="polite"></span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-cta" id="submitBtn">
           <div class="spinner" aria-hidden="true"></div>
-          <span class="btn-label">Send OTP</span>
+          <span class="btn-label" id="btnLabel">Send OTP</span>
         </button>
       </form>
 
+      <!-- "Check your inbox" state (email signup) -->
+      <div class="inbox-state" id="inboxState" style="display:none">
+        <div class="inbox-art" aria-hidden="true"><span class="inbox-glyph">📨</span><span class="inbox-pulse"></span></div>
+        <div class="auth-heading" style="text-align:center">
+          <h2>Check your inbox.</h2>
+          <p>We sent a verification link to <strong class="inbox-addr" id="inboxAddr">your email</strong>. Tap it to finish setting up your account, then sign in.</p>
+        </div>
+        <p class="inbox-resend">Didn't get it? <button type="button" id="resendLink" disabled>Resend in <span id="resendCd">0:30</span></button></p>
+        <a class="auth-footer" href="/login.html" style="color:var(--accent)">Back to sign in</a>
+      </div>
+
       <!-- Terms -->
-      <p class="auth-terms">
+      <p class="auth-terms" id="authTerms">
         By continuing, you agree to Simmer's
         <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
-        OTP sent via SMS.
       </p>
 
-      <div class="auth-divider">or</div>
+      <div class="auth-divider" id="authDivider">or</div>
 
       <!-- Footer -->
-      <p class="auth-footer">
+      <p class="auth-footer" id="authFooter">
         Already have an account? <a href="/login.html">Sign in</a>
       </p>
 
@@ -414,96 +505,148 @@
 
   <script>
     (() => {
-      const form      = document.getElementById('signupForm');
-      const input     = document.getElementById('phoneInput');
-      const wrap      = document.getElementById('phoneWrap');
-      const errorEl   = document.getElementById('phoneError');
-      const btn       = document.getElementById('sendOtpBtn');
-      const toggle    = document.getElementById('themeToggle');
+      const form     = document.getElementById('signupForm');
+      const toggle   = document.getElementById('themeToggle');
+      const phoneInp = document.getElementById('phoneInput');
+      const phoneWrap= document.getElementById('phoneWrap');
+      const phoneErr = document.getElementById('phoneError');
+      const emailInp = document.getElementById('emailInput');
+      const emailWrap= document.getElementById('emailWrap');
+      const emailErr = document.getElementById('emailError');
+      const pwInp    = document.getElementById('pwInput');
+      const pwWrap   = document.getElementById('pwWrap');
+      const pwErr    = document.getElementById('pwError');
+      const pw2Inp   = document.getElementById('pw2Input');
+      const pw2Wrap  = document.getElementById('pw2Wrap');
+      const pw2Err   = document.getElementById('pw2Error');
+      const strength = document.getElementById('pwStrength');
+      const strengthLbl = strength.querySelector('.pw-label');
+      const btn      = document.getElementById('submitBtn');
+      const btnLabel = document.getElementById('btnLabel');
+      const authSub  = document.getElementById('authSub');
+      const seg      = document.getElementById('segToggle');
+      const panes    = [...document.querySelectorAll('.method-pane')];
 
-      // ── Theme ─────────────────────────────────────────────────
-      const savedTheme = localStorage.getItem('simmer_theme') ||
-        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      // ── Theme ──
+      const savedTheme = localStorage.getItem('simmer_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       applyTheme(savedTheme);
+      toggle.addEventListener('click', () => { const n = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; applyTheme(n); localStorage.setItem('simmer_theme', n); });
+      function applyTheme(t) { document.documentElement.dataset.theme = t; toggle.textContent = t === 'dark' ? '☀️' : '🌙'; }
 
-      toggle.addEventListener('click', () => {
-        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-        applyTheme(next);
-        localStorage.setItem('simmer_theme', next);
+      let method = localStorage.getItem('simmer_auth_method') === 'email' ? 'email' : 'phone';
+
+      function fieldError(wrap, errEl, input, msg) { errEl.textContent = '⚠ ' + msg; errEl.classList.add('visible'); wrap.classList.add('error'); input && input.setAttribute('aria-invalid','true'); }
+      function clearFieldError(wrap, errEl, input) { errEl.classList.remove('visible'); wrap.classList.remove('error'); input && input.removeAttribute('aria-invalid'); }
+
+      function setMethod(m) {
+        method = m;
+        seg.dataset.active = m;
+        seg.querySelectorAll('.seg-btn').forEach(b => { const on = b.dataset.method === m; b.classList.toggle('is-active', on); b.setAttribute('aria-selected', String(on)); });
+        panes.forEach(p => { const on = p.dataset.method === m; p.hidden = !on; if (on) { p.classList.add('entering'); p.addEventListener('animationend', () => p.classList.remove('entering'), { once:true }); } });
+        btnLabel.textContent = m === 'phone' ? 'Send OTP' : 'Create account';
+        authSub.textContent  = m === 'phone' ? 'Sign up free — takes 20 seconds.' : 'Sign up with your email and a password.';
+        localStorage.setItem('simmer_auth_method', m);
+        setTimeout(() => (m === 'phone' ? phoneInp : emailInp).focus(), 60);
+      }
+      seg.querySelectorAll('.seg-btn').forEach(b => b.addEventListener('click', () => setMethod(b.dataset.method)));
+      setMethod(method);
+
+      // ── Eye toggles ──
+      [['pwEye', pwInp], ['pw2Eye', pw2Inp]].forEach(([id, inp]) => {
+        const eye = document.getElementById(id);
+        eye.addEventListener('click', () => { const show = inp.type === 'password'; inp.type = show ? 'text' : 'password'; eye.setAttribute('aria-pressed', String(show)); eye.textContent = show ? '🙈' : '👁️'; });
       });
 
-      function applyTheme(t) {
-        document.documentElement.dataset.theme = t;
-        toggle.textContent = t === 'dark' ? '☀️' : '🌙';
+      // ── Password strength + confirm ──
+      function score(p) { let s=0; if(p.length>=8)s++; if(/[a-z]/.test(p)&&/[A-Z]/.test(p))s++; if(/\d/.test(p))s++; if(/[^A-Za-z0-9]/.test(p))s++; return p.length<8?Math.min(s,1):s; }
+      const LABELS = ['Too short','Weak','Fair','Good','Strong'];
+      function refreshPw() {
+        const lvl = score(pwInp.value);
+        strength.dataset.level = String(lvl);
+        strengthLbl.textContent = pwInp.value ? LABELS[lvl] : 'Too short';
+        const match = pwInp.value && pw2Inp.value && pwInp.value === pw2Inp.value;
+        if (pw2Inp.value && !match) fieldError(pw2Wrap, pw2Err, pw2Inp, "Passwords don't match.");
+        else clearFieldError(pw2Wrap, pw2Err, pw2Inp);
+      }
+      pwInp.addEventListener('input', () => { clearFieldError(pwWrap, pwErr, pwInp); refreshPw(); });
+      pw2Inp.addEventListener('input', refreshPw);
+
+      phoneInp.addEventListener('input', () => { phoneInp.value = phoneInp.value.replace(/\D/g, ''); if (phoneInp.value.length>0) clearFieldError(phoneWrap, phoneErr, phoneInp); });
+      emailInp.addEventListener('input', () => clearFieldError(emailWrap, emailErr, emailInp));
+
+      const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+      function setLoading(on) { btn.disabled = on; btn.classList.toggle('loading', on); }
+
+      // ── Resend countdown for inbox state ──
+      let resendTimer = null;
+      function startResendCountdown(onResend) {
+        const link = document.getElementById('resendLink'); const cd = document.getElementById('resendCd');
+        let secs = 30; link.disabled = true;
+        clearInterval(resendTimer);
+        resendTimer = setInterval(() => {
+          secs--; cd.textContent = '0:' + String(secs).padStart(2,'0');
+          if (secs <= 0) { clearInterval(resendTimer); link.textContent = 'Resend verification email'; link.disabled = false; }
+        }, 1000);
+        link.onclick = () => { if (!link.disabled) { onResend(); link.textContent = 'Resend in '; const span = document.createElement('span'); span.id='resendCd'; link.appendChild(span); startResendCountdown(onResend); } };
+      }
+      function showInbox(email, onResend) {
+        document.getElementById('inboxAddr').textContent = email;
+        form.style.display = 'none'; seg.style.display = 'none';
+        document.getElementById('authHead').style.display = 'none';
+        document.getElementById('authTerms').style.display = 'none';
+        document.getElementById('authDivider').style.display = 'none';
+        document.getElementById('authFooter').style.display = 'none';
+        document.getElementById('inboxState').style.display = 'flex';
+        startResendCountdown(onResend);
       }
 
-      // ── Validation ────────────────────────────────────────────
-      function showError(msg) {
-        errorEl.textContent = '⚠ ' + msg;
-        errorEl.classList.add('visible');
-        wrap.classList.add('error');
-        input.setAttribute('aria-invalid', 'true');
-      }
-      function clearError() {
-        errorEl.classList.remove('visible');
-        wrap.classList.remove('error');
-        input.removeAttribute('aria-invalid');
-      }
-
-      input.addEventListener('input', () => {
-        // strip non-digits
-        input.value = input.value.replace(/\D/g, '');
-        if (input.value.length > 0) clearError();
-      });
-
-      // ── Submit ────────────────────────────────────────────────
+      // ── Submit (method-aware) ──
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        clearError();
 
-        const digits = input.value.replace(/\D/g, '');
-        if (digits.length !== 10) {
-          showError('Enter a valid 10-digit Indian mobile number.');
-          input.focus();
+        if (method === 'phone') {
+          clearFieldError(phoneWrap, phoneErr, phoneInp);
+          const digits = phoneInp.value.replace(/\D/g, '');
+          if (digits.length !== 10)   return fieldError(phoneWrap, phoneErr, phoneInp, 'Enter a valid 10-digit Indian mobile number.'), phoneInp.focus();
+          if (!/^[6-9]/.test(digits)) return fieldError(phoneWrap, phoneErr, phoneInp, 'Indian mobile numbers start with 6, 7, 8, or 9.'), phoneInp.focus();
+          setLoading(true);
+          const phone = '+91' + digits;
+          try {
+            const res = await fetch('/api/auth/request-otp', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ phone }) });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) { sessionStorage.setItem('simmer_pending_phone', phone); sessionStorage.setItem('simmer_otp_intent', 'signup'); window.location.href = '/verify-otp.html'; }
+            else { fieldError(phoneWrap, phoneErr, phoneInp, data.detail || data.message || 'Could not send OTP. Please try again.'); setLoading(false); }
+          } catch { fieldError(phoneWrap, phoneErr, phoneInp, 'Network error — check your connection.'); setLoading(false); }
           return;
         }
-        if (!/^[6-9]/.test(digits)) {
-          showError('Indian mobile numbers start with 6, 7, 8, or 9.');
-          input.focus();
-          return;
-        }
 
-        // Loading state
-        btn.disabled = true;
-        btn.classList.add('loading');
-
-        const phone = '+91' + digits;
-
+        // Email signup
+        clearFieldError(emailWrap, emailErr, emailInp); clearFieldError(pwWrap, pwErr, pwInp); clearFieldError(pw2Wrap, pw2Err, pw2Inp);
+        const email = emailInp.value.trim().toLowerCase(); const pw = pwInp.value; const pw2 = pw2Inp.value;
+        if (!EMAIL_RE.test(email))  return fieldError(emailWrap, emailErr, emailInp, 'Enter a valid email address.'), emailInp.focus();
+        if (pw.length < 8)          return fieldError(pwWrap, pwErr, pwInp, 'Password must be at least 8 characters.'), pwInp.focus();
+        if (score(pw) < 2)          return fieldError(pwWrap, pwErr, pwInp, 'Choose a stronger password (mix letters, numbers, symbols).'), pwInp.focus();
+        if (pw !== pw2)             return fieldError(pw2Wrap, pw2Err, pw2Inp, "Passwords don't match."), pw2Inp.focus();
+        setLoading(true);
+        const doSignup = async () => {
+          const res = await fetch('/api/auth/email-signup', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ email, password: pw }) });
+          return { res, data: await res.json().catch(() => ({})) };
+        };
         try {
-          const res = await fetch('/api/auth/request-otp', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone })
-          });
-
-          const data = await res.json().catch(() => ({}));
-
-          if (res.ok) {
-            // Store for verify page
-            sessionStorage.setItem('simmer_pending_phone', phone);
-            sessionStorage.setItem('simmer_otp_intent', 'signup');
-            // Redirect
-            window.location.href = '/verify-otp.html';
+          const { res, data } = await doSignup();
+          if (res.ok && data.access_token) {           // confirmation disabled — instant login
+            localStorage.setItem('simmer_token', data.access_token);
+            window.location.href = '/onboarding.html';
+          } else if (res.ok && data.needs_verification) {
+            showInbox(email, doSignup);
+          } else if (res.status === 409) {
+            fieldError(emailWrap, emailErr, emailInp, data.detail || 'An account with this email already exists. Try signing in.');
+            setLoading(false);
           } else {
-            showError(data.detail || data.message || 'Could not send OTP. Please try again.');
-            btn.disabled = false;
-            btn.classList.remove('loading');
+            fieldError(pwWrap, pwErr, pwInp, data.detail || 'Could not create the account. Please try again.');
+            setLoading(false);
           }
-        } catch {
-          showError('Network error — check your connection and try again.');
-          btn.disabled = false;
-          btn.classList.remove('loading');
-        }
+        } catch { fieldError(emailWrap, emailErr, emailInp, 'Network error — check your connection.'); setLoading(false); }
       });
     })();
   </script>
