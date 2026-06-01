@@ -6,8 +6,8 @@
   <title>Sign up — Simmer</title>
   <meta name="theme-color" content="#0D0702" />
   <link rel="manifest" href="/manifest.json" />
-  <link rel="icon" type="image/png" href="/logo.png" />
-  <link rel="apple-touch-icon" href="/logo.png" />
+  <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+  <link rel="apple-touch-icon" href="/logo.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Manrope:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -111,11 +111,8 @@
     .auth-brand {
       text-align: center;
     }
-    /* White "logo chip" — legible in both light & dark mode */
-    .auth-logo { display: block; width: 200px; max-width: 76%; height: auto; margin: 0 auto;
-      background: #fff; border-radius: 18px; padding: 16px 20px;
-      box-shadow: 0 4px 18px -4px rgba(50,20,5,0.22); }
-    [data-theme="dark"] .auth-logo { box-shadow: 0 6px 22px -4px rgba(0,0,0,0.55); }
+    .logo-mark { display: block; width: 64px; height: 64px; margin: 0 auto 8px;
+      filter: drop-shadow(0 4px 10px rgba(200,105,14,0.28)); }
     .auth-brand .flame {
       font-size: 2.2rem;
       line-height: 1;
@@ -412,7 +409,8 @@
 
       <!-- Brand -->
       <div class="auth-brand">
-        <img src="/logo.png" alt="Simmer" class="auth-logo" />
+        <img src="/logo.svg" alt="" class="logo-mark" />
+        <h1>Simmer</h1>
       </div>
 
       <!-- Heading -->
