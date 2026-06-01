@@ -8969,13 +8969,26 @@
     }
 
     async function fetchWithRetry(url, options, retries = 2, timeout = 38000) {
+      // Attach the signed-in user's token to API calls so the backend can
+      // personalize per-user (e.g. /recommend, /track). Harmlessly ignored by
+      // endpoints that don't read it. Never overrides an explicit Authorization.
+      let opts = options || {};
+      try {
+        const token = localStorage.getItem("simmer_token");
+        if (token && typeof url === "string" && url.indexOf("/api/") !== -1) {
+          const hasAuth = opts.headers && Object.keys(opts.headers).some(h => h.toLowerCase() === "authorization");
+          if (!hasAuth) {
+            opts = { ...opts, headers: { ...(opts.headers || {}), "Authorization": "Bearer " + token } };
+          }
+        }
+      } catch (_) {}
       for (let i = 0; i <= retries; i++) {
         try {
           const controller = new AbortController();
           const id = setTimeout(() => controller.abort(), timeout);
 
           const response = await fetch(url, {
-            ...options,
+            ...opts,
             signal: controller.signal
           });
 
