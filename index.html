@@ -15,6 +15,11 @@
   <link rel="apple-touch-icon" href="/icon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Warm up the recipe-image hosts so the first photos paint sooner -->
+  <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
+  <link rel="preconnect" href="https://www.themealdb.com" crossorigin>
+  <link rel="dns-prefetch" href="https://images.unsplash.com">
+  <link rel="dns-prefetch" href="https://www.themealdb.com">
   <!-- Non-render-blocking font load: paint immediately, swap fonts in when ready -->
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
@@ -8036,7 +8041,7 @@
   <div class="modalOverlay" id="recipeModal">
     <section class="modal" role="dialog" aria-modal="true" aria-label="Recipe steps">
       <div class="modalHero" id="modalHero">
-        <img class="modalHeroImg" id="modalHeroImg" alt="" loading="lazy" />
+        <img class="modalHeroImg" id="modalHeroImg" alt="" decoding="async" />
         <div class="modalHeroGradient"></div>
       </div>
       <div class="dragHandle" aria-hidden="true"></div>
@@ -8298,7 +8303,7 @@
 
     <!-- Done celebration screen — revealed on last step -->
     <div class="cookModeDoneScreen hidden" id="cookModeDoneScreen">
-      <img class="cookModeDonePlate" id="cookModeDonePlate" alt="" style="display:none">
+      <img class="cookModeDonePlate" id="cookModeDonePlate" alt="" loading="lazy" decoding="async" style="display:none">
       <div class="cookModeDoneEmoji" id="cookModeDoneEmoji">🎉</div>
       <div class="cookModeDoneName" id="cookModeDoneName"></div>
       <div class="cookModeDoneSubtitle" id="cookModeDoneSubtitle">is ready to serve!</div>
@@ -18053,7 +18058,7 @@
         const img   = recipeImg(r);
         return `
           <div class="savedRecipeCard" data-saved-id="${escapeHtml(String(r.id))}">
-            <img class="savedRecipeThumb" src="${escapeHtml(img)}" alt="${escapeHtml(r.name)}" loading="lazy" />
+            <img class="savedRecipeThumb" src="${escapeHtml(img)}" alt="${escapeHtml(r.name)}" loading="lazy" decoding="async" />
             <div class="savedRecipeInfo">
               <div class="savedRecipeName">${escapeHtml(r.name)}</div>
               ${meta ? `<div class="savedRecipeMeta">${meta}</div>` : ""}
@@ -18141,7 +18146,7 @@
           const dietCls = r.diet === "veg" ? "veg" : "nonveg";
           const dietLbl = r.diet === "veg" ? "🌱 Veg" : "🍗 Non-veg";
           const imgEl = r.image_url
-            ? `<img class="browseCardImg" src="${escapeHtml(r.image_url)}" alt="${escapeHtml(r.name||"")}" loading="lazy" onerror="this.style.display='none'">`
+            ? `<img class="browseCardImg" src="${escapeHtml(r.image_url)}" alt="${escapeHtml(r.name||"")}" loading="lazy" decoding="async" onerror="this.style.display='none'">`
             : `<div class="browseCardNoImg">🍴</div>`;
           card.innerHTML = `
             ${imgEl}
@@ -18702,7 +18707,7 @@
       const time = clampInt(item.time_minutes, 0);
       const cals = clampInt(item.calories, 0);
       card.innerHTML = `
-        <img class="quickfireImg" src="${escapeHtml(recipeImg(item))}" alt="${escapeHtml(item.name)}" loading="lazy" />
+        <img class="quickfireImg" src="${escapeHtml(recipeImg(item))}" alt="${escapeHtml(item.name)}" loading="lazy" decoding="async" />
         <div class="quickfireInfo">
           <div class="quickfireName">${escapeHtml(item.name)}</div>
           <div class="quickfireMeta">${[time ? `⏱ ${time} min` : null, cals ? `🔥 ${cals} cal` : null].filter(Boolean).join("  ·  ")}</div>
@@ -19909,7 +19914,7 @@
                </div>`
             : recipes.map(r => `
                 <div class="myRecipeCard" data-id="${escapeHtml(r.id)}">
-                  <img class="myRecipeCardImg" src="${escapeHtml(r.image_url || dishImageUrl(r.name))}" alt="" loading="lazy" onerror="this.style.background='var(--goldBg)';this.style.display='block'" />
+                  <img class="myRecipeCardImg" src="${escapeHtml(r.image_url || dishImageUrl(r.name))}" alt="" loading="lazy" decoding="async" onerror="this.style.background='var(--goldBg)';this.style.display='block'" />
                   <div class="myRecipeCardBody">
                     <div class="myRecipeCardName">${escapeHtml(r.name)} <span class="customRecipeBadge">✏️ Custom</span></div>
                     <div class="myRecipeCardMeta">⏱ ${r.time_minutes} min · ${titleCase(r.difficulty)} · ${r.servings} servings</div>
