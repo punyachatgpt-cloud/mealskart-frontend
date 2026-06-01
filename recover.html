@@ -235,6 +235,20 @@
       transition: background 200ms ease, border-color 200ms ease;
     }
     .theme-toggle:hover { border-color: var(--accent); }
+
+    /* Segmented Phone ⇄ Email toggle + email input */
+    .seg-toggle { position:relative; display:grid; grid-template-columns:1fr 1fr; padding:4px; background:var(--bg0); border:1.5px solid var(--border); border-radius:14px; isolation:isolate; margin-bottom:var(--sp-md); }
+    .seg-indicator { position:absolute; z-index:-1; top:4px; bottom:4px; left:4px; width:calc(50% - 4px); border-radius:10px; background:var(--surface); border:1px solid var(--border); box-shadow:0 2px 8px -2px rgba(50,20,5,0.20); transition:transform 280ms cubic-bezier(0.34,1.56,0.64,1); }
+    .seg-toggle[data-active="email"] .seg-indicator { transform:translateX(100%); }
+    .seg-btn { appearance:none; border:none; background:none; cursor:pointer; padding:10px 0; font-family:inherit; font-size:var(--t-sm); font-weight:var(--fw-bold); color:var(--ink-faint); transition:color 200ms ease; }
+    .seg-btn.is-active { color:var(--ink); }
+    .method-pane[hidden] { display:none; }
+    .input-wrap { display:flex; align-items:center; border:1.5px solid var(--border); border-radius:12px; background:var(--bg0); transition:border-color 160ms ease, box-shadow 160ms ease; overflow:hidden; }
+    .input-wrap:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px var(--accentGlow); }
+    .input-wrap.error { border-color:var(--danger); box-shadow:0 0 0 3px rgba(220,38,38,0.12); }
+    .input-icon { padding:14px 4px 14px 14px; font-size:var(--t-base); color:var(--ink-faint); display:flex; align-items:center; user-select:none; }
+    .input-field { flex:1; border:none; background:transparent; padding:14px 16px 14px 8px; font-size:var(--t-base); font-weight:var(--fw-med); color:var(--ink); font-family:inherit; outline:none; -webkit-appearance:none; min-width:0; }
+    .input-field::placeholder { color:var(--ink-faint); font-weight:var(--fw-reg); }
   </style>
 </head>
 <body>
@@ -254,35 +268,63 @@
 
     <div class="auth-card" role="main">
 
-      <!-- Step 1: Enter phone -->
+      <!-- Step 1: choose recovery method -->
       <div class="step active" id="step1">
         <div class="auth-heading">
           <h2>Trouble signing in?</h2>
-          <p>Enter your registered number. We'll verify it's you with an OTP.</p>
+          <p id="recoverSub">Reset your password by email, or recover via your phone number.</p>
+        </div>
+
+        <div class="seg-toggle" id="segToggle" role="tablist" aria-label="Recovery method" data-active="email">
+          <span class="seg-indicator" aria-hidden="true"></span>
+          <button type="button" class="seg-btn is-active" role="tab" aria-selected="true"  data-method="email">Email</button>
+          <button type="button" class="seg-btn"           role="tab" aria-selected="false" data-method="phone">Phone</button>
         </div>
 
         <form class="auth-form" id="recoverForm" novalidate>
-          <div class="field-group">
-            <label class="field-label" for="phoneInput">Registered mobile number</label>
-            <div class="phone-input-wrap" id="phoneWrap">
-              <span class="phone-prefix">🇮🇳 +91</span>
-              <input
-                class="phone-input" id="phoneInput" type="tel" inputmode="numeric"
-                autocomplete="tel-national" placeholder="98765 43210" maxlength="10"
-                aria-describedby="phoneError" required
-              />
+          <!-- Email reset pane -->
+          <div class="method-pane" data-method="email">
+            <div class="field-group">
+              <label class="field-label" for="emailInput">Email address</label>
+              <div class="input-wrap" id="emailWrap">
+                <span class="input-icon" aria-hidden="true">✉️</span>
+                <input class="input-field" id="emailInput" type="email" inputmode="email"
+                       autocomplete="email" placeholder="you@kitchen.com" aria-describedby="emailError" />
+              </div>
+              <span class="field-error" id="emailError" role="alert" aria-live="polite"></span>
             </div>
-            <span class="field-error" id="phoneError" role="alert" aria-live="polite"></span>
           </div>
+
+          <!-- Phone OTP recovery pane -->
+          <div class="method-pane" data-method="phone" hidden>
+            <div class="field-group">
+              <label class="field-label" for="phoneInput">Registered mobile number</label>
+              <div class="phone-input-wrap" id="phoneWrap">
+                <span class="phone-prefix">🇮🇳 +91</span>
+                <input class="phone-input" id="phoneInput" type="tel" inputmode="numeric"
+                       autocomplete="tel-national" placeholder="98765 43210" maxlength="10" aria-describedby="phoneError" />
+              </div>
+              <span class="field-error" id="phoneError" role="alert" aria-live="polite"></span>
+            </div>
+          </div>
+
           <button type="submit" class="btn-cta" id="sendOtpBtn">
             <div class="spinner" aria-hidden="true"></div>
-            <span class="btn-label">Send recovery OTP</span>
+            <span class="btn-label" id="recoverBtnLabel">Send reset link</span>
           </button>
         </form>
 
         <p class="auth-footer">
           Remember your details? <a href="/login.html">Sign in</a>
         </p>
+      </div>
+
+      <!-- Email reset link sent -->
+      <div class="success-notice" id="resetSent">
+        <div class="icon">📨</div>
+        <h3>Check your inbox.</h3>
+        <p>If an account exists for <strong id="resetAddr">that email</strong>, a password-reset link is on its way. Open it to set a new password.</p>
+        <a class="auth-footer" href="/login.html" style="color:var(--accent)">Back to sign in</a>
       </div>
 
       <!-- Step 2: Enter OTP -->
@@ -347,15 +389,61 @@
       const phoneError  = document.getElementById('phoneError');
       const sendOtpBtn  = document.getElementById('sendOtpBtn');
       const recoverForm = document.getElementById('recoverForm');
+      const emailInput  = document.getElementById('emailInput');
+      const emailWrap   = document.getElementById('emailWrap');
+      const emailError  = document.getElementById('emailError');
+      const seg         = document.getElementById('segToggle');
+      const recoverBtnLabel = document.getElementById('recoverBtnLabel');
+      const recoverSub  = document.getElementById('recoverSub');
+      const EMAIL_RE    = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+      let method = 'email';
+
+      function setMethod(m) {
+        method = m;
+        seg.dataset.active = m;
+        seg.querySelectorAll('.seg-btn').forEach(b => { const on = b.dataset.method === m; b.classList.toggle('is-active', on); b.setAttribute('aria-selected', String(on)); });
+        document.querySelectorAll('#recoverForm .method-pane').forEach(p => { p.hidden = p.dataset.method !== m; });
+        recoverBtnLabel.textContent = m === 'email' ? 'Send reset link' : 'Send recovery OTP';
+        recoverSub.textContent = m === 'email'
+          ? "Enter your email and we'll send a password-reset link."
+          : "Enter your registered number — we'll verify it's you with an OTP.";
+        setTimeout(() => (m === 'email' ? emailInput : phoneInput).focus(), 60);
+      }
+      seg.querySelectorAll('.seg-btn').forEach(b => b.addEventListener('click', () => setMethod(b.dataset.method)));
+      setMethod('email');
 
       phoneInput.addEventListener('input', () => {
         phoneInput.value = phoneInput.value.replace(/\D/g, '');
         phoneError.classList.remove('visible');
         phoneWrap.classList.remove('error');
       });
+      emailInput.addEventListener('input', () => { emailError.classList.remove('visible'); emailWrap.classList.remove('error'); });
 
       recoverForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        // ── Email password reset ──
+        if (method === 'email') {
+          const email = emailInput.value.trim().toLowerCase();
+          if (!EMAIL_RE.test(email)) {
+            emailError.textContent = '⚠ Enter a valid email address.';
+            emailError.classList.add('visible'); emailWrap.classList.add('error'); return;
+          }
+          sendOtpBtn.disabled = true; sendOtpBtn.classList.add('loading');
+          try {
+            await fetch('/api/auth/request-password-reset', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email })
+            });
+          } catch { /* fall through — we always show the generic confirmation */ }
+          // Anti-enumeration: always show the same confirmation.
+          document.getElementById('resetAddr').textContent = email;
+          document.getElementById('step1').classList.remove('active');
+          document.getElementById('resetSent').style.display = 'flex';
+          return;
+        }
+
+        // ── Phone OTP recovery ──
         const digits = phoneInput.value.replace(/\D/g, '');
         if (digits.length !== 10 || !/^[6-9]/.test(digits)) {
           phoneError.textContent = '⚠ Enter a valid 10-digit Indian mobile number.';
