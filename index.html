@@ -3144,6 +3144,51 @@
     }
     .plannerNavBtn:hover { background: var(--goldBg); }
     .plannerBody { flex: 1; overflow-y: auto; padding: 12px 14px 0; }
+
+    /* ── Week-progress hero ──────────────────────────────────────────── */
+    .plannerWeekHero {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      margin: 0 0 14px; padding: 16px 18px;
+      border-radius: var(--radiusSm);
+      background: linear-gradient(135deg, var(--goldBg), #FCE9CE);
+      border: 1px solid var(--goldBorder);
+    }
+    [data-theme="dark"] .plannerWeekHero {
+      background: linear-gradient(135deg, rgba(200,105,14,0.16), rgba(158,78,8,0.10));
+      border-color: rgba(200,105,14,0.30);
+    }
+    .plannerHeroLeft { flex-shrink: 0; }
+    .plannerHeroBig {
+      font-family: 'Fraunces', serif; font-size: var(--t-display); font-weight: 900;
+      color: var(--accent2); line-height: 1; letter-spacing: -0.02em;
+    }
+    .plannerHeroSlash { font-size: 0.5em; color: var(--muted2); font-weight: 700; margin-left: 2px; }
+    .plannerHeroLbl {
+      font-size: var(--t-xs); font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px;
+    }
+    .plannerHeroRight { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+    .plannerHeroBar {
+      height: 8px; border-radius: 999px; overflow: hidden;
+      background: rgba(124,45,18,0.12);
+    }
+    .plannerHeroBarFill {
+      height: 100%; border-radius: 999px; background: var(--ember-gradient);
+      box-shadow: 0 0 12px var(--accentGlow);
+      transition: width var(--dur-slow) var(--ease-out);
+    }
+    .plannerAutoFillBtn {
+      align-self: flex-end;
+      padding: 9px 16px; border-radius: 999px; border: none; cursor: pointer;
+      font-family: inherit; font-size: var(--t-sm); font-weight: 800; color: #fff;
+      background: var(--ember-gradient);
+      box-shadow: 0 4px 14px var(--accentGlow);
+      transition: transform var(--dur-fast) var(--ease-spring), box-shadow var(--dur-fast) var(--ease-out);
+    }
+    .plannerAutoFillBtn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px var(--accentGlow); }
+    .plannerAutoFillBtn:active:not(:disabled) { transform: translateY(0) scale(0.97); }
+    .plannerAutoFillBtn:disabled { opacity: 0.55; cursor: default; background: var(--muted2); box-shadow: none; }
+
     .plannerDayRow {
       margin-bottom: 12px; border-radius: 16px;
       border: 1px solid var(--border); overflow: hidden; background: var(--bg1);
@@ -20300,8 +20345,30 @@
         html += `</div>`;
       });
 
-      body.innerHTML = html;
+      // ── Week-progress hero (glanceable retention + one-tap auto-fill) ──
+      const totalMeals = dates.length * MEALS.length;
+      const pct = totalMeals ? Math.round((totalAssigned / totalMeals) * 100) : 0;
+      const heroCta = totalAssigned === 0 ? "✨ Auto-fill my week"
+                    : totalAssigned >= totalMeals ? "✓ Week complete"
+                    : "✨ Fill the gaps";
+      const heroHtml = `<div class="plannerWeekHero">
+        <div class="plannerHeroLeft">
+          <div class="plannerHeroBig">${totalAssigned}<span class="plannerHeroSlash">/${totalMeals}</span></div>
+          <div class="plannerHeroLbl">meals planned</div>
+        </div>
+        <div class="plannerHeroRight">
+          <div class="plannerHeroBar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100" aria-label="Week planned ${pct}%">
+            <div class="plannerHeroBarFill" style="width:${pct}%"></div>
+          </div>
+          <button class="plannerAutoFillBtn" id="plannerAutoFillBtn" type="button" ${totalAssigned >= totalMeals ? "disabled" : ""}>${heroCta}</button>
+        </div>
+      </div>`;
+
+      body.innerHTML = heroHtml + html;
       if (shopBtn) shopBtn.disabled = totalAssigned === 0;
+
+      // Wire auto-fill
+      document.getElementById("plannerAutoFillBtn")?.addEventListener("click", plannerAutoFill);
 
       // Wire up slot clicks (open picker)
       body.querySelectorAll(".plannerSlot").forEach(slot => {
@@ -20408,6 +20475,68 @@
       if (!d[dateKey]) d[dateKey] = {};
       d[dateKey][meal] = _wpSlimRecipe(recipe);
       _wpSave(d);
+    }
+
+    // ── Candidate pool for the planner (saved + custom + cooked, de-duped) ──
+    function _wpCandidates() {
+      const seen = new Set();
+      const out  = [];
+      const add  = (r) => {
+        if (!r || !r.name || r.id == null) return;
+        const k = String(r.id);
+        if (seen.has(k)) return;
+        seen.add(k);
+        out.push(r);
+      };
+      try { getSavedRecipes().forEach(add); }  catch (_) {}
+      try { getCustomRecipes().forEach(add); } catch (_) {}
+      try { getCookLog().forEach(add); }        catch (_) {}
+      return out;
+    }
+
+    // ── One-tap smart auto-fill: fills only EMPTY slots, varied, no adjacent repeats ──
+    function plannerAutoFill() {
+      const pool = _wpCandidates();
+      if (!pool.length) {
+        showToast("Save or cook a few recipes first — then I'll fill your week. 👩‍🍳", "info");
+        return;
+      }
+      const dates = _wpWeekDates(_wpWeekOffset);
+      const data  = _wpLoad();
+
+      // Shuffle a working copy for variety each time
+      const bag = pool.slice();
+      for (let i = bag.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [bag[i], bag[j]] = [bag[j], bag[i]];
+      }
+
+      let ptr = 0, filled = 0, lastName = null;
+      dates.forEach(date => {
+        const dk = _wpDateKey(date);
+        if (!data[dk]) data[dk] = {};
+        MEALS.forEach(meal => {
+          if (data[dk][meal]) return;                 // never overwrite an existing pick
+          let pick = bag[ptr % bag.length];
+          // Avoid the same dish back-to-back when we have options
+          if (bag.length > 1 && pick && pick.name === lastName) {
+            ptr++;
+            pick = bag[ptr % bag.length];
+          }
+          ptr++;
+          if (pick) {
+            data[dk][meal] = _wpSlimRecipe(pick);
+            lastName = pick.name;
+            filled++;
+          }
+        });
+      });
+
+      _wpSave(data);
+      renderPlannerWeek();
+      showToast(filled > 0
+        ? `✨ Filled ${filled} meal${filled > 1 ? "s" : ""} from your recipes!`
+        : "Your week is already full — nice! 🎉", "success");
     }
 
     // ── Shopping list integration ───────────────────────────────────────────
