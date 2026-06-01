@@ -6,6 +6,8 @@
   <title>Account Recovery — Simmer</title>
   <meta name="theme-color" content="#0D0702" />
   <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <link rel="apple-touch-icon" href="/logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Manrope:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -236,6 +238,9 @@
     }
     .theme-toggle:hover { border-color: var(--accent); }
 
+    .auth-logo { display:block; width:200px; max-width:76%; height:auto; margin:0 auto; background:#fff; border-radius:18px; padding:16px 20px; box-shadow:0 4px 18px -4px rgba(50,20,5,0.22); }
+    [data-theme="dark"] .auth-logo { box-shadow:0 6px 22px -4px rgba(0,0,0,0.55); }
+
     /* Segmented Phone ⇄ Email toggle + email input */
     .seg-toggle { position:relative; display:grid; grid-template-columns:1fr 1fr; padding:4px; background:var(--bg0); border:1.5px solid var(--border); border-radius:14px; isolation:isolate; margin-bottom:var(--sp-md); }
     .seg-indicator { position:absolute; z-index:-1; top:4px; bottom:4px; left:4px; width:calc(50% - 4px); border-radius:10px; background:var(--surface); border:1px solid var(--border); box-shadow:0 2px 8px -2px rgba(50,20,5,0.20); transition:transform 280ms cubic-bezier(0.34,1.56,0.64,1); }
@@ -267,6 +272,8 @@
     </nav>
 
     <div class="auth-card" role="main">
+
+      <div class="auth-brand" style="text-align:center"><img src="/logo.png" alt="Simmer" class="auth-logo" /></div>
 
       <!-- Step 1: choose recovery method -->
       <div class="step active" id="step1">
