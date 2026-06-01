@@ -3202,10 +3202,21 @@
     .plannerDayName.today { color: var(--accent); }
     .plannerDayCal { font-size: 0.72rem; color: var(--muted2); font-weight: 600; }
     .plannerSlot {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 14px; border-top: 1px solid var(--border);
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 11px 14px; border-top: 1px solid var(--border);
       min-height: 52px; cursor: pointer; transition: background 0.12s;
     }
+    .plannerSlot .plannerSlotLabel { padding-top: 3px; }
+    .plannerSlotDishes { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+    .plannerDish { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .plannerDishInfo { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .plannerAddDish {
+      align-self: flex-start; background: none; border: 1px dashed var(--goldBorder);
+      color: var(--accent); border-radius: 8px; padding: 3px 10px;
+      font-family: inherit; font-size: 0.74rem; font-weight: 700; cursor: pointer;
+    }
+    .plannerAddDish:hover { background: var(--goldBg); }
+    .slotPickerItemAdded { background: rgba(22,163,74,0.12) !important; }
     .plannerSlot:first-child { border-top: none; }
     .plannerSlot:hover { background: rgba(200,105,14,0.04); }
     .plannerSlotLabel {
@@ -20327,6 +20338,13 @@
       return `${fmt(s)} – ${fmt(e)}`;
     }
 
+    // A meal slot holds an ARRAY of dishes. Normalizes legacy single-object data.
+    function _wpMealDishes(day, meal) {
+      const v = day ? day[meal] : null;
+      if (!v) return [];
+      return Array.isArray(v) ? v : [v];
+    }
+
     function _wpSlimRecipe(r) {
       return {
         id: r.id || r._id || String(Date.now()),
@@ -20358,8 +20376,8 @@
         const lbl   = _wpDayLabel(date);
         const today = _wpIsToday(date);
         let dayCals = 0;
-        MEALS.forEach(m => { dayCals += Number(day[m]?.calories || 0); });
-        totalAssigned += MEALS.filter(m => day[m]).length;
+        MEALS.forEach(m => { _wpMealDishes(day, m).forEach(r => { dayCals += Number(r.calories || 0); }); });
+        totalAssigned += MEALS.filter(m => _wpMealDishes(day, m).length > 0).length;
 
         html += `<div class="plannerDayRow">
           <div class="plannerDayHeader">
@@ -20368,21 +20386,29 @@
           </div>`;
 
         MEALS.forEach(meal => {
-          const recipe = day[meal];
+          const dishes = _wpMealDishes(day, meal);
+          const aria = dishes.length ? dishes.map(d => escapeHtml(d.name)).join(", ") : "Add recipe";
           html += `<div class="plannerSlot" data-date="${escapeHtml(dk)}" data-meal="${meal}" role="button" tabindex="0"
-                       aria-label="${MEAL_LABELS[meal]}: ${recipe ? escapeHtml(recipe.name) : "Add recipe"}">
+                       aria-label="${MEAL_LABELS[meal]}: ${aria}">
             <span class="plannerSlotLabel">${MEAL_LABELS[meal]}</span>`;
-          if (recipe) {
-            const img = recipe.image_url ? `background-image:url('${escapeHtml(recipe.image_url)}')` : "";
-            const time = recipe.time_minutes ? `⏱${recipe.time_minutes}m` : "";
-            const cal  = recipe.calories    ? `🔥${recipe.calories}` : "";
-            html += `<div class="plannerSlotFilled">
-              <div class="plannerSlotThumb" style="${img}"></div>
-              <span class="plannerSlotName">${escapeHtml(recipe.name)}</span>
-              <span class="plannerSlotMeta">${[time,cal].filter(Boolean).join(" ")}</span>
-            </div>
-            <button class="plannerSlotRemove" data-date="${escapeHtml(dk)}" data-meal="${meal}"
-                    type="button" aria-label="Remove ${escapeHtml(recipe.name)}">✕</button>`;
+          if (dishes.length) {
+            html += `<div class="plannerSlotDishes">`;
+            dishes.forEach((recipe, idx) => {
+              const img  = recipe.image_url ? `background-image:url('${escapeHtml(recipe.image_url)}')` : "";
+              const time = recipe.time_minutes ? `⏱${recipe.time_minutes}m` : "";
+              const cal  = recipe.calories    ? `🔥${recipe.calories}` : "";
+              html += `<div class="plannerDish">
+                <div class="plannerSlotThumb" style="${img}"></div>
+                <div class="plannerDishInfo">
+                  <span class="plannerSlotName">${escapeHtml(recipe.name)}</span>
+                  <span class="plannerSlotMeta">${[time,cal].filter(Boolean).join(" ")}</span>
+                </div>
+                <button class="plannerSlotRemove" data-date="${escapeHtml(dk)}" data-meal="${meal}" data-idx="${idx}"
+                        type="button" aria-label="Remove ${escapeHtml(recipe.name)}">✕</button>
+              </div>`;
+            });
+            html += `<button class="plannerAddDish" data-date="${escapeHtml(dk)}" data-meal="${meal}" type="button">＋ Add another dish</button>`;
+            html += `</div>`;
           } else {
             html += `<span class="plannerSlotEmpty">Add recipe</span>`;
           }
@@ -20429,14 +20455,20 @@
         });
       });
 
-      // Wire up remove buttons
+      // Wire up remove buttons (remove a single dish by index)
       body.querySelectorAll(".plannerSlotRemove").forEach(btn => {
         btn.addEventListener("click", e => {
           e.stopPropagation();
           const dk   = btn.dataset.date;
           const meal = btn.dataset.meal;
+          const idx  = parseInt(btn.dataset.idx, 10) || 0;
           const d    = _wpLoad();
-          if (d[dk]) { delete d[dk][meal]; if (!Object.keys(d[dk]).length) delete d[dk]; }
+          if (d[dk]) {
+            const arr = _wpMealDishes(d[dk], meal);
+            arr.splice(idx, 1);
+            if (arr.length) d[dk][meal] = arr; else delete d[dk][meal];
+            if (!Object.keys(d[dk]).length) delete d[dk];
+          }
           _wpSave(d);
           renderPlannerWeek();
         });
@@ -20456,7 +20488,7 @@
       const [y,mo,d] = dateKey.split("-").map(Number);
       const dateObj  = new Date(y, mo-1, d);
       const dayName  = _wpDayLabel(dateObj);
-      if (title) title.textContent = `${lbl} · ${dayName.full} ${d} ${dateObj.toLocaleString("default",{month:"short"})}`;
+      if (title) title.textContent = `${lbl} · ${dayName.full} ${d} ${dateObj.toLocaleString("default",{month:"short"})} — tap to add, Close when done`;
 
       // Collect candidate recipes: saved + custom + recent cooked
       const saved  = getSavedRecipes();
@@ -20493,13 +20525,16 @@
           </div>`;
         }).join("");
 
-        // Wire clicks
+        // Wire clicks — add the dish and KEEP the picker open so several dishes
+        // can be added to the same meal; the user taps Close when done.
         list.querySelectorAll(".slotPickerItem").forEach((item, idx) => {
           const recipe = candidates[idx];
           const handler = () => {
             assignSlotRecipe(dateKey, meal, recipe);
-            closeSlotPicker();
-            renderPlannerWeek();
+            renderPlannerWeek();                 // refresh the planner behind
+            item.classList.add("slotPickerItemAdded");
+            setTimeout(() => item.classList.remove("slotPickerItemAdded"), 700);
+            showToast(`Added ${recipe.name}`, "success", 1100);
           };
           item.addEventListener("click", handler);
           item.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handler(); } });
@@ -20519,7 +20554,12 @@
     function assignSlotRecipe(dateKey, meal, recipe) {
       const d = _wpLoad();
       if (!d[dateKey]) d[dateKey] = {};
-      d[dateKey][meal] = _wpSlimRecipe(recipe);
+      const arr = _wpMealDishes(d[dateKey], meal);
+      // Append; avoid exact duplicates of the same dish in one meal.
+      if (!arr.some(x => String(x.id) === String(recipe.id))) {
+        arr.push(_wpSlimRecipe(recipe));
+      }
+      d[dateKey][meal] = arr;
       _wpSave(d);
     }
 
@@ -20562,7 +20602,7 @@
         const dk = _wpDateKey(date);
         if (!data[dk]) data[dk] = {};
         MEALS.forEach(meal => {
-          if (data[dk][meal]) return;                 // never overwrite an existing pick
+          if (_wpMealDishes(data[dk], meal).length) return;   // only fill empty meals; never overwrite
           let pick = bag[ptr % bag.length];
           // Avoid the same dish back-to-back when we have options
           if (bag.length > 1 && pick && pick.name === lastName) {
@@ -20571,7 +20611,7 @@
           }
           ptr++;
           if (pick) {
-            data[dk][meal] = _wpSlimRecipe(pick);
+            data[dk][meal] = [_wpSlimRecipe(pick)];           // array model
             lastName = pick.name;
             filled++;
           }
@@ -20593,7 +20633,7 @@
       dates.forEach(date => {
         const day = data[_wpDateKey(date)] || {};
         MEALS.forEach(meal => {
-          if (day[meal]) added += addRecipeToShoppingList(day[meal]);
+          _wpMealDishes(day, meal).forEach(dish => { added += addRecipeToShoppingList(dish); });
         });
       });
       const msg = added > 0 ? `✅ ${added} ingredient${added !== 1 ? "s" : ""} added to shopping list` : "All ingredients already in your shopping list!";
@@ -20618,33 +20658,44 @@
     }
 
     // ── Wire up ───────────────────────────────────────────────────────────────
-    document.getElementById("weekPlannerBtn")?.addEventListener("click",      openPlannerSheet);
-    document.getElementById("moreWeekPlannerBtn")?.addEventListener("click",  () => { closeMoreSheet(); openPlannerSheet(); });
-    document.getElementById("plannerCloseBtn")?.addEventListener("click",     closePlannerSheet);
-    document.getElementById("plannerShopBtn")?.addEventListener("click",      plannerAddAllToShoppingList);
-    document.getElementById("slotPickerClose")?.addEventListener("click",     closeSlotPicker);
+    // NOTE: this script runs *before* the planner/slot-picker markup later in the
+    // body, so the elements don't exist yet at parse time. Defer wiring until the
+    // DOM is fully parsed, otherwise getElementById returns null and no listeners
+    // attach (this was the "slot picker won't close" bug).
+    function _wirePlannerControls() {
+      document.getElementById("weekPlannerBtn")?.addEventListener("click",      openPlannerSheet);
+      document.getElementById("moreWeekPlannerBtn")?.addEventListener("click",  () => { closeMoreSheet(); openPlannerSheet(); });
+      document.getElementById("plannerCloseBtn")?.addEventListener("click",     closePlannerSheet);
+      document.getElementById("plannerShopBtn")?.addEventListener("click",      plannerAddAllToShoppingList);
+      document.getElementById("slotPickerClose")?.addEventListener("click",     closeSlotPicker);
 
-    document.getElementById("plannerPrevWeek")?.addEventListener("click", () => {
-      _wpWeekOffset--; renderPlannerWeek();
-    });
-    document.getElementById("plannerNextWeek")?.addEventListener("click", () => {
-      _wpWeekOffset++; renderPlannerWeek();
-    });
+      document.getElementById("plannerPrevWeek")?.addEventListener("click", () => {
+        _wpWeekOffset--; renderPlannerWeek();
+      });
+      document.getElementById("plannerNextWeek")?.addEventListener("click", () => {
+        _wpWeekOffset++; renderPlannerWeek();
+      });
 
-    // Close planner on backdrop click
-    document.getElementById("plannerOverlay")?.addEventListener("click", e => {
-      if (e.target === document.getElementById("plannerOverlay")) closePlannerSheet();
-    });
-    document.getElementById("slotPickerOverlay")?.addEventListener("click", e => {
-      if (e.target === document.getElementById("slotPickerOverlay")) closeSlotPicker();
-    });
+      // Close planner on backdrop click
+      document.getElementById("plannerOverlay")?.addEventListener("click", e => {
+        if (e.target === document.getElementById("plannerOverlay")) closePlannerSheet();
+      });
+      document.getElementById("slotPickerOverlay")?.addEventListener("click", e => {
+        if (e.target === document.getElementById("slotPickerOverlay")) closeSlotPicker();
+      });
 
-    // Close on Escape
-    document.addEventListener("keydown", e => {
-      if (e.key !== "Escape") return;
-      if (!document.getElementById("slotPickerOverlay")?.classList.contains("hidden")) { closeSlotPicker(); return; }
-      if (!document.getElementById("plannerOverlay")?.classList.contains("hidden")) { closePlannerSheet(); }
-    });
+      // Close on Escape
+      document.addEventListener("keydown", e => {
+        if (e.key !== "Escape") return;
+        if (!document.getElementById("slotPickerOverlay")?.classList.contains("hidden")) { closeSlotPicker(); return; }
+        if (!document.getElementById("plannerOverlay")?.classList.contains("hidden")) { closePlannerSheet(); }
+      });
+    }
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", _wirePlannerControls);
+    } else {
+      _wirePlannerControls();
+    }
     // ── end Week Planner ─────────────────────────────────────────────────────
 
     // ─────────────────────────────────────────────────────────────────────────
