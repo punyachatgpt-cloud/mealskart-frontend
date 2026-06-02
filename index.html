@@ -5737,12 +5737,16 @@
     .cookModeMain {
       display: flex; flex-direction: column;
       align-items: center; justify-content: center; gap: 22px;
-      width: 100%; max-width: 540px; margin: 0 auto;
+      width: 100%;                      /* full-bleed scroller: scrollbar sits at the
+                                           viewport edge, never floating mid-screen */
       flex: 1 1 auto; min-height: 0;
-      overflow-y: auto;
+      overflow-y: auto; overflow-x: hidden;
       padding: 72px 20px 12px;          /* clear the absolute top bar */
       position: relative; z-index: 2;
     }
+    /* Inner content stays a centered 540px column even though the scroller is full width. */
+    .cookModeMain > * { max-width: 540px; }
+    .cookModeStepCard { max-width: 540px; }
     /* Fixed bottom controls (dots + nav) — always visible above the genie. */
     .cookModeControls {
       flex: 0 0 auto; z-index: 6;
