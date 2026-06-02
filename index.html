@@ -5029,69 +5029,133 @@
       box-shadow: 0 -20px 60px rgba(80,30,5,0.2);
       animation: reportSlideUp 0.38s cubic-bezier(0.34,1.08,0.64,1) both;
     }
+    .shoppingGrab {
+      width: 36px; height: 4px; border-radius: 999px;
+      background: var(--border); margin: 0 auto 16px;
+    }
     .shoppingHeader {
       display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
     .shoppingHeader h2 {
-      font-family: 'Fraunces', serif; font-size: 1.35rem; font-weight: 900;
-      color: var(--ink); margin: 0 0 2px;
+      font-family: 'Fraunces', serif; font-size: var(--t-lg); font-weight: var(--fw-black);
+      letter-spacing: -0.02em; color: var(--ink); margin: 0;
     }
-    .shoppingMeta { font-size: 0.78rem; color: var(--muted2); font-weight: 600; margin: 0; }
+    .shoppingMeta {
+      font-size: var(--t-xs); color: var(--muted); font-weight: var(--fw-med);
+      letter-spacing: 0.02em; margin: 3px 0 0;
+    }
+    .shoppingProgressTrack {
+      height: 4px; border-radius: 999px; background: var(--hairline);
+      margin: 12px 0 18px; overflow: hidden;
+    }
+    .shoppingProgressFill {
+      height: 100%; border-radius: 999px; background: var(--ember-gradient);
+      transition: width var(--transition-spring);
+    }
     .shoppingActions {
-      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px;
+      display: flex; gap: 8px; align-items: center; margin-bottom: 22px;
     }
     .shoppingActionBtn {
-      padding: 7px 14px; border-radius: 999px; border: 1px solid var(--border);
-      background: var(--bg1); font-size: 0.78rem; font-weight: 700;
-      color: var(--ink); cursor: pointer; transition: all 0.15s;
+      padding: 11px 14px; border-radius: 999px; border: 1px solid var(--border);
+      background: transparent; font-size: var(--t-sm); font-weight: var(--fw-med);
+      color: var(--ink-lo); cursor: pointer; transition: all 0.15s;
+      min-height: 44px;
     }
     .shoppingActionBtn:hover { border-color: var(--accent); color: var(--accent); }
-    .shoppingActionBtn.danger { color: #dc2626; border-color: rgba(220,38,38,0.3); }
-    .shoppingActionBtn.danger:hover { background: rgba(220,38,38,0.07); }
-    .shoppingAisle { margin-bottom: 22px; }
+    .shoppingActionBtn.primary {
+      flex: 1; background: var(--accent); border-color: transparent; color: #fff;
+      font-weight: var(--fw-bold);
+    }
+    .shoppingActionBtn.primary:hover { filter: brightness(1.06); color: #fff; }
+    .shoppingActionBtn.iconOnly {
+      width: 44px; min-width: 44px; padding: 0; display: flex; align-items: center;
+      justify-content: center; color: var(--ink-faint); font-size: 1rem; border-color: var(--border);
+    }
+    .shoppingActionBtn.iconOnly:hover { color: var(--danger); border-color: var(--danger); }
+    .shoppingActionBtn.confirming { color: var(--danger); border-color: var(--danger); }
+    .shoppingAisle { margin-bottom: 24px; }
+    .shoppingAisle.done .shoppingAisleHead { opacity: 0.5; }
     .shoppingAisleHead {
+      position: sticky; top: -1px; z-index: 2; background: var(--bg0);
       display: flex; align-items: center; gap: 8px;
-      font-size: 0.8rem; font-weight: 800; color: var(--muted);
-      text-transform: uppercase; letter-spacing: 0.06em;
-      margin-bottom: 8px; padding-bottom: 6px;
-      border-bottom: 1px solid var(--border);
+      font-size: var(--t-xs); font-weight: var(--fw-bold); color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      padding: 8px 0 6px; margin-bottom: 8px;
+      border-bottom: 1px solid var(--hairline);
     }
     .shoppingAisleCount {
-      background: var(--border); border-radius: 999px;
-      padding: 1px 7px; font-size: 0.7rem; color: var(--muted2);
+      background: transparent; border: 1px solid var(--border); border-radius: 999px;
+      padding: 1px 8px; font-size: 0.66rem; font-weight: 700; color: var(--ink-faint);
+      margin-left: 4px;
     }
+    .shoppingAisleCount.allDone { color: var(--positive); border-color: var(--positive); }
     .shoppingItem {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 12px; border-radius: 12px;
-      background: var(--bg1); border: 1px solid var(--border);
-      margin-bottom: 6px; transition: opacity 0.2s;
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 12px; border-radius: var(--radiusSm);
+      background: var(--bg1); border: 1px solid var(--hairline);
+      margin-bottom: 6px;
+      transition: transform var(--transition-smooth), border-color var(--transition-smooth), background 0.2s;
     }
-    .shoppingItem.checked { opacity: 0.45; }
-    .shoppingItem.checked .shoppingItemName { text-decoration: line-through; color: var(--muted2); }
+    .shoppingItem.sibling { margin-bottom: 3px; box-shadow: inset 2px 0 0 var(--hairline); }
+    @media (hover: hover) {
+      .shoppingItem:hover { border-color: var(--border); transform: translateY(-1px); box-shadow: var(--shadow); }
+    }
+    .shoppingItem.is-merged { box-shadow: inset 3px 0 0 var(--goldBorder); }
+    .shoppingItem.checked {
+      background: var(--surface-2); border-color: transparent; box-shadow: none;
+    }
+    .shoppingItem.checked .shoppingItemName {
+      text-decoration: line-through; text-decoration-color: var(--border-strong); color: var(--ink-faint);
+    }
+    .shoppingItem.checked .shoppingItemQty,
+    .shoppingItem.checked .shoppingItemSource,
+    .shoppingItem.checked .shoppingMergeBadge { opacity: 0.55; }
     .shoppingCheckbox {
-      width: 20px; height: 20px; border-radius: 6px;
-      border: 2px solid var(--border); background: var(--bg0);
+      width: 24px; height: 24px; border-radius: 8px;
+      border: 2px solid var(--border-strong); background: var(--surface-2);
       cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-      transition: all 0.15s; color: #fff; font-size: 0.7rem;
+      transition: all 0.15s; color: #fff; font-size: 0.82rem; position: relative;
     }
+    .shoppingCheckbox::before { content: ""; position: absolute; inset: -10px; }
+    .shoppingCheckbox:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accentGlow); }
     .shoppingItem.checked .shoppingCheckbox {
-      background: var(--accent); border-color: var(--accent);
+      background: var(--ember-gradient); border-color: transparent;
+      animation: shopCheckPop var(--transition-spring);
     }
+    @keyframes shopCheckPop { 0% { transform: scale(0.7); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
     .shoppingItemBody { flex: 1; min-width: 0; }
-    .shoppingItemName { font-size: 0.88rem; font-weight: 700; color: var(--ink); }
-    .shoppingItemSource { font-size: 0.72rem; color: var(--muted2); margin-top: 1px; }
+    .shoppingItemName { font-size: var(--t-base); font-weight: var(--fw-med); color: var(--ink); }
+    .shoppingItemQty { margin-left: 8px; font-size: var(--t-sm); font-weight: 500; color: var(--ink-lo); }
+    .shoppingItem.is-merged .shoppingItemQty { font-weight: var(--fw-med); }
+    .shoppingMergeBadge {
+      display: inline-block; margin-right: 6px;
+      background: var(--goldBg); color: var(--goldInk); border: 1px solid var(--goldBorder);
+      border-radius: 999px; padding: 1px 7px; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.04em;
+    }
+    .shoppingItemSource { font-size: var(--t-xs); font-weight: 500; color: var(--ink-faint); margin-top: 3px; }
+    .shoppingItemNote { font-size: 0.66rem; color: var(--ink-faint); font-style: italic; margin-top: 2px; }
     .shoppingItemRemove {
       background: none; border: none; cursor: pointer;
-      font-size: 1rem; color: var(--muted2); padding: 2px 4px; flex-shrink: 0;
-      transition: color 0.15s; line-height: 1;
+      width: 32px; height: 32px; border-radius: 999px; color: var(--ink-faint);
+      padding: 0; flex-shrink: 0; transition: all 0.15s; line-height: 1;
+      display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
     }
-    .shoppingItemRemove:hover { color: #dc2626; }
+    .shoppingItemRemove:hover { background: rgba(220,38,38,0.08); color: var(--danger); }
+    .shoppingItemRemove.confirming { width: auto; padding: 0 10px; color: var(--danger); font-size: 0.72rem; font-weight: 700; }
     .shoppingEmpty {
-      text-align: center; padding: 40px 20px;
-      color: var(--muted2); font-size: 0.9rem; line-height: 1.6;
+      text-align: center; padding: 56px 24px 48px;
+      color: var(--muted); font-size: 0.9rem; line-height: 1.6;
     }
-    .shoppingEmpty .shoppingEmptyIcon { font-size: 2.5rem; margin-bottom: 12px; }
+    .shoppingEmpty .shoppingEmptyIcon { font-size: 2.75rem; margin-bottom: 14px; opacity: 0.85; }
+    .shoppingEmpty h3 {
+      font-family: 'Fraunces', serif; font-size: var(--t-lg); font-weight: var(--fw-black);
+      color: var(--ink); margin: 0 0 8px;
+    }
+    .shoppingEmptyHint { font-size: var(--t-sm); color: var(--ink-lo); max-width: 34ch; margin: 0 auto; }
+    @media (prefers-reduced-motion: reduce) {
+      .shoppingItem, .shoppingProgressFill, .shoppingItem.checked .shoppingCheckbox { transition: none; animation: none; }
+    }
     .shoppingBadge {
       background: transparent; color: var(--ink-lo);
       border: 1px solid var(--border); border-radius: 999px;
@@ -16635,7 +16699,11 @@
       // onlyMissingSet: optional Set of normalised ingredient names to restrict to
       if (!recipe) return 0;
       const existing = getShoppingList();
-      const existingNames = new Set(existing.map(i => i.name.toLowerCase()));
+      const rid = String(recipe.id || "");
+      // Key by recipe+ingredient so the SAME recipe can't add an item twice, but
+      // DIFFERENT recipes can each contribute their shared ingredient — the render
+      // pass then merges duplicates across recipes and sums quantities.
+      const existingKeys = new Set(existing.map(i => `${i.recipeId || ""}|${i.name.toLowerCase()}`));
 
       const rawIngredients = Array.isArray(recipe.ingredients_with_quantities) && recipe.ingredients_with_quantities.length
         ? recipe.ingredients_with_quantities
@@ -16646,7 +16714,8 @@
       for (const ing of rawIngredients) {
         const name = titleCase(ing?.name || String(ing || "")).trim();
         if (!name) continue;
-        if (existingNames.has(name.toLowerCase())) continue; // skip dupes
+        const key = `${rid}|${name.toLowerCase()}`;
+        if (existingKeys.has(key)) continue; // skip dupes within the same recipe
         // If caller wants only missing, skip pantry items
         if (onlyMissingSet && !onlyMissingSet.has(normalizeIngredientName(name))) continue;
         const qty = ing?.quantity ? `${ing.quantity}${ing.unit ? " " + ing.unit : ""}` : "";
@@ -16660,7 +16729,7 @@
           checked: false,
           addedAt: Date.now()
         });
-        existingNames.add(name.toLowerCase());
+        existingKeys.add(key);
         added++;
       }
       saveShoppingList([...existing, ...newItems]);
@@ -16691,8 +16760,89 @@
       saveShoppingList(list);
     }
 
+    // Set a target checked-state on many items at once (used by merged rows).
+    function setShoppingItemsChecked(ids, checked) {
+      const idset = new Set(ids);
+      const list = getShoppingList();
+      list.forEach(i => { if (idset.has(i.id)) i.checked = checked; });
+      saveShoppingList(list);
+    }
+
     function removeShoppingItem(id) {
       saveShoppingList(getShoppingList().filter(i => i.id !== id));
+    }
+
+    function removeShoppingItems(ids) {
+      const idset = new Set(ids);
+      saveShoppingList(getShoppingList().filter(i => !idset.has(i.id)));
+    }
+
+    // ── Smart merge: parse "6 medium" / "400 g" / "1/2 cup" → {n, unit} ─────────
+    function _parseQty(qty) {
+      const s = String(qty || "").trim();
+      if (!s) return { n: null, unit: "" };
+      const m = s.match(/^(\d+(?:\.\d+)?|\d+\/\d+)\s*(.*)$/);
+      if (!m) return { n: null, unit: s.toLowerCase() };
+      let n;
+      if (m[1].includes("/")) { const [a, b] = m[1].split("/").map(Number); n = b ? a / b : NaN; }
+      else n = parseFloat(m[1]);
+      return { n: isNaN(n) ? null : n, unit: (m[2] || "").trim().toLowerCase() };
+    }
+    function _fmtNum(n) {
+      return Number.isInteger(n) ? String(n) : String(Math.round(n * 100) / 100);
+    }
+
+    // Build display rows for one aisle's items: merge identical ingredients across
+    // recipes, sum quantities when units match, keep separate rows when units differ.
+    function _buildShoppingRows(items) {
+      const byName = new Map();
+      items.forEach(it => {
+        const k = normalizeIngredientName(it.name);
+        if (!byName.has(k)) byName.set(k, []);
+        byName.get(k).push(it);
+      });
+      const rows = [];
+      for (const group of byName.values()) {
+        // Split a same-named group by unit so mismatched units stay separate.
+        const byUnit = new Map();
+        group.forEach(it => {
+          const { n, unit } = _parseQty(it.qty);
+          if (!byUnit.has(unit)) byUnit.set(unit, []);
+          byUnit.get(unit).push({ it, n, unit });
+        });
+        const unitKeys = [...byUnit.keys()];
+        unitKeys.forEach((uk, ui) => {
+          const entries = byUnit.get(uk);
+          const ids = entries.map(e => e.it.id);
+          const sources = [...new Set(entries.map(e => e.it.recipeName).filter(Boolean))];
+          const allHaveN = entries.every(e => e.n !== null);
+          let qtyText = "";
+          if (allHaveN) {
+            const sum = entries.reduce((s, e) => s + e.n, 0);
+            qtyText = _fmtNum(sum) + (uk ? " " + uk : "");
+          } else if (entries.length === 1) {
+            qtyText = String(entries[0].it.qty || "");
+          } else if (uk) {
+            qtyText = uk;
+          }
+          rows.push({
+            name: entries[0].it.name,
+            ids,
+            qtyText,
+            sources,
+            merged: ids.length > 1,
+            checked: entries.every(e => e.it.checked),
+            aisle: entries[0].it.aisle,
+            unitDiffers: unitKeys.length > 1 && ui > 0,
+            sibling: unitKeys.length > 1,
+          });
+        });
+      }
+      // Unchecked first, checked sink to the bottom (stable).
+      return rows
+        .map((r, i) => [r, i])
+        .sort((a, b) => (a[0].checked - b[0].checked) || (a[1] - b[1]))
+        .map(p => p[0]);
     }
 
     function clearCheckedItems() {
@@ -16736,69 +16886,103 @@
 
       if (list.length === 0) {
         sheet.innerHTML = `
+          <div class="shoppingGrab"></div>
           <div class="shoppingHeader">
-            <div><h2>🛒 Shopping List</h2><p class="shoppingMeta">Your list is empty</p></div>
+            <div><h2 tabindex="-1">Shopping List</h2><p class="shoppingMeta">Your list is empty</p></div>
             <button class="closeBtn" id="closeShoppingBtn" type="button">Close</button>
           </div>
           <div class="shoppingEmpty">
-            <div class="shoppingEmptyIcon">🛒</div>
-            <p>Nothing here yet.</p>
-            <p>Open any recipe and tap <strong>Add to List</strong> to start building your shopping list.</p>
+            <div class="shoppingEmptyIcon">🧺</div>
+            <h3>Nothing on the list yet</h3>
+            <p class="shoppingEmptyHint">Open a recipe and tap <strong>Add to List</strong>, or build a week in the Planner — we'll merge shared ingredients for you.</p>
           </div>
         `;
         sheet.querySelector("#closeShoppingBtn")?.addEventListener("click", closeShoppingSheet);
         return;
       }
 
-      const total = list.length;
-      const checked = list.filter(i => i.checked).length;
-      const unchecked = total - checked;
-
-      // Group by aisle
+      // Group by aisle, then build merged display rows per aisle.
       const grouped = {};
       for (const item of list) {
         (grouped[item.aisle] = grouped[item.aisle] || []).push(item);
       }
-
       const aisleOrder = ["produce", "dairy", "protein", "spices", "pantry", "canned", "other"];
-      let aisleHTML = "";
+
+      let totalRows = 0, checkedRows = 0, aisleHTML = "";
       for (const aisleKey of aisleOrder) {
         const items = grouped[aisleKey];
         if (!items?.length) continue;
         const { label, emoji } = AISLES[aisleKey];
-        const itemsHTML = items.map(item => `
-          <div class="shoppingItem${item.checked ? " checked" : ""}" data-id="${item.id}">
-            <div class="shoppingCheckbox shoppingToggle" data-id="${item.id}">${item.checked ? "✓" : ""}</div>
-            <div class="shoppingItemBody">
-              <div class="shoppingItemName">${item.name}${item.qty ? ` <span style="color:var(--muted2);font-weight:600;font-size:0.78rem">${item.qty}</span>` : ""}</div>
-              ${item.recipeName ? `<div class="shoppingItemSource">from ${item.recipeName}</div>` : ""}
-            </div>
-            <button class="shoppingItemRemove shoppingRemove" data-id="${item.id}" title="Remove">✕</button>
-          </div>
-        `).join("");
+        const rows = _buildShoppingRows(items);
+        const remaining = rows.filter(r => !r.checked).length;
+        totalRows += rows.length;
+        checkedRows += rows.length - remaining;
+
+        const itemsHTML = rows.map(r => {
+          const ids = r.ids.join(",");
+          const qty = r.qtyText ? ` <span class="shoppingItemQty">· ${escapeHtml(r.qtyText)}</span>` : "";
+          // Source attribution line
+          let badge = "", srcText = "";
+          if (r.merged && r.sources.length) {
+            badge = `<span class="shoppingMergeBadge">×${r.sources.length}</span>`;
+            const shown = r.sources.slice(0, 2).map(escapeHtml).join(", ");
+            const more = r.sources.length > 2 ? ` +${r.sources.length - 2} more` : "";
+            srcText = shown + more;
+          } else if (r.sources.length) {
+            srcText = escapeHtml(r.sources[0]);
+          }
+          const srcLine = (badge || srcText)
+            ? `<div class="shoppingItemSource">${badge}${srcText}</div>` : "";
+          const note = r.unitDiffers ? `<div class="shoppingItemNote">units differ — listed separately</div>` : "";
+          const cls = `shoppingItem${r.checked ? " checked" : ""}${r.merged ? " is-merged" : ""}${r.sibling ? " sibling" : ""}`;
+          const aria = `${escapeHtml(r.name)}${r.qtyText ? ", " + escapeHtml(r.qtyText) : ""}${r.sources.length ? ", from " + r.sources.map(escapeHtml).join(", ") : ""}`;
+          return `
+            <div class="${cls}">
+              <button class="shoppingCheckbox shoppingToggle" data-ids="${ids}" data-checked="${r.checked ? 1 : 0}"
+                      role="checkbox" aria-checked="${r.checked}" aria-label="${aria}" type="button">${r.checked ? "✓" : ""}</button>
+              <div class="shoppingItemBody">
+                <div class="shoppingItemName">${escapeHtml(r.name)}${qty}</div>
+                ${srcLine}${note}
+              </div>
+              <button class="shoppingItemRemove shoppingRemove" data-ids="${ids}" data-count="${r.ids.length}"
+                      type="button" aria-label="Remove ${escapeHtml(r.name)}">✕</button>
+            </div>`;
+        }).join("");
+
+        const countMarkup = remaining === 0
+          ? `<span class="shoppingAisleCount allDone">✓</span>`
+          : `<span class="shoppingAisleCount">${remaining}</span>`;
         aisleHTML += `
-          <div class="shoppingAisle">
+          <div class="shoppingAisle${remaining === 0 ? " done" : ""}" role="group" aria-label="${escapeHtml(label)}, ${remaining} remaining">
             <div class="shoppingAisleHead">
-              ${emoji} ${label}
-              <span class="shoppingAisleCount">${items.length}</span>
+              <span style="font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',sans-serif">${emoji}</span> ${escapeHtml(label)}
+              ${countMarkup}
             </div>
             ${itemsHTML}
-          </div>
-        `;
+          </div>`;
       }
 
+      const pct = totalRows ? Math.round((checkedRows / totalRows) * 100) : 0;
+      const metaText = checkedRows >= totalRows
+        ? "All gathered — nicely done."
+        : `${checkedRows} of ${totalRows} gathered`;
+
       sheet.innerHTML = `
+        <div class="shoppingGrab"></div>
         <div class="shoppingHeader">
           <div>
-            <h2>🛒 Shopping List</h2>
-            <p class="shoppingMeta">${unchecked} remaining · ${checked} done</p>
+            <h2 tabindex="-1">Shopping List</h2>
+            <p class="shoppingMeta">${metaText}</p>
           </div>
           <button class="closeBtn" id="closeShoppingBtn" type="button">Close</button>
         </div>
+        <div class="shoppingProgressTrack" role="progressbar" aria-valuenow="${checkedRows}" aria-valuemin="0" aria-valuemax="${totalRows}" aria-label="${metaText}">
+          <div class="shoppingProgressFill" style="width:${pct}%"></div>
+        </div>
         <div class="shoppingActions">
-          <button class="shoppingActionBtn" id="shareShoppingBtn">📤 Share</button>
-          ${checked > 0 ? `<button class="shoppingActionBtn danger" id="clearCheckedBtn">✓ Clear done (${checked})</button>` : ""}
-          <button class="shoppingActionBtn danger" id="clearAllShoppingBtn">🗑 Clear all</button>
+          <button class="shoppingActionBtn primary" id="shareShoppingBtn" type="button">📤 Share list</button>
+          ${checkedRows > 0 ? `<button class="shoppingActionBtn" id="clearCheckedBtn" type="button">Clear done (${checkedRows})</button>` : ""}
+          <button class="shoppingActionBtn iconOnly" id="clearAllShoppingBtn" type="button" aria-label="Clear entire list" title="Clear all">🗑</button>
         </div>
         ${aisleHTML}
       `;
@@ -16807,12 +16991,44 @@
       sheet.querySelector("#closeShoppingBtn")?.addEventListener("click", closeShoppingSheet);
       sheet.querySelector("#shareShoppingBtn")?.addEventListener("click", shareShoppingList);
       sheet.querySelector("#clearCheckedBtn")?.addEventListener("click", () => { clearCheckedItems(); renderShoppingSheet(); });
-      sheet.querySelector("#clearAllShoppingBtn")?.addEventListener("click", () => { clearAllShoppingItems(); renderShoppingSheet(); });
+      const clearAllBtn = sheet.querySelector("#clearAllShoppingBtn");
+      clearAllBtn?.addEventListener("click", () => {
+        if (clearAllBtn.dataset.armed === "1") { clearAllShoppingItems(); renderShoppingSheet(); return; }
+        clearAllBtn.dataset.armed = "1";
+        clearAllBtn.classList.add("confirming");
+        clearAllBtn.textContent = "Clear all?";
+        clearAllBtn.style.width = "auto";
+        setTimeout(() => {
+          if (!clearAllBtn.isConnected) return;
+          clearAllBtn.dataset.armed = "0"; clearAllBtn.classList.remove("confirming");
+          clearAllBtn.textContent = "🗑"; clearAllBtn.style.width = "";
+        }, 2600);
+      });
       sheet.querySelectorAll(".shoppingToggle").forEach(el => {
-        el.addEventListener("click", () => { toggleShoppingItem(el.dataset.id); renderShoppingSheet(); });
+        el.addEventListener("click", () => {
+          const ids = (el.dataset.ids || "").split(",").filter(Boolean);
+          setShoppingItemsChecked(ids, el.dataset.checked !== "1");
+          renderShoppingSheet();
+        });
       });
       sheet.querySelectorAll(".shoppingRemove").forEach(el => {
-        el.addEventListener("click", () => { removeShoppingItem(el.dataset.id); renderShoppingSheet(); });
+        el.addEventListener("click", () => {
+          const ids = (el.dataset.ids || "").split(",").filter(Boolean);
+          const count = parseInt(el.dataset.count || "1", 10);
+          if (count > 1 && el.dataset.armed !== "1") {
+            // Merged row: confirm before removing several recipes' contributions.
+            el.dataset.armed = "1";
+            el.classList.add("confirming");
+            el.textContent = `Remove all ${count}?`;
+            setTimeout(() => {
+              if (!el.isConnected) return;
+              el.dataset.armed = "0"; el.classList.remove("confirming"); el.textContent = "✕";
+            }, 2600);
+            return;
+          }
+          removeShoppingItems(ids);
+          renderShoppingSheet();
+        });
       });
     }
 
@@ -16822,6 +17038,7 @@
       renderShoppingSheet();
       overlay.classList.remove("hidden");
       overlay.addEventListener("click", e => { if (e.target === overlay) closeShoppingSheet(); }, { once: true });
+      document.getElementById("shoppingSheet")?.querySelector(".shoppingHeader h2")?.focus?.();
     }
 
     function closeShoppingSheet() {
