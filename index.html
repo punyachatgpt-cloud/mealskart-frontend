@@ -8128,53 +8128,53 @@
           <div class="section" id="timePanel">
             <div class="label">Time <span class="hint">how long do you have</span></div>
             <div class="seg" role="group" aria-label="Time">
-              <button class="chip selected" data-group="time" data-value="999">Any time</button>
-              <button class="chip" data-group="time" data-value="15">15 min</button>
-              <button class="chip" data-group="time" data-value="30">30 min</button>
+              <button class="chip selected" data-group="time" data-value="999" aria-pressed="true">Any time</button>
+              <button class="chip" data-group="time" data-value="15" aria-pressed="false">15 min</button>
+              <button class="chip" data-group="time" data-value="30" aria-pressed="false">30 min</button>
             </div>
           </div>
 
           <div class="section" id="moodPanel">
             <div class="label">Mood <span class="hint">match the vibe</span></div>
             <div class="seg" role="group" aria-label="Mood">
-              <button class="chip selected" data-group="mood" data-value="">Any</button>
-              <button class="chip" data-group="mood" data-value="quick">quick</button>
-              <button class="chip" data-group="mood" data-value="healthy">healthy</button>
-              <button class="chip" data-group="mood" data-value="comfort">comfort</button>
+              <button class="chip selected" data-group="mood" data-value="" aria-pressed="true">Any</button>
+              <button class="chip" data-group="mood" data-value="quick" aria-pressed="false">quick</button>
+              <button class="chip" data-group="mood" data-value="healthy" aria-pressed="false">healthy</button>
+              <button class="chip" data-group="mood" data-value="comfort" aria-pressed="false">comfort</button>
             </div>
           </div>
 
           <div class="section" id="categoryPanel">
             <div class="label">Craving <span class="hint">cuisine or type</span></div>
             <div class="seg scroll" role="group" aria-label="Category">
-              <button class="chip selected" data-group="category" data-value="all">all</button>
-              <button class="chip" data-group="category" data-value="north-indian">north indian</button>
-              <button class="chip" data-group="category" data-value="south-indian">south indian</button>
-              <button class="chip" data-group="category" data-value="continental">continental</button>
-              <button class="chip" data-group="category" data-value="chinese">chinese</button>
-              <button class="chip" data-group="category" data-value="salad">salad</button>
-              <button class="chip" data-group="category" data-value="drinks">drinks</button>
-              <button class="chip" data-group="category" data-value="snacks">snacks</button>
-              <button class="chip" data-group="category" data-value="sweets">sweets</button>
-              <button class="chip" data-group="category" data-value="other">other</button>
+              <button class="chip selected" data-group="category" data-value="all" aria-pressed="true">all</button>
+              <button class="chip" data-group="category" data-value="north-indian" aria-pressed="false">north indian</button>
+              <button class="chip" data-group="category" data-value="south-indian" aria-pressed="false">south indian</button>
+              <button class="chip" data-group="category" data-value="continental" aria-pressed="false">continental</button>
+              <button class="chip" data-group="category" data-value="chinese" aria-pressed="false">chinese</button>
+              <button class="chip" data-group="category" data-value="salad" aria-pressed="false">salad</button>
+              <button class="chip" data-group="category" data-value="drinks" aria-pressed="false">drinks</button>
+              <button class="chip" data-group="category" data-value="snacks" aria-pressed="false">snacks</button>
+              <button class="chip" data-group="category" data-value="sweets" aria-pressed="false">sweets</button>
+              <button class="chip" data-group="category" data-value="other" aria-pressed="false">other</button>
             </div>
           </div>
 
           <div class="section" id="dietPanel">
             <div class="label">Diet <span class="hint">always respected</span></div>
             <div class="seg" role="group" aria-label="Diet">
-              <button class="chip selected" data-group="diet" data-value="">All</button>
-              <button class="chip" data-group="diet" data-value="veg">veg</button>
-              <button class="chip" data-group="diet" data-value="non-veg">non-veg</button>
+              <button class="chip selected" data-group="diet" data-value="" aria-pressed="true">All</button>
+              <button class="chip" data-group="diet" data-value="veg" aria-pressed="false">veg</button>
+              <button class="chip" data-group="diet" data-value="non-veg" aria-pressed="false">non-veg</button>
             </div>
           </div>
 
           <div class="section" id="budgetPanel">
             <div class="label">Budget <span class="hint">shapes suggestions</span></div>
             <div class="seg" role="group" aria-label="Budget">
-              <button class="chip" data-group="budget" data-value="economical">💚 Economical</button>
-              <button class="chip selected" data-group="budget" data-value="any">✨ Any</button>
-              <button class="chip" data-group="budget" data-value="premium">💰 Premium</button>
+              <button class="chip" data-group="budget" data-value="economical" aria-pressed="false">💚 Economical</button>
+              <button class="chip selected" data-group="budget" data-value="any" aria-pressed="true">✨ Any</button>
+              <button class="chip" data-group="budget" data-value="premium" aria-pressed="false">💰 Premium</button>
             </div>
           </div>
 
@@ -9412,7 +9412,9 @@
 
     function setSelected(group, value) {
       document.querySelectorAll(`[data-group="${group}"]`).forEach((btn) => {
-        btn.classList.toggle("selected", btn.dataset.value === value);
+        const isSelected = btn.dataset.value === value;
+        btn.classList.toggle("selected", isSelected);
+        btn.setAttribute("aria-pressed", isSelected ? "true" : "false");
       });
     }
 
@@ -12494,6 +12496,7 @@
       document.querySelectorAll("[data-group]").forEach((btn) => {
         btn.addEventListener("click", (e) => {
           if (btn.closest(".btn")) return;
+          if (navigator.vibrate) navigator.vibrate(40);
           const group = btn.dataset.group;
           const value = btn.dataset.value;
 
