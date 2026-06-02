@@ -15931,6 +15931,7 @@
       if (dishEl) dishEl.textContent = activeRecipe?.name || "Recipe";
 
       overlay.classList.remove("hidden");
+      document.body.style.overflow = "hidden";   // lock page scroll — no stray edge scrollbar behind the overlay
       _acquireWakeLock();   // keep screen on while cooking
 
       // Start elapsed time counter
@@ -16016,6 +16017,7 @@
 
       const overlay = document.getElementById("cookModeOverlay");
       if (overlay) overlay.classList.add("hidden");
+      document.body.style.overflow = "";   // restore page scroll
       // ② Restore the recipe modal and sync step
       el.recipeModal.classList.add("open");
       updateModalStep();
