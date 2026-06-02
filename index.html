@@ -9543,6 +9543,17 @@
       sweet:      "photo-1565299624946-b28f40a0ae38",
       ladoo:      "photo-1565299624946-b28f40a0ae38",
       laddoo:     "photo-1565299624946-b28f40a0ae38",
+      gulab:      "photo-1565299624946-b28f40a0ae38",
+      jamun:      "photo-1565299624946-b28f40a0ae38",
+      jalebi:     "photo-1565299624946-b28f40a0ae38",
+      rasgulla:   "photo-1565299624946-b28f40a0ae38",
+      rasmalai:   "photo-1565299624946-b28f40a0ae38",
+      gajar:      "photo-1565299624946-b28f40a0ae38",
+      peda:       "photo-1565299624946-b28f40a0ae38",
+      sandesh:    "photo-1565299624946-b28f40a0ae38",
+      modak:      "photo-1565299624946-b28f40a0ae38",
+      mithai:     "photo-1565299624946-b28f40a0ae38",
+      kulfi:      "photo-1565299624946-b28f40a0ae38",
       barfi:      "photo-1565299624946-b28f40a0ae38",
       pudding:    "photo-1565299624946-b28f40a0ae38",
       cake:       "photo-1565299624946-b28f40a0ae38",
@@ -9558,20 +9569,21 @@
       mousse:     "photo-1565299624946-b28f40a0ae38",
     };
 
-    function dishImageUrl(name, w = 900) {
-      const lower = String(name || "").toLowerCase();
-      const words = lower.replace(/[^a-z\s]/g, "").split(/\s+/);
+    // Returns the curated Unsplash photo id for a dish name, or "" if none match.
+    // Whole-word matching only — substring matching caused false positives
+    // (e.g. "Classic" contains "lassi", "Tourtiere" etc.).
+    function _dishImageId(name) {
+      const words = String(name || "").toLowerCase().replace(/[^a-z\s]/g, "").split(/\s+/);
       for (const word of words) {
-        if (DISH_IMAGE_MAP[word]) {
-          return `https://images.unsplash.com/${DISH_IMAGE_MAP[word]}?auto=format&fit=crop&w=${w}&q=82`;
-        }
+        if (DISH_IMAGE_MAP[word]) return DISH_IMAGE_MAP[word];
       }
-      // check partial matches for compound words
-      for (const [key, id] of Object.entries(DISH_IMAGE_MAP)) {
-        if (lower.includes(key)) {
-          return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=82`;
-        }
-      }
+      return "";
+    }
+    function _unsplash(id, w) { return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=82`; }
+
+    function dishImageUrl(name, w = 900) {
+      const id = _dishImageId(name);
+      if (id) return _unsplash(id, w);
       // deterministic fallback from original pool
       const fallback = [
         "photo-1565299624946-b28f40a0ae38",
@@ -9583,7 +9595,7 @@
         "photo-1631515243349-e0cb75fb8d3a",
         "photo-1540189549336-e6e99c3679fe"
       ];
-      return `https://images.unsplash.com/${fallback[Math.abs(hashText(name)) % fallback.length]}?auto=format&fit=crop&w=${w}&q=82`;
+      return _unsplash(fallback[Math.abs(hashText(name)) % fallback.length], w);
     }
 
     /**
@@ -9591,8 +9603,15 @@
      * a keyword-guessed Unsplash fallback.
      */
     function recipeImg(recipe, w = 900) {
+      const name = (recipe && recipe.name) || "";
+      // Curated category image wins for recognizable dishes — the seeded
+      // image_url is unreliable (MealDB photos were mismatched/shared across
+      // recipes, e.g. Lassi got a meat-pie photo). Only fall back to the stored
+      // photo for dishes we don't recognize (genuine foreign MealDB dishes).
+      const id = _dishImageId(name);
+      if (id) return _unsplash(id, w);
       const url = recipe && (recipe.image_url || "");
-      return (url && url.startsWith("http")) ? url : dishImageUrl((recipe && recipe.name) || "", w);
+      return (url && url.startsWith("http")) ? url : dishImageUrl(name, w);
     }
 
     /**
@@ -10811,10 +10830,9 @@
           <div class="miniMacro"><span>Fat</span>${clampInt(nutrition.fat_g, 0)}g</div>
         ` : "";
 
-        // Prefer the real photo from MealDB; fall back to Unsplash keyword match
-        const cardImgUrl = (item.image_url && item.image_url.startsWith("http"))
-          ? item.image_url
-          : dishImageUrl(item.name);
+        // Curated category image for recognizable dishes (seeded image_url is
+        // unreliable), else the real photo, else a generic fallback.
+        const cardImgUrl = recipeImg(item);
 
         card.innerHTML = `
           <div class="foodImg" style="background-image:url('${cardImgUrl}');">
