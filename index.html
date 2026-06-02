@@ -15707,6 +15707,17 @@
       const overlay = document.getElementById("cookModeOverlay");
       if (!overlay) return;
 
+      // Unlock audio/speech during this user gesture so the genie's TTS can play
+      // later (the genie fetches AI text async, which otherwise loses the gesture
+      // activation and gets blocked by browser autoplay policies).
+      try {
+        const synth = window.speechSynthesis;
+        if (synth) { synth.getVoices(); synth.resume?.(); synth.cancel(); }
+        // Prime HTMLAudio playback with a tiny silent clip.
+        const _primer = new Audio("data:audio/mpeg;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA");
+        _primer.volume = 0; _primer.play().then(() => _primer.pause()).catch(() => {});
+      } catch (_) {}
+
       // ① Hide the recipe modal so it doesn't show behind Cook Mode
       el.recipeModal.classList.remove("open");
 
