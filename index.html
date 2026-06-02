@@ -9604,14 +9604,18 @@
      */
     function recipeImg(recipe, w = 900) {
       const name = (recipe && recipe.name) || "";
-      // Curated category image wins for recognizable dishes — the seeded
-      // image_url is unreliable (MealDB photos were mismatched/shared across
-      // recipes, e.g. Lassi got a meat-pie photo). Only fall back to the stored
-      // photo for dishes we don't recognize (genuine foreign MealDB dishes).
+      const url  = (recipe && recipe.image_url) || "";
+      // 1. Trust our cleaned per-dish Unsplash images (written by the image
+      //    cleanup script) — these are varied and correct.
+      if (url.includes("images.unsplash.com")) return url;
+      // 2. Curated category image for recognizable dishes — overrides the bad
+      //    seeded MealDB photos (e.g. Lassi was given a meat-pie photo).
       const id = _dishImageId(name);
       if (id) return _unsplash(id, w);
-      const url = recipe && (recipe.image_url || "");
-      return (url && url.startsWith("http")) ? url : dishImageUrl(name, w);
+      // 3. A real photo for dishes we don't recognize (genuine foreign dishes).
+      if (url.startsWith("http")) return url;
+      // 4. Generic fallback so nothing is imageless.
+      return dishImageUrl(name, w);
     }
 
     /**
