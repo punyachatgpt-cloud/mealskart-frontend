@@ -239,6 +239,15 @@
       background: var(--accent); border-color: var(--accent);
       color: #fff; box-shadow: 0 2px 8px rgba(200,105,14,0.28);
     }
+    /* Voice settings */
+    .voiceSelect {
+      width: 100%; padding: 11px 14px; border-radius: 12px;
+      border: 1.5px solid var(--border); background: var(--bg0); color: var(--ink);
+      font-family: inherit; font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .voiceSelect:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(200,105,14,0.14); }
+    .voiceSavedHint { text-align: center; min-height: 16px; font-size: 0.78rem; font-weight: 700; color: var(--positive); }
     /* Multi-select chip group (same but toggleable) */
     .prefChipGrid {
       display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 4px;
@@ -373,6 +382,31 @@
       </div>
 
       <button class="prefSaveBtn" id="prefSaveBtn" disabled>Save preferences</button>
+    </div>
+
+    <!-- ── Cook Genie Voice (applies in Cook Mode) ── -->
+    <div class="section">
+      <div class="sectionHead">🎙 Cook Genie Voice</div>
+
+      <div class="prefCard">
+        <div class="prefCardHead"><span class="prefCardTitle">🔊 Voice guidance</span></div>
+        <div class="prefPillRow" id="voiceOnRow"></div>
+        <div class="prefGroupHint">Read each step aloud during Cook Mode</div>
+      </div>
+
+      <div class="prefCard">
+        <div class="prefCardHead"><span class="prefCardTitle">🌐 Voice language</span></div>
+        <select class="voiceSelect" id="voiceLangSelect"></select>
+        <div class="prefGroupHint">Steps are spoken (and translated) in this language</div>
+      </div>
+
+      <div class="prefCard">
+        <div class="prefCardHead"><span class="prefCardTitle">🗣 Voice type</span></div>
+        <div class="prefPillRow" id="voiceTypeRow"></div>
+        <div class="prefGroupHint">Choose the voice that reads your steps</div>
+      </div>
+
+      <div class="voiceSavedHint" id="voiceSavedHint"></div>
     </div>
 
     <!-- Favourite cuisines (cook-log based) -->
@@ -766,6 +800,55 @@
       window.location.href = "/login.html";
     });
 
+
+    // ── Cook Genie voice settings ──────────────────────────────────────────────
+    // Saved straight to localStorage; the Cook Genie reads these keys on load, so
+    // the user's choices apply automatically in Cook Mode.
+    (function initVoiceSettings() {
+      const LANGS = [
+        {code:"en",label:"🇺🇸 English (US)"},{code:"en-gb",label:"🇬🇧 English (UK)"},
+        {code:"en-in",label:"🇮🇳 English (IN)"},{code:"hi",label:"हिन्दी (Hindi)"},
+        {code:"ta",label:"தமிழ் (Tamil)"},{code:"te",label:"తెలుగు (Telugu)"},
+        {code:"bn",label:"বাংলা (Bengali)"},{code:"mr",label:"मराठी (Marathi)"},
+        {code:"gu",label:"ગુજરાતી (Gujarati)"},{code:"kn",label:"ಕನ್ನಡ (Kannada)"},
+        {code:"ml",label:"മലയാളം (Malayalam)"},{code:"pa",label:"ਪੰਜਾਬੀ (Punjabi)"},
+        {code:"es",label:"🇪🇸 Español"},{code:"fr",label:"🇫🇷 Français"},
+        {code:"de",label:"🇩🇪 Deutsch"},{code:"ar",label:"العربية (Arabic)"},
+        {code:"ja",label:"日本語 (Japanese)"},{code:"ko",label:"한국어 (Korean)"},
+        {code:"zh",label:"中文 (Chinese)"},{code:"pt",label:"Português"},
+        {code:"ru",label:"Русский (Russian)"},{code:"it",label:"Italiano"},
+      ];
+      const hint = document.getElementById("voiceSavedHint");
+      const flash = () => { if (!hint) return; hint.textContent = "Saved ✓"; clearTimeout(hint._t); hint._t = setTimeout(() => hint.textContent = "", 1600); };
+
+      function pillRow(id, opts, cur, onPick) {
+        const row = document.getElementById(id); if (!row) return;
+        row.innerHTML = opts.map(o => `<button class="prefPill${o.value === cur ? " active" : ""}" data-value="${o.value}" type="button">${o.label}</button>`).join("");
+        row.querySelectorAll(".prefPill").forEach(btn => btn.addEventListener("click", () => {
+          row.querySelectorAll(".prefPill").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          onPick(btn.dataset.value); flash();
+        }));
+      }
+
+      // 1. Voice on/off
+      const ttsOn = localStorage.getItem("simmer_genie_tts") !== "0";
+      pillRow("voiceOnRow", [{value:"on",label:"🔊 On"},{value:"off",label:"🔇 Off"}], ttsOn ? "on" : "off",
+        v => localStorage.setItem("simmer_genie_tts", v === "on" ? "1" : "0"));
+
+      // 2. Voice language
+      const sel = document.getElementById("voiceLangSelect");
+      if (sel) {
+        const curLang = localStorage.getItem("simmer_genie_lang") || "en";
+        sel.innerHTML = LANGS.map(l => `<option value="${l.code}"${l.code === curLang ? " selected" : ""}>${l.label}</option>`).join("");
+        sel.addEventListener("change", () => { localStorage.setItem("simmer_genie_lang", sel.value); flash(); });
+      }
+
+      // 3. Voice type
+      const gender = localStorage.getItem("simmer_genie_voice") || "auto";
+      pillRow("voiceTypeRow", [{value:"female",label:"♀ Female"},{value:"male",label:"♂ Male"},{value:"auto",label:"🎙 Auto"}], gender,
+        v => localStorage.setItem("simmer_genie_voice", v));
+    })();
 
     // ── Init ──────────────────────────────────────────────────────────────────
     loadHero();
