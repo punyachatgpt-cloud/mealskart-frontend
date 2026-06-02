@@ -5508,10 +5508,10 @@
         radial-gradient(100% 100% at 50% 120%, rgba(124,53,18,0.18), transparent 55%),
         #0B0703;
       display: flex; flex-direction: column;
-      align-items: center; justify-content: safe center;
-      padding: 24px 20px env(safe-area-inset-bottom, 0px);
+      align-items: stretch; justify-content: flex-start;
+      padding: 0;
       animation: obFadeIn 0.4s ease both;
-      overflow-y: auto;
+      overflow: hidden;                 /* the middle zone scrolls, not the whole screen */
       /* Ensures nothing behind the overlay receives pointer events */
       isolation: isolate;
     }
@@ -5558,13 +5558,23 @@
     }
     .cookModeCloseBtn:hover { background: rgba(255,255,255,0.14); color: #fff; }
 
-    /* Main content area. Sits in the centered group above the in-flow genie bar. */
+    /* Middle zone — ring + card + timer. Scrolls internally if too tall so the
+       fixed controls + genie below are never pushed off-screen. */
     .cookModeMain {
       display: flex; flex-direction: column;
-      align-items: center; gap: 28px;
-      width: 100%; max-width: 540px;
-      flex: 0 0 auto;
+      align-items: center; justify-content: center; gap: 22px;
+      width: 100%; max-width: 540px; margin: 0 auto;
+      flex: 1 1 auto; min-height: 0;
+      overflow-y: auto;
+      padding: 72px 20px 12px;          /* clear the absolute top bar */
       position: relative; z-index: 2;
+    }
+    /* Fixed bottom controls (dots + nav) — always visible above the genie. */
+    .cookModeControls {
+      flex: 0 0 auto; z-index: 6;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+      width: 100%; max-width: 540px; margin: 0 auto;
+      padding: 6px 20px 12px;
     }
 
     /* Step progress ring */
@@ -5677,11 +5687,16 @@
 
     /* Voice indicator */
     /* ── Cook Mode Done Screen ──────────────────────────────────────── */
+    /* Celebration covers the whole screen so it sits above controls + genie */
     .cookModeDoneScreen {
-      flex: 1;
+      position: absolute; inset: 0; z-index: 30;
       display: flex; flex-direction: column; align-items: center;
       justify-content: center; gap: 10px;
       text-align: center; padding: 24px;
+      background:
+        radial-gradient(120% 80% at 50% 0%, rgba(200,105,14,0.12), transparent 60%),
+        radial-gradient(100% 100% at 50% 120%, rgba(124,53,18,0.20), transparent 55%),
+        #0B0703;
       animation: fadeIn 0.45s ease both;
     }
     .cookModeDoneScreen.hidden { display: none; }
@@ -5819,9 +5834,10 @@
       position: relative;
       z-index: 20;
       width: 100%;
+      flex: 0 0 auto;              /* fixed bottom zone, below the controls */
       padding-bottom: env(safe-area-inset-bottom, 0px);
       display: none;
-      flex-direction: column;      /* bubble → opts → track, grows upward */
+      flex-direction: column;      /* bubble → opts → track */
     }
     .genieBar.genieOpen {
       display: flex;
@@ -8395,10 +8411,11 @@
 
       <!-- + Custom timer button -->
       <button class="cmAddTimerBtn" id="cmAddTimerBtn" type="button">＋ Custom Timer</button>
+    </div>
 
-      <!-- Step dots -->
+    <!-- Fixed controls zone — always visible, never covered by the genie -->
+    <div class="cookModeControls" id="cookModeControls">
       <div class="cookModeStepDots" id="cookModeStepDots"></div>
-
       <div class="cookModeNav">
         <button class="cookModeNavBtn secondary" id="cookModePrevBtn" type="button">← Previous</button>
         <button class="cookModeNavBtn primary" id="cookModeNextBtn" type="button">Next Step →</button>
@@ -15689,6 +15706,17 @@
       if (!modalSteps.length) return;
       const overlay = document.getElementById("cookModeOverlay");
       if (!overlay) return;
+
+      // Unlock audio/speech during this user gesture so the genie's TTS can play
+      // later (the genie fetches AI text async, which otherwise loses the gesture
+      // activation and gets blocked by browser autoplay policies).
+      try {
+        const synth = window.speechSynthesis;
+        if (synth) { synth.getVoices(); synth.resume?.(); synth.cancel(); }
+        // Prime HTMLAudio playback with a tiny silent clip.
+        const _primer = new Audio("data:audio/mpeg;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA");
+        _primer.volume = 0; _primer.play().then(() => _primer.pause()).catch(() => {});
+      } catch (_) {}
 
       // ① Hide the recipe modal so it doesn't show behind Cook Mode
       el.recipeModal.classList.remove("open");
