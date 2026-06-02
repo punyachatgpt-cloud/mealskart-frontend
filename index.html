@@ -5582,7 +5582,7 @@
       position: relative; flex-shrink: 0;
     }
     .cookModeRingSvg {
-      filter: drop-shadow(0 0 20px rgba(200,105,14,0.30));
+      filter: drop-shadow(0 0 16px rgba(200,105,14,0.35));
     }
     .cookModeRingLabel {
       position: absolute; inset: 0;
@@ -5592,7 +5592,7 @@
     }
     .cookModeStepNum {
       font-family: 'Fraunces', serif;
-      font-size: 2.6rem; font-weight: 900;
+      font-size: 2.1rem; font-weight: 900;
       color: #fff; line-height: 1;
     }
     .cookModeStepTotal {
@@ -5741,15 +5741,11 @@
     }
 
     .cookModeVoice {
-      position: absolute; left: 50%;
-      bottom: calc(var(--cm-genie-h) + 12px + env(safe-area-inset-bottom, 0px));
-      transform: translateX(-50%);
-      display: flex; align-items: center; gap: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
       font-size: 0.74rem; font-weight: 700;
-      pointer-events: none;  /* status label only — never intercept Next/Prev clicks beneath */
+      pointer-events: none;  /* status label only — never intercept clicks */
       color: rgba(255,255,255,0.35);
       transition: color 0.3s, opacity 0.3s;
-      z-index: 2;
     }
     .cookModeVoice.listening {
       color: #22c55e;
@@ -8415,6 +8411,10 @@
 
     <!-- Fixed controls zone — always visible, never covered by the genie -->
     <div class="cookModeControls" id="cookModeControls">
+      <div class="cookModeVoice" id="cookModeVoice">
+        <span class="cookModeVoiceDot"></span>
+        <span id="cookModeVoiceLabel">Say "Hey Simmer, next"</span>
+      </div>
       <div class="cookModeStepDots" id="cookModeStepDots"></div>
       <div class="cookModeNav">
         <button class="cookModeNavBtn secondary" id="cookModePrevBtn" type="button">← Previous</button>
@@ -8503,10 +8503,6 @@
       </div>
     </div>
 
-    <div class="cookModeVoice" id="cookModeVoice">
-      <span class="cookModeVoiceDot"></span>
-      <span id="cookModeVoiceLabel">Say "Hey Simmer, next"</span>
-    </div>
   </div>
 
   <!-- Weekly report overlay -->
@@ -14532,16 +14528,16 @@
     }
 
     function buildStepRingSVG(current, total) {
-      const r = 68, cx = 80, cy = 80, size = 160;
+      const r = 52, cx = 64, cy = 64, size = 128;
       const circ = 2 * Math.PI * r;
       const pct = total > 0 ? current / total : 0;
       const dash = pct * circ;
       return `
         <svg class="cookModeRingSvg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
           <circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
-            stroke="rgba(255,255,255,0.07)" stroke-width="12"/>
+            stroke="rgba(255,255,255,0.08)" stroke-width="8"/>
           <circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
-            stroke="url(#cmGrad)" stroke-width="12"
+            stroke="url(#cmGrad)" stroke-width="8"
             stroke-linecap="round"
             stroke-dasharray="${dash} ${circ}"
             stroke-dashoffset="${circ / 4}"
