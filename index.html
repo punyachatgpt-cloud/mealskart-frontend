@@ -5099,6 +5099,116 @@
       display: none;
     }
     .shoppingBadge.visible { display: inline-block; }
+
+    /* ── Streaks & Achievements ─────────────────────────────────────────── */
+    .streakSheet {
+      background: var(--bg0); border-radius: 28px 28px 0 0;
+      padding: 28px 24px 48px; width: min(560px, 100%);
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 -20px 60px rgba(80,30,5,0.2);
+      animation: reportSlideUp 0.38s cubic-bezier(0.34,1.08,0.64,1) both;
+    }
+    [data-theme="dark"] .streakSheet { background: var(--bg1); }
+    .achvHero {
+      display: flex; align-items: center; gap: 18px;
+      padding: 22px 20px; margin: 6px 0 16px;
+      border-radius: var(--cardRadius);
+      background: linear-gradient(135deg, var(--goldBg), rgba(254,243,226,0.4));
+      border: 1px solid var(--goldBorder); box-shadow: var(--shadow-card);
+    }
+    .achvFlame {
+      width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.9rem; color: #fff; background: var(--ember-gradient);
+      box-shadow: 0 6px 18px var(--accentGlow);
+    }
+    .achvFlame.cold { background: var(--surface-2); border: 1.5px solid var(--goldBorder); color: var(--ink-faint); box-shadow: none; }
+    .achvFlame.lit { animation: achvEmber 4s ease-in-out infinite; }
+    @keyframes achvEmber { 0%,100% { box-shadow: 0 6px 18px var(--accentGlow); } 50% { box-shadow: 0 6px 26px var(--accentGlow); } }
+    .achvStreakCount { flex: 1; min-width: 0; }
+    .achvStreakNum { font-family: 'Fraunces', serif; font-size: var(--t-display); font-weight: var(--fw-black); color: var(--ink); line-height: 1; letter-spacing: -0.03em; }
+    .achvStreakLbl { font-size: var(--t-sm); font-weight: var(--fw-med); color: var(--muted); margin-top: 2px; }
+    .achvBest {
+      display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0;
+      font-size: var(--t-xs); font-weight: var(--fw-bold); color: var(--accent);
+      background: var(--accentGlow); border: 1px solid var(--goldBorder);
+      border-radius: 8px; padding: 4px 9px;
+    }
+    .achvWeek { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin: 0 0 20px; }
+    .achvToday {
+      padding: 4px 10px; border-radius: 999px; font-size: var(--t-xs); font-weight: var(--fw-bold);
+      border: 1px solid var(--border); color: var(--ink-lo); margin-left: 4px;
+    }
+    .achvToday.done { color: var(--positive); border-color: var(--positive); }
+    .achvStats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 24px; }
+    @media (max-width: 380px) { .achvStats { grid-template-columns: repeat(2, 1fr); } }
+    .achvStat {
+      background: var(--bg1); border: 1px solid var(--hairline); border-radius: var(--radiusSm);
+      padding: 14px 8px; text-align: center; box-shadow: var(--shadow-card);
+    }
+    .achvStatVal { font-family: 'Fraunces', serif; font-size: var(--t-xl); font-weight: var(--fw-black); color: var(--ink); line-height: 1; letter-spacing: -0.02em; }
+    .achvStatVal .star { color: var(--accent); font-size: 0.8em; }
+    .achvStatLbl { font-size: var(--t-xs); font-weight: var(--fw-med); color: var(--muted2); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 6px; }
+    .achvSectionHead {
+      display: flex; align-items: center; gap: 8px;
+      font-size: var(--t-xs); font-weight: var(--fw-bold); color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      padding-bottom: 6px; margin-bottom: 12px; border-bottom: 1px solid var(--hairline);
+    }
+    .achvGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .achvBadge {
+      display: flex; flex-direction: column; gap: 8px; padding: 16px 14px;
+      border-radius: var(--radiusSm); background: var(--bg1); border: 1px solid var(--hairline);
+      box-shadow: var(--shadow-card);
+      transition: transform var(--dur-fast) var(--ease-spring), border-color var(--dur-fast) var(--ease-out);
+    }
+    @media (hover: hover) { .achvBadge:hover { transform: translateY(-2px); border-color: var(--border); } }
+    .achvBadge.locked { opacity: 0.7; }
+    .achvBadgeTop { display: flex; align-items: flex-start; justify-content: space-between; }
+    .achvSeal {
+      width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center;
+      justify-content: center; font-size: 1.25rem; flex-shrink: 0;
+      background: var(--ember-gradient); color: #fff; box-shadow: 0 3px 10px var(--accentGlow);
+    }
+    .achvSeal.progress { background: var(--goldBg); border: 1px solid var(--goldBorder); color: var(--accent); box-shadow: none; }
+    .achvSeal.locked { background: var(--surface-2); border: 1px solid var(--hairline); color: var(--ink-faint); box-shadow: none; }
+    .achvSeal.justUnlocked { animation: achvSealPop var(--transition-spring); }
+    @keyframes achvSealPop { 0% { transform: scale(0.7); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+    .achvStateMark { font-size: 0.85rem; line-height: 1; }
+    .achvStateMark.earned { color: var(--positive); }
+    .achvStateMark.lock { color: var(--ink-faint); }
+    .achvBadgeTitle { font-family: 'Fraunces', serif; font-size: var(--t-base); font-weight: var(--fw-bold); color: var(--ink); letter-spacing: -0.01em; }
+    .achvBadge.locked .achvBadgeTitle { color: var(--ink-lo); }
+    .achvBadgeDesc { font-size: var(--t-xs); font-weight: var(--fw-reg); color: var(--ink-faint); line-height: 1.45; }
+    .achvProgressTrack { height: 4px; border-radius: 999px; background: var(--hairline); overflow: hidden; margin-top: 2px; }
+    .achvProgressFill { height: 100%; border-radius: 999px; background: var(--ember-gradient); transition: width var(--transition-spring); }
+    .achvFraction { font-size: 0.66rem; font-weight: var(--fw-bold); color: var(--accent); margin-top: 4px; }
+    .achvEmpty { text-align: center; padding: 56px 24px 48px; color: var(--muted); line-height: 1.6; }
+    .achvEmptyIcon { font-size: 2.75rem; opacity: 0.85; margin-bottom: 14px; }
+    .achvEmpty h3 { font-family: 'Fraunces', serif; font-size: var(--t-lg); font-weight: var(--fw-black); color: var(--ink); margin: 0 0 8px; }
+    .achvEmptyHint { font-size: var(--t-sm); color: var(--ink-lo); max-width: 34ch; margin: 0 auto; }
+    /* Home-screen streak chip */
+    .streakChip {
+      display: inline-flex; align-items: center; gap: 6px; height: 40px;
+      padding: 0 14px 0 8px; border-radius: 999px; cursor: pointer;
+      background: var(--accentGlow); border: 1px solid var(--goldBorder);
+      transition: transform var(--dur-fast) var(--ease-spring), filter var(--dur-fast) var(--ease-out);
+    }
+    .streakChip:hover { filter: brightness(1.03); transform: translateY(-1px); }
+    .streakChip:active { transform: scale(0.97); }
+    .streakChip.cold { background: var(--surface-2); border-color: var(--hairline); }
+    .streakChipFlame {
+      width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 0.85rem; color: #fff;
+      background: var(--ember-gradient); box-shadow: 0 2px 6px var(--accentGlow);
+    }
+    .streakChip.cold .streakChipFlame { background: var(--surface-2); border: 1px solid var(--goldBorder); color: var(--ink-faint); box-shadow: none; }
+    .streakChipNum { font-family: 'Fraunces', serif; font-size: var(--t-base); font-weight: var(--fw-black); color: var(--accent); line-height: 1; }
+    .streakChip.cold .streakChipNum { color: var(--ink-lo); }
+    .streakChipLbl { font-size: var(--t-xs); font-weight: var(--fw-bold); color: var(--accent2); }
+    @media (prefers-reduced-motion: reduce) {
+      .achvBadge, .achvProgressFill, .achvSeal, .achvFlame, .streakChip { animation: none !important; transition: none !important; }
+    }
     /* Add to list chip in recipe modal */
     .addToListBtn {
       display: inline-flex; align-items: center; gap: 5px;
@@ -8271,6 +8381,11 @@
     <div class="cookLogSheet" id="cookLogSheet"></div>
   </div>
 
+  <!-- Streaks & Achievements overlay -->
+  <div class="reportOverlay hidden" id="streaksOverlay" role="dialog" aria-modal="true" aria-label="Streaks and achievements">
+    <div class="streakSheet" id="streaksSheet"></div>
+  </div>
+
   <!-- Shopping List overlay -->
   <div class="reportOverlay hidden" id="shoppingOverlay" role="dialog" aria-modal="true" aria-label="Shopping List">
     <div class="shoppingSheet" id="shoppingSheet"></div>
@@ -8614,6 +8729,7 @@
       </div>
       <div class="moreGrid">
         <button class="moreBtn" id="moreCookLogBtn" type="button"><span class="moreBtnIcon">📖</span>Cook Log</button>
+        <button class="moreBtn" id="moreStreaksBtn" type="button"><span class="moreBtnIcon">🔥</span>Streaks</button>
         <button class="moreBtn" id="moreCollectionsBtn" type="button"><span class="moreBtnIcon">📚</span>Collections</button>
         <button class="moreBtn" id="moreGoalBtn" type="button"><span class="moreBtnIcon">🎯</span>Goal</button>
         <button class="moreBtn" id="moreExploreBtn" type="button"><span class="moreBtnIcon">🌍</span>Explore</button>
@@ -12548,7 +12664,7 @@
       const chefChat = document.getElementById("chefChatOverlay");
       if (chefChat && !chefChat.classList.contains("hidden")) { closeChefChat(); return; }
       const activeSheet = document.querySelector(
-        "#shoppingOverlay:not(.hidden),#cookLogOverlay:not(.hidden),#collectionsOverlay:not(.hidden),#nutDashOverlay:not(.hidden),#cuisineOverlay:not(.hidden),#moreSheetOverlay:not(.hidden),#savedSheetOverlay:not(.hidden),#browseOverlay:not(.hidden),#quickfireOverlay:not(.hidden)"
+        "#shoppingOverlay:not(.hidden),#cookLogOverlay:not(.hidden),#streaksOverlay:not(.hidden),#collectionsOverlay:not(.hidden),#nutDashOverlay:not(.hidden),#cuisineOverlay:not(.hidden),#moreSheetOverlay:not(.hidden),#savedSheetOverlay:not(.hidden),#browseOverlay:not(.hidden),#quickfireOverlay:not(.hidden)"
       );
       if (activeSheet) { activeSheet.classList.add("hidden"); return; }
     });
@@ -16914,6 +17030,205 @@
     // ── end cook log ──────────────────────────────
 
     // ══════════════════════════════════════════════
+    // STREAKS & ACHIEVEMENTS
+    // ══════════════════════════════════════════════
+    const ACHV_SEEN_KEY = "simmer_achv_seen_v1";
+
+    function _dayKey(d) {
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+    }
+
+    function getCookStats() {
+      const log = getCookLog();
+      const days = new Set(log.map(e => _dayKey(new Date(e.ts))));
+      const has = d => days.has(_dayKey(d));
+
+      // Current streak — consecutive days ending today (or yesterday if not yet cooked today).
+      let currentStreak = 0;
+      const probe = new Date();
+      if (!has(probe)) probe.setDate(probe.getDate() - 1);
+      while (has(probe)) { currentStreak++; probe.setDate(probe.getDate() - 1); }
+
+      // Longest streak across all cooked days.
+      const sorted = [...days].sort();
+      let longestStreak = 0, run = 0, prev = null;
+      for (const k of sorted) {
+        const cur = new Date(k + "T00:00:00");
+        if (prev && (cur - prev) === 86400000) run++;
+        else run = 1;
+        prev = cur;
+        if (run > longestStreak) longestStreak = run;
+      }
+
+      const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      const rated = log.filter(e => Number(e.stars) >= 1);
+      const cuisines = new Set(log.map(e => e.category).filter(c => c && c !== "all"));
+
+      return {
+        totalCooks:     log.length,
+        currentStreak,
+        longestStreak:  Math.max(longestStreak, currentStreak),
+        weekCooks:      log.filter(e => e.ts >= weekAgo).length,
+        uniqueCuisines: cuisines.size,
+        ratedCount:     rated.length,
+        avgRating:      rated.length ? (rated.reduce((s, e) => s + Number(e.stars), 0) / rated.length) : 0,
+        under400:       log.filter(e => Number(e.calories) > 0 && Number(e.calories) < 400).length,
+        under20:        log.filter(e => Number(e.time) > 0 && Number(e.time) < 20).length,
+        cookedToday:    has(new Date()),
+        firstTs:        log.length ? Math.min(...log.map(e => e.ts)) : null,
+        days,
+      };
+    }
+
+    function _achievements(s) {
+      const streakBest = Math.max(s.currentStreak, s.longestStreak);
+      return [
+        { id: "first",   icon: "🔥", title: "First Flame",    desc: "Cook your very first dish.",        cur: s.totalCooks,     target: 1 },
+        { id: "going",   icon: "🍳", title: "Getting Going",  desc: "Cook 10 dishes.",                   cur: s.totalCooks,     target: 10 },
+        { id: "home",    icon: "👨‍🍳", title: "Home Cook",      desc: "Cook 50 dishes.",                   cur: s.totalCooks,     target: 50 },
+        { id: "century", icon: "🏆", title: "Centurion",      desc: "Cook 100 dishes.",                  cur: s.totalCooks,     target: 100 },
+        { id: "row3",    icon: "⚡", title: "Three in a Row", desc: "Cook 3 days running.",              cur: streakBest,       target: 3 },
+        { id: "fire7",   icon: "🔥", title: "On Fire",        desc: "Keep a 7-day streak.",              cur: streakBest,       target: 7 },
+        { id: "fire30",  icon: "🌟", title: "Unbroken",       desc: "Keep a 30-day streak.",             cur: streakBest,       target: 30 },
+        { id: "globe5",  icon: "🧭", title: "Globetrotter",   desc: "Explore 5 cuisines.",               cur: s.uniqueCuisines, target: 5 },
+        { id: "globe7",  icon: "🌍", title: "World Kitchen",  desc: "Explore all 7 cuisines.",           cur: s.uniqueCuisines, target: 7 },
+        { id: "critic",  icon: "⭐", title: "The Critic",     desc: "Rate 20 dishes you've cooked.",     cur: s.ratedCount,     target: 20 },
+        { id: "lean",    icon: "🌿", title: "Light & Lean",   desc: "Cook 10 dishes under 400 cal.",     cur: s.under400,       target: 10 },
+        { id: "quick",   icon: "⏱", title: "Quick Hands",    desc: "Cook 10 dishes under 20 min.",      cur: s.under20,        target: 10 },
+      ];
+    }
+
+    function _monthYear(ts) {
+      const d = new Date(ts);
+      return d.toLocaleString("default", { month: "short", year: "numeric" });
+    }
+
+    function renderStreaksSheet() {
+      const sheet = document.getElementById("streaksSheet");
+      if (!sheet) return;
+      const s = getCookStats();
+
+      if (s.totalCooks === 0) {
+        sheet.innerHTML = `
+          <div class="shoppingGrab"></div>
+          <div class="shoppingHeader">
+            <div><h2 tabindex="-1">Your Kitchen</h2><p class="shoppingMeta">No dishes cooked yet</p></div>
+            <button class="closeBtn" id="closeStreaksBtn" type="button">Close</button>
+          </div>
+          <div class="achvEmpty">
+            <div class="achvEmptyIcon">🔥</div>
+            <h3>Your logbook is empty</h3>
+            <p class="achvEmptyHint">Cook your first dish and we'll start tracking streaks, cuisines, and the badges you earn along the way.</p>
+            <button class="shoppingActionBtn primary" id="achvFindBtn" type="button" style="margin-top:22px">Find something to cook</button>
+          </div>`;
+        sheet.querySelector("#closeStreaksBtn")?.addEventListener("click", closeStreaks);
+        sheet.querySelector("#achvFindBtn")?.addEventListener("click", () => { closeStreaks(); document.getElementById("tabHome")?.click(); });
+        return;
+      }
+
+      // Week strip — rolling last 7 days ending today.
+      const INI = ["S","M","T","W","T","F","S"];
+      let weekHTML = "";
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const cooked = s.days.has(_dayKey(d));
+        const today = i === 0;
+        weekHTML += `<div class="streakDot ${cooked ? "cooked" : "empty"}${today ? " today" : ""}" title="${_dayKey(d)}">${INI[d.getDay()]}</div>`;
+      }
+      const todayPill = s.cookedToday
+        ? `<span class="achvToday done">Cooked today ✓</span>`
+        : `<span class="achvToday">Not cooked yet today</span>`;
+
+      const avg = s.ratedCount
+        ? `${s.avgRating.toFixed(1)}<span class="star">★</span>`
+        : `<span style="color:var(--ink-faint)" aria-label="not rated yet">—</span>`;
+
+      // Achievements: earned first, then in-progress by %, then locked.
+      const list = _achievements(s).map(a => {
+        const earned = a.cur >= a.target;
+        const pct = Math.min(100, Math.round((a.cur / a.target) * 100));
+        return { ...a, earned, pct, started: a.cur > 0 };
+      });
+      const order = list.slice().sort((x, y) =>
+        (y.earned - x.earned) || (y.pct - x.pct) || (x.target - y.target));
+      const unlocked = list.filter(a => a.earned).length;
+
+      // Detect newly-earned badges this session for a one-shot pop.
+      let seen = [];
+      try { seen = JSON.parse(localStorage.getItem(ACHV_SEEN_KEY) || "[]"); } catch {}
+      const seenSet = new Set(seen);
+      const earnedIds = list.filter(a => a.earned).map(a => a.id);
+      const justNew = new Set(earnedIds.filter(id => !seenSet.has(id)));
+      try { localStorage.setItem(ACHV_SEEN_KEY, JSON.stringify(earnedIds)); } catch {}
+
+      const badgesHTML = order.map(a => {
+        const sealCls = a.earned ? "" : (a.started ? " progress" : " locked");
+        const mark = a.earned
+          ? `<span class="achvStateMark earned" aria-hidden="true">✓</span>`
+          : (a.started ? "" : `<span class="achvStateMark lock" aria-hidden="true">🔒</span>`);
+        const prog = (!a.earned && a.started)
+          ? `<div class="achvProgressTrack" role="progressbar" aria-valuemin="0" aria-valuemax="${a.target}" aria-valuenow="${a.cur}">
+               <div class="achvProgressFill" style="width:${a.pct}%"></div></div>
+             <div class="achvFraction">${a.cur} / ${a.target}</div>`
+          : "";
+        const state = a.earned ? "Earned" : (a.started ? `In progress, ${a.cur} of ${a.target}` : "Locked");
+        const pop = justNew.has(a.id) ? " justUnlocked" : "";
+        return `
+          <div class="achvBadge${a.earned ? "" : " locked"}" role="group" aria-label="${escapeHtml(a.title)}. ${state}. ${escapeHtml(a.desc)}">
+            <div class="achvBadgeTop">
+              <div class="achvSeal${sealCls}${pop}" aria-hidden="true">${a.icon}</div>
+              ${mark}
+            </div>
+            <div class="achvBadgeTitle">${escapeHtml(a.title)}</div>
+            <div class="achvBadgeDesc">${escapeHtml(a.desc)}</div>
+            ${prog}
+          </div>`;
+      }).join("");
+
+      sheet.innerHTML = `
+        <div class="shoppingGrab"></div>
+        <div class="shoppingHeader">
+          <div>
+            <h2 tabindex="-1">Your Kitchen</h2>
+            <p class="shoppingMeta">${s.totalCooks} ${s.totalCooks === 1 ? "dish" : "dishes"} cooked${s.firstTs ? " · since " + _monthYear(s.firstTs) : ""}</p>
+          </div>
+          <button class="closeBtn" id="closeStreaksBtn" type="button">Close</button>
+        </div>
+        <div class="achvHero">
+          <div class="achvFlame ${s.currentStreak > 0 ? "lit" : "cold"}" aria-hidden="true">🔥</div>
+          <div class="achvStreakCount" aria-label="Current streak ${s.currentStreak} days, best ${s.longestStreak} days">
+            <div class="achvStreakNum">${s.currentStreak}</div>
+            <div class="achvStreakLbl">${s.currentStreak === 1 ? "day streak" : "day streak"}</div>
+          </div>
+          <span class="achvBest">★ Best · ${s.longestStreak}d</span>
+        </div>
+        <div class="achvWeek">${weekHTML}${todayPill}</div>
+        <div class="achvStats">
+          <div class="achvStat"><div class="achvStatVal">${s.totalCooks}</div><div class="achvStatLbl">Total cooks</div></div>
+          <div class="achvStat"><div class="achvStatVal">${s.weekCooks}</div><div class="achvStatLbl">This week</div></div>
+          <div class="achvStat"><div class="achvStatVal">${s.uniqueCuisines}</div><div class="achvStatLbl">Cuisines</div></div>
+          <div class="achvStat"><div class="achvStatVal">${avg}</div><div class="achvStatLbl">Avg rating</div></div>
+        </div>
+        <div class="achvSectionHead">Badges <span class="shoppingAisleCount">${unlocked}/${list.length}</span></div>
+        <div class="achvGrid">${badgesHTML}</div>`;
+
+      sheet.querySelector("#closeStreaksBtn")?.addEventListener("click", closeStreaks);
+    }
+
+    function openStreaks() {
+      const overlay = document.getElementById("streaksOverlay");
+      if (!overlay) return;
+      renderStreaksSheet();
+      overlay.classList.remove("hidden");
+      overlay.addEventListener("click", e => { if (e.target === overlay) closeStreaks(); }, { once: true });
+      document.getElementById("streaksSheet")?.querySelector(".shoppingHeader h2")?.focus?.();
+    }
+    function closeStreaks() {
+      document.getElementById("streaksOverlay")?.classList.add("hidden");
+    }
+    // ── end streaks ──────────────────────────────
+
+    // ══════════════════════════════════════════════
     // H — AI CHEF CHAT
     // ══════════════════════════════════════════════
     const CHAT_HISTORY_KEY = "simmer_chat_v1";
@@ -17292,6 +17607,7 @@
 
       // More sheet buttons
       document.getElementById("moreCookLogBtn")?.addEventListener("click",     () => { closeMoreSheet(); openCookLog(); });
+      document.getElementById("moreStreaksBtn")?.addEventListener("click",     () => { closeMoreSheet(); openStreaks(); });
       document.getElementById("moreUrlImportBtn")?.addEventListener("click",   () => { closeMoreSheet(); openUrlImport(); });
       document.getElementById("moreCollectionsBtn")?.addEventListener("click", () => { closeMoreSheet(); openCollectionsSheet(); });
       document.getElementById("moreGoalBtn")?.addEventListener("click",        () => { closeMoreSheet(); openGoalSetup(); });
