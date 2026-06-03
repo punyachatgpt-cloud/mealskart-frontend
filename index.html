@@ -5852,7 +5852,12 @@
       .cmLeftRail::-webkit-scrollbar { display: none; }
       .cookModeMain { grid-area: center; max-width: none; }
       .cmRightRail  { grid-area: right; align-self: start; max-width: none; margin: 0; }
-      .cmBottomBar  { grid-area: bottom; max-width: none; }
+      /* Explicit 3-column grid pins Previous | timeline | Next so Next can NEVER
+         be pushed off the row by the timeline, regardless of step count. */
+      .cmBottomBar  { grid-area: bottom; max-width: none;
+        display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center; gap: 16px; }
+      .cmBottomBar .cmTimeline { min-width: 0; }
       /* The center ring is replaced by the top stepper on desktop. */
       .cookModeRingWrap { display: none; }
       .cookModeMain { justify-content: stretch; padding: 0; overflow: visible; }
@@ -6562,13 +6567,13 @@
     .cmStepEmphasis .stepTime, .cmStepEmphasis .stepIngredient { color: #E8A020; }
     /* Larger editorial type on the cinematic stage (desktop) */
     @media (min-width: 1025px) {
-      /* Medium (default) */
-      .cmStageContent .cookModeStepText { font-size: clamp(1.9rem, 1.1rem + 1.6vw, 2.7rem); line-height: 1.24; letter-spacing: -0.012em; text-align: left; max-width: 24ch; }
-      /* Short step → hero type */
-      .cmStageContent .cookModeStepText.cmShortStep { font-size: clamp(2.4rem, 1.3rem + 2.1vw, 3.5rem); line-height: 1.18; max-width: 18ch; }
+      /* Medium (default) — editorial but comfortable, ~reference scale */
+      .cmStageContent .cookModeStepText { font-size: clamp(1.5rem, 0.95rem + 1.0vw, 1.9rem); line-height: 1.3; letter-spacing: -0.01em; text-align: left; max-width: 26ch; }
+      /* Short step → a touch larger, never oversized */
+      .cmStageContent .cookModeStepText.cmShortStep { font-size: clamp(1.7rem, 1.0rem + 1.2vw, 2.2rem); line-height: 1.24; max-width: 22ch; }
       /* Long step → steps down, comfortable line length */
-      .cmStageContent .cookModeStepText.cmLongStep { font-size: clamp(1.55rem, 0.9rem + 1.2vw, 2.1rem); line-height: 1.32; max-width: 32ch; }
-      .cmStepSecondary { font-size: 0.6em; max-width: 42ch; }
+      .cmStageContent .cookModeStepText.cmLongStep { font-size: clamp(1.3rem, 0.85rem + 0.85vw, 1.6rem); line-height: 1.36; max-width: 34ch; }
+      .cmStepSecondary { font-size: 0.78em; max-width: 44ch; }
       /* Image yields to long content */
       .cookModeStepCard.cmLongCard .cmStageImg { left: 76%; opacity: 0.8; }
       .cookModeStepCard.cmLongCard .cmStageContent { max-width: 80%; }
