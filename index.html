@@ -5760,6 +5760,93 @@
       padding: 6px 20px 12px;
     }
 
+    /* ══════════════════════════════════════════════════════════════════
+       COOK MODE — "Kitchen OS" 3-zone layout (left rail · center · right rail)
+       Base styles below are mobile-first (stacked); desktop grid is opted in
+       at ≥1025px. Every element keeps its original id + JS handler.
+       ══════════════════════════════════════════════════════════════════ */
+    .cookModeOverlay {
+      --cm-rail-bg:    rgba(255,255,255,0.05);
+      --cm-rail-bd:    rgba(255,255,255,0.10);
+      --cm-elev-hover: 0 16px 38px -12px rgba(200,105,14,0.32);
+    }
+    .cmLeftRail, .cmRightRail {
+      display: flex; flex-direction: column; gap: 14px;
+      width: 100%; max-width: 540px; margin: 0 auto; box-sizing: border-box;
+    }
+    /* Shared glass surface for rail cards */
+    .cmTimerCard, .cmProTip, .cmLeftRail .cookModeVoice, .cmRailAction {
+      background: var(--cm-rail-bg); border: 1px solid var(--cm-rail-bd);
+      border-radius: 18px;
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    }
+    .cmTimerCard { padding: 18px 18px 16px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .cmRailLabel { align-self: flex-start; font-size: var(--t-xs); font-weight: var(--fw-bold);
+      letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+    .cmLeftRail .cookModeVoice { padding: 12px 14px; }
+    .cmVoiceCopy { display: flex; flex-direction: column; line-height: 1.25; }
+    .cmVoiceCopy small { font-size: 0.66rem; color: rgba(255,255,255,0.42); margin-top: 2px; }
+    .cmProTip { padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; }
+    .cmProTipIcon { font-size: 1.3rem; line-height: 1; }
+    .cmProTipTitle { font-weight: var(--fw-bold); color: #fff; font-size: var(--t-sm); margin-bottom: 3px; }
+    .cmProTipBody { font-size: var(--t-xs); color: rgba(255,255,255,0.55); line-height: 1.5; }
+    /* Right rail */
+    .cmRailHeading { display: flex; flex-direction: column; gap: 3px; padding: 4px 4px 6px;
+      font-weight: var(--fw-bold); color: #fff; font-size: var(--t-base); }
+    .cmRailHeading small { font-weight: var(--fw-reg); color: rgba(255,255,255,0.45); font-size: var(--t-xs); }
+    .cmRailAction {
+      display: flex; align-items: center; gap: 12px; padding: 13px 15px; cursor: pointer;
+      color: rgba(255,255,255,0.92); font-size: var(--t-sm); font-weight: var(--fw-med);
+      text-align: left; min-height: 52px; font-family: inherit;
+      transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+    }
+    .cmRailAction:hover { transform: translateY(-2px); box-shadow: var(--cm-elev-hover); border-color: rgba(200,105,14,0.42); }
+    .cmRailAction:active { transform: scale(0.98); }
+    .cmRailActionIcon { width: 36px; height: 36px; border-radius: 11px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 1.05rem;
+      background: rgba(200,105,14,0.16); }
+    .cmRailActionLabel { flex: 1; }
+    .cmRailChevron { color: rgba(255,255,255,0.32); font-size: 1.2rem; }
+    /* Bottom bar */
+    .cmBottomBar { display: flex; align-items: center; gap: 16px;
+      width: 100%; max-width: 540px; margin: 0 auto; padding: 8px 20px 12px; box-sizing: border-box; }
+    .cmBottomBar .cookModeStepDots { flex: 1; }
+
+    /* ── Mobile / tablet: clean scrollable stack (step first) ── */
+    @media (max-width: 1024px) {
+      .cookModeOverlay { justify-content: flex-start; overflow-y: auto; }
+      .cookModeMain { order: -1; }
+      .cmLeftRail { order: 1; margin-top: 6px; }
+      .cmRightRail { order: 2; }
+      .cmBottomBar { order: 3; }
+      .cmProTip { display: none; }            /* reclaim space on small screens */
+      .cmRailHeading { display: none; }
+    }
+
+    /* ── Desktop: persistent 3-column kitchen OS ── */
+    @media (min-width: 1025px) {
+      .cookModeOverlay {
+        display: grid; overflow: hidden;
+        grid-template-columns: 300px minmax(0, 1fr) 320px;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        grid-template-areas: "top top top" "left center right" "bottom bottom bottom";
+        column-gap: 20px; row-gap: 12px; padding: 16px 24px 90px;
+        align-items: stretch;
+      }
+      /* The Cook Genie bar is taken out of grid flow and docked at the very
+         bottom (the 90px bottom padding reserves room so it never overlaps nav). */
+      .cookModeOverlay > #genieBar { position: absolute; left: 16px; right: 16px; bottom: 10px; z-index: 8; }
+      .cookModeTop  { position: static; grid-area: top; padding: 4px 4px 2px; }
+      .cmLeftRail   { grid-area: left;  align-self: start; max-width: none; margin: 0; overflow-y: auto; scrollbar-width: none; }
+      .cmLeftRail::-webkit-scrollbar { display: none; }
+      .cookModeMain { grid-area: center; max-width: none; }
+      .cmRightRail  { grid-area: right; align-self: start; max-width: none; margin: 0; }
+      .cmBottomBar  { grid-area: bottom; max-width: none; }
+      /* In the bounded center cell the ring no longer needs the big top offset or band. */
+      .cookModeRingWrap { margin-top: 6px; }
+      .cookModeRingWrap::before { display: none; }
+    }
+
     /* Step progress ring — sticky at the top of the scroll area so it NEVER
        disappears, even when a long step + timer make the middle scroll. */
     .cookModeRingWrap {
@@ -8583,12 +8670,6 @@
       </div>
     </div>
 
-    <!-- Utility cluster: Ingredients + Ask, docked top-right (no bottom-band collisions) -->
-    <div class="cmUtilCluster">
-      <button class="cmIngToggleBtn" id="cmIngToggleBtn" type="button">📋 Ingredients</button>
-      <button class="cookModeAskBtn" id="cookModeAskBtn" type="button" aria-label="Ask the AI chef">💬</button>
-    </div>
-
     <!-- Resume banner (shown when re-entering a recipe mid-cook) -->
     <div class="cmResumeBanner hidden" id="cmResumeBanner">
       <span id="cmResumeText">Resume from step 1?</span>
@@ -8596,6 +8677,29 @@
       <button class="cmResumeDismiss" id="cmResumeDismiss" type="button">✕</button>
     </div>
 
+    <!-- ░░ LEFT RAIL — execution controls (timer · voice · tip) ░░ -->
+    <aside class="cmLeftRail" id="cmLeftRail" role="region" aria-label="Timer and voice controls">
+      <div class="cmRailCard cmTimerCard">
+        <div class="cmRailLabel">Timer</div>
+        <div class="cookModeTimerWrap" id="cookModeTimerWrap" style="display:none">
+          <div class="cookModeTimerRingWrap" id="cookModeTimerRingWrap" role="timer">
+            <!-- Timer SVG injected by JS -->
+          </div>
+          <button class="cookModeTimerBtn" id="cookModeTimerBtn" type="button">▶ Start Timer</button>
+        </div>
+        <button class="cmAddTimerBtn" id="cmAddTimerBtn" type="button">＋ Custom Timer</button>
+      </div>
+      <div class="cookModeVoice" id="cookModeVoice" aria-live="polite">
+        <span class="cookModeVoiceDot"></span>
+        <span class="cmVoiceCopy"><span id="cookModeVoiceLabel">Say "Hey Simmer, next"</span><small>Voice cooking active</small></span>
+      </div>
+      <div class="cmProTip">
+        <div class="cmProTipIcon">👨‍🍳</div>
+        <div><div class="cmProTipTitle">Pro Tip</div><div class="cmProTipBody">Read the entire recipe before you begin for the best experience.</div></div>
+      </div>
+    </aside>
+
+    <!-- ░░ CENTER — reading experience ░░ -->
     <div class="cookModeMain">
       <div class="cookModeRingWrap" id="cookModeRingWrap">
         <!-- SVG injected by JS -->
@@ -8612,29 +8716,21 @@
         </label>
         <span class="cmTapHint">tap card · swipe · or say "hey simmer next"</span>
       </div>
-
-      <div class="cookModeTimerWrap" id="cookModeTimerWrap" style="display:none">
-        <div class="cookModeTimerRingWrap" id="cookModeTimerRingWrap">
-          <!-- Timer SVG injected by JS -->
-        </div>
-        <button class="cookModeTimerBtn" id="cookModeTimerBtn" type="button">▶ Start Timer</button>
-      </div>
-
-      <!-- + Custom timer button -->
-      <button class="cmAddTimerBtn" id="cmAddTimerBtn" type="button">＋ Custom Timer</button>
     </div>
 
-    <!-- Fixed controls zone — always visible, never covered by the genie -->
-    <div class="cookModeControls" id="cookModeControls">
-      <div class="cookModeVoice" id="cookModeVoice">
-        <span class="cookModeVoiceDot"></span>
-        <span id="cookModeVoiceLabel">Say "Hey Simmer, next"</span>
-      </div>
+    <!-- ░░ RIGHT RAIL — context + support ░░ -->
+    <aside class="cmRightRail" id="cmRightRail" role="region" aria-label="Recipe references and help">
+      <div class="cmRailHeading">Need a hand?<small>Reference without leaving the step</small></div>
+      <button class="cmRailAction" id="cmIngToggleBtn" type="button"><span class="cmRailActionIcon">📋</span><span class="cmRailActionLabel">View Ingredients</span><span class="cmRailChevron">›</span></button>
+      <button class="cmRailAction" id="cookModeAskBtn" type="button" aria-label="Ask the AI chef for tips"><span class="cmRailActionIcon">💡</span><span class="cmRailActionLabel">Kitchen Tips</span><span class="cmRailChevron">›</span></button>
+      <button class="cmRailAction" id="cmSubsBtn" type="button"><span class="cmRailActionIcon">🔁</span><span class="cmRailActionLabel">Substitutions</span><span class="cmRailChevron">›</span></button>
+    </aside>
+
+    <!-- ░░ BOTTOM — progress + navigation ░░ -->
+    <div class="cmBottomBar" id="cmBottomBar">
+      <button class="cookModeNavBtn secondary" id="cookModePrevBtn" type="button">← Previous</button>
       <div class="cookModeStepDots" id="cookModeStepDots"></div>
-      <div class="cookModeNav">
-        <button class="cookModeNavBtn secondary" id="cookModePrevBtn" type="button">← Previous</button>
-        <button class="cookModeNavBtn primary" id="cookModeNextBtn" type="button">Next Step →</button>
-      </div>
+      <button class="cookModeNavBtn primary" id="cookModeNextBtn" type="button">Next Step →</button>
     </div>
 
     <!-- Done celebration screen — revealed on last step -->
@@ -16197,6 +16293,11 @@
       document.getElementById("cookModeAskBtn")?.addEventListener("click", () => {
         const q = prompt("Ask the AI chef a question about this step:");
         if (q?.trim()) askCookModeAI(q.trim());
+      });
+      // Substitutions — reuse the AI chef with an ingredient-swap question.
+      document.getElementById("cmSubsBtn")?.addEventListener("click", () => {
+        const dish = (activeRecipe?.name) ? ` for ${activeRecipe.name}` : "";
+        askCookModeAI(`What are good ingredient substitutions${dish} if I'm missing something in this step?`);
       });
 
       document.getElementById("cookModeNextBtn")?.addEventListener("click", () => {
