@@ -5963,6 +5963,25 @@
     @media (prefers-reduced-motion: reduce) { .cmBottomBar .cookModeNavBtn.primary { animation: none; } }
     .cmBottomBar .cookModeNavBtn:disabled { opacity: 0.45; cursor: default; box-shadow: none; animation: none; }
 
+    /* ── Persistent floating Next CTA (cannot be clipped/hidden) ── */
+    .cmBottomBar #cookModeNextBtn { display: none; }   /* the floating CTA is canonical */
+    .cmFloatingNext {
+      position: fixed; bottom: 100px; right: 48px; z-index: 99999;
+      width: 300px; height: 80px; border: none; border-radius: 999px; cursor: pointer;
+      background: var(--ember-gradient); color: #fff; font-family: inherit;
+      font-size: 1.18rem; font-weight: 800; letter-spacing: 0.01em;
+      box-shadow: 0 16px 44px rgba(200,105,14,0.55), 0 0 0 1px rgba(255,200,120,0.18) inset;
+      display: none; align-items: center; justify-content: center; gap: 8px;
+      animation: cmBreathe 3.4s var(--ease-in-out) 5s infinite;
+      transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast) var(--ease-out);
+    }
+    .cookModeOverlay:not(.hidden) .cmFloatingNext { display: flex; }
+    .cmFloatingNext:hover { transform: translateY(-2px); filter: brightness(1.06); animation: none; }
+    .cmFloatingNext:active { transform: scale(0.97); }
+    .cmFloatingNext:focus-visible { outline: none; box-shadow: 0 0 0 4px var(--accentGlow), 0 16px 44px rgba(200,105,14,0.55); }
+    @media (max-width: 680px) { .cmFloatingNext { right: 16px; bottom: 84px; width: min(300px, calc(100% - 32px)); } }
+    @media (prefers-reduced-motion: reduce) { .cmFloatingNext { animation: none; } }
+
     /* Step progress ring — sticky at the top of the scroll area so it NEVER
        disappears, even when a long step + timer make the middle scroll. */
     .cookModeRingWrap {
@@ -5996,9 +6015,18 @@
       letter-spacing: 0.04em;
     }
 
-    /* Plain wrapper around the step text (kept for a11y grouping). */
-    .cmStepTextScroll { width: 100%; }
+    /* Step text region — scrolls INTERNALLY only when content exceeds the panel,
+       behind a top/bottom fade. Works at every viewport size; page never scrolls. */
+    .cmStepTextScroll {
+      width: 100%; flex: 1 1 auto; min-height: 0;
+      overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+      scrollbar-width: none; -ms-overflow-style: none;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 22px), transparent 100%);
+              mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 22px), transparent 100%);
+    }
+    .cmStepTextScroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
     .cmStepTextScroll:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: 12px; }
+    .cmStageContent { overflow: hidden; }
     /* Step text */
     .cookModeStepText {
       font-family: 'Fraunces', serif;   /* cookbook, not chatbot */
@@ -6489,7 +6517,7 @@
     }
     .cookModeStepCard:active { transform: scale(0.995); }
     .cmStageImg {
-      position: absolute; top: 0; right: 0; bottom: 0; left: 62%; z-index: 0;   /* visual = 35-38% */
+      position: absolute; top: 0; right: 0; bottom: 0; left: 68%; z-index: 0;   /* visual = 32% */
       background-size: cover; background-position: center; opacity: 0.92;
     }
     .cmStageImg::after {           /* blend the image into the dark stage on the left */
@@ -6505,7 +6533,7 @@
       height: 100%; box-sizing: border-box;
       padding: clamp(28px, 3.2vw, 52px);
       display: flex; flex-direction: column; gap: 16px;
-      max-width: 65%;
+      max-width: 68%;
     }
     .cmChipRow { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
     .cmStepChip {
@@ -8934,6 +8962,11 @@
       <div class="cookModeStepDots" id="cookModeStepDots" style="display:none"></div>
       <button class="cookModeNavBtn primary" id="cookModeNextBtn" type="button">Next Step →</button>
     </div>
+
+    <!-- Persistent floating Next CTA — fixed to the viewport so it can never be
+         clipped, hidden, or rendered behind the assistant. Drives the same handler. -->
+    <button class="cmFloatingNext" id="cmFloatingNext" type="button"
+            onclick="document.getElementById('cookModeNextBtn').click()">Next Step →</button>
 
     <!-- Done celebration screen — revealed on last step -->
     <div class="cookModeDoneScreen hidden" id="cookModeDoneScreen">
