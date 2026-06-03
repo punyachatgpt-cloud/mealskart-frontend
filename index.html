@@ -5960,6 +5960,10 @@
     .cmBottomBar .cookModeNavBtn.primary:hover { transform: translateY(-1px); filter: brightness(1.06); }
     /* Both nav pills keep a consistent minimum width so they read as a pair. */
     .cmBottomBar .cookModeNavBtn.secondary, .cmBottomBar .cookModeNavBtn.primary { min-width: 132px; }
+    /* Last step: Next becomes a green "Finish" to signal completion. */
+    .cmBottomBar .cookModeNavBtn.primary.isFinish {
+      background: linear-gradient(135deg, #34d399, #10b981); box-shadow: 0 8px 22px rgba(16,185,129,0.4);
+    }
     /* Disabled Previous stays a clearly-visible outlined pill (not nearly invisible). */
     .cmBottomBar .cookModeNavBtn:disabled { opacity: 0.55; cursor: default; box-shadow: none; }
     .cmBottomBar .cookModeNavBtn.secondary:disabled { background: transparent; border-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); }
@@ -16195,11 +16199,16 @@
         timerWrap.classList.toggle("cmTimerIdle", timerSec <= 0 && !cookModeTimerId);
       }
 
-      // Buttons
+      // Buttons — first step: Prev disabled / Next enabled; middle: both enabled;
+      // last step: Next becomes "Finish" (clicking it ends the session).
       const prevBtn = document.getElementById("cookModePrevBtn");
       const nextBtn = document.getElementById("cookModeNextBtn");
+      const isLast  = stepNo >= total;
       if (prevBtn) prevBtn.disabled = currentStepIndex <= 0;
-      if (nextBtn) nextBtn.textContent = stepNo >= total ? "🎉 Done!" : "Next Step →";
+      if (nextBtn) {
+        nextBtn.textContent = isLast ? "✓ Finish" : "Next Step →";
+        nextBtn.classList.toggle("isFinish", isLast);
+      }
 
       // Save progress to sessionStorage
       if (activeRecipe) saveCookProgress(activeRecipe.id, currentStepIndex);
