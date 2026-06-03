@@ -5834,17 +5834,19 @@
       .cookModeOverlay {
         display: grid; overflow: hidden;
         grid-template-columns: minmax(190px, 18fr) 58fr minmax(228px, 24fr);
-        grid-template-rows: auto minmax(0, 1fr) auto;
-        grid-template-areas: "top top top" "left center right" "bottom bottom bottom";
-        column-gap: 20px; row-gap: 12px; padding: 16px 24px 90px;
+        grid-template-rows: auto minmax(0, 1fr) auto auto;
+        grid-template-areas:
+          "top    top     top"
+          "left   center  right"
+          "bottom bottom  bottom"
+          "genie  genie   genie";
+        column-gap: 20px; row-gap: 10px; padding: 16px 24px 12px;
         align-items: stretch;
       }
-      /* The Cook Genie bar is taken out of grid flow and docked at the very
-         bottom (the 90px bottom padding reserves room so it never overlaps nav). */
-      /* Assistant bar: thin, quiet, low-dominance — the recipe stays primary. */
-      .cookModeOverlay > #genieBar { position: absolute; left: 16px; right: 320px; bottom: 8px; z-index: 8;
-        max-height: 64px; overflow: hidden; opacity: 0.9; transform: scale(0.96); transform-origin: left bottom; }
-      .cookModeOverlay > #genieBar:hover { opacity: 1; }
+      /* Assistant bar is its OWN row below the nav — never overlaps it, never
+         clips its content. Quiet/low-dominance but fully visible. */
+      .cookModeOverlay > #genieBar { grid-area: genie; position: static; z-index: 8;
+        max-height: none; overflow: visible; opacity: 0.95; margin: 0; }
       .cookModeTop  { position: static; grid-area: top; padding: 4px 4px 2px; }
       .cmLeftRail   { grid-area: left;  align-self: start; max-width: none; margin: 0; overflow-y: auto; scrollbar-width: none; }
       .cmLeftRail::-webkit-scrollbar { display: none; }
