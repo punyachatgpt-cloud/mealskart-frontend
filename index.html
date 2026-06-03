@@ -6478,7 +6478,7 @@
     .cookModeStepCard {
       position: relative; overflow: hidden;
       width: 100%; box-sizing: border-box;
-      min-height: 340px; max-height: 75vh;
+      min-height: 360px; max-height: 72vh;
       border-radius: 24px;
       border: 1px solid rgba(255,235,210,0.10);
       background: #140C06;            /* warm near-black stage */
@@ -6548,9 +6548,16 @@
     .cmStepEmphasis .stepTime, .cmStepEmphasis .stepIngredient { color: #E8A020; }
     /* Larger editorial type on the cinematic stage (desktop) */
     @media (min-width: 1025px) {
-      .cmStageContent .cookModeStepText { font-size: clamp(1.7rem, 1rem + 1.5vw, 2.5rem); line-height: 1.24; letter-spacing: -0.012em; text-align: left; max-width: 26ch; }
-      .cmStageContent .cookModeStepText.cmLongStep { font-size: clamp(1.45rem, 0.9rem + 1.1vw, 2.0rem); line-height: 1.3; max-width: 30ch; }
-      .cmStepSecondary { font-size: 0.62em; max-width: 40ch; }
+      /* Medium (default) */
+      .cmStageContent .cookModeStepText { font-size: clamp(1.9rem, 1.1rem + 1.6vw, 2.7rem); line-height: 1.24; letter-spacing: -0.012em; text-align: left; max-width: 24ch; }
+      /* Short step → hero type */
+      .cmStageContent .cookModeStepText.cmShortStep { font-size: clamp(2.4rem, 1.3rem + 2.1vw, 3.5rem); line-height: 1.18; max-width: 18ch; }
+      /* Long step → steps down, comfortable line length */
+      .cmStageContent .cookModeStepText.cmLongStep { font-size: clamp(1.55rem, 0.9rem + 1.2vw, 2.1rem); line-height: 1.32; max-width: 32ch; }
+      .cmStepSecondary { font-size: 0.6em; max-width: 42ch; }
+      /* Image yields to long content */
+      .cookModeStepCard.cmLongCard .cmStageImg { left: 76%; opacity: 0.8; }
+      .cookModeStepCard.cmLongCard .cmStageContent { max-width: 80%; }
       .cmStageContent { gap: 18px; overflow: hidden; }
       /* Long instructions scroll within the stage text column behind a soft fade,
          so the ring/timer/controls (in the rails) are never displaced. */
@@ -16128,8 +16135,12 @@
           ? `<div class="stepTimerChip">⏱ ${Math.round(timerChipSec / 60)} min</div>`
           : "";
         stepEl.innerHTML = cmStructureStepText(stepText) + timerChip;
-        // Long instructions step the type down a notch so they stay readable.
-        stepEl.classList.toggle("cmLongStep", (stepText || "").length > 160);
+        // Adaptive type tiers: short steps go large (hero), long steps step down.
+        const _len = (stepText || "").length;
+        stepEl.classList.toggle("cmShortStep", _len < 90);
+        stepEl.classList.toggle("cmLongStep", _len > 200);
+        // When the step is long, the image yields (narrows) so text dominates.
+        document.getElementById("cookModeStepCard")?.classList.toggle("cmLongCard", _len > 240);
         // Reset the scroll position to the top on each new step (ring + card start visible).
         const _sc = document.querySelector(".cookModeMain");
         if (_sc) _sc.scrollTop = 0;
