@@ -6024,11 +6024,14 @@
     }
     .cookModeTimerDisplay {
       position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
       font-family: 'Fraunces', serif;
       font-size: 1.4rem; font-weight: 900;
       color: #fff;
     }
+    .cmTimerValue { font-family: 'Fraunces', serif; font-size: 1.5rem; font-weight: 900; line-height: 1; }
+    .cmTimerLabel { font-family: 'Inter', sans-serif; font-size: 0.46rem; font-weight: 700; letter-spacing: 0.16em; color: rgba(255,255,255,0.45); }
+    .cmTimerUnit { font-family: 'Inter', sans-serif; font-size: 0.46rem; font-weight: 600; letter-spacing: 0.06em; color: rgba(255,255,255,0.4); }
     .cookModeTimerBtn {
       background: rgba(200,105,14,0.20);
       border: 1.5px solid rgba(200,105,14,0.45);
@@ -6521,6 +6524,11 @@
     /* Editorial highlights inside the stage — ember accents like the reference */
     .cookModeStepText .stepIngredient { color: #E8A020; font-weight: 700; }
     .cookModeStepText .stepTime { color: #E8A020; font-weight: 800; font-variant-numeric: tabular-nums; }
+    /* Editorial three-tier step text */
+    .cmStepPrimary { display: block; }
+    .cmStepSecondary { display: block; margin-top: 14px; font-size: 0.66em; line-height: 1.55; color: rgba(255,255,255,0.72); }
+    .cmStepEmphasis { display: block; margin-top: 16px; font-weight: 800; color: #fff; }
+    .cmStepEmphasis .stepTime, .cmStepEmphasis .stepIngredient { color: #E8A020; }
     /* Larger editorial type on the cinematic stage (desktop) */
     @media (min-width: 1025px) {
       .cmStageContent .cookModeStepText { font-size: clamp(1.4rem, 1rem + 1.1vw, 2.0rem); line-height: 1.4; text-align: left; max-width: 24ch; }
@@ -15081,7 +15089,7 @@
             transform="rotate(-90 ${cx} ${cy})"
             style="transition:stroke-dasharray 1s linear,stroke 0.3s"/>
         </svg>
-        <div class="cookModeTimerDisplay">${formatTimer(remaining)}</div>
+        <div class="cookModeTimerDisplay"><span class="cmTimerLabel">REMAINING</span><span class="cmTimerValue">${formatTimer(remaining)}</span><span class="cmTimerUnit">min : sec</span></div>
       `;
     }
 
@@ -15995,6 +16003,27 @@
       });
     }
 
+    // Editorial split: big primary lead, smaller secondary detail, and a standalone
+    // time/action emphasis line (e.g. "Chill for 20 minutes.") — matches the reference.
+    function cmStructureStepText(text) {
+      const sentences = String(text || "").match(/[^.!?]+[.!?]+|\S[^.!?]*$/g) || [text];
+      const parts = sentences.map(s => s.trim()).filter(Boolean);
+      if (parts.length <= 1) return `<span class="cmStepPrimary">${highlightStepText(text)}</span>`;
+      // Pull a trailing emphasis line if it states a time-bound action.
+      let emphasis = "";
+      const last = parts[parts.length - 1];
+      if (/\b(chill|rest|refrigerate|bake|cook|simmer|marinate|soak|freeze|set aside|prove|proof)\b/i.test(last)
+          && /\d+\s*(min|minute|hour|hr|sec|second)/i.test(last)) {
+        emphasis = parts.pop();
+      }
+      const primary = parts.shift();
+      const secondary = parts.join(" ");
+      let html = `<span class="cmStepPrimary">${highlightStepText(primary)}</span>`;
+      if (secondary) html += `<span class="cmStepSecondary">${highlightStepText(secondary)}</span>`;
+      if (emphasis) html += `<span class="cmStepEmphasis">${highlightStepText(emphasis)}</span>`;
+      return html;
+    }
+
     // Populate the reference-design chrome (top stepper, bottom timeline, stage
     // food image, step chip, ingredient preview). UI-only; reads existing state.
     function cmRenderReferenceChrome(stepNo, total) {
@@ -16082,7 +16111,7 @@
         const timerChip = timerChipSec > 0
           ? `<div class="stepTimerChip">⏱ ${Math.round(timerChipSec / 60)} min</div>`
           : "";
-        stepEl.innerHTML = highlightStepText(stepText) + timerChip;
+        stepEl.innerHTML = cmStructureStepText(stepText) + timerChip;
         // Long instructions step the type down a notch so they stay readable.
         stepEl.classList.toggle("cmLongStep", (stepText || "").length > 160);
         // Reset the scroll position to the top on each new step (ring + card start visible).
