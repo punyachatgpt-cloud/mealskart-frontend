@@ -5814,7 +5814,7 @@
     .cmRailActionLabel { flex: 1; }
     .cmRailChevron { color: rgba(255,255,255,0.32); font-size: 1.2rem; }
     /* Bottom bar */
-    .cmBottomBar { display: flex; align-items: center; gap: 16px;
+    .cmBottomBar { display: flex; align-items: center; justify-content: space-between; gap: 16px;
       width: 100%; max-width: 540px; margin: 0 auto; padding: 8px 20px 12px; box-sizing: border-box; }
     .cmBottomBar .cookModeStepDots { flex: 1; }
 
@@ -5949,38 +5949,18 @@
       border: 1px solid rgba(255,255,255,0.14);
     }
     .cmBottomBar .cookModeNavBtn.secondary:hover { background: rgba(255,255,255,0.09); }
+    /* Next MIRRORS Previous — identical pill shape/size, warm accent fill, right end. */
     .cmBottomBar .cookModeNavBtn.primary {
-      min-width: 280px; height: 76px; padding: 0 40px; font-size: var(--t-lg); font-weight: var(--fw-black);
+      padding: 13px 26px; font-size: var(--t-sm); font-weight: var(--fw-bold);
       background: var(--ember-gradient); color: #fff; border: none;
-      box-shadow: 0 14px 40px rgba(200,105,14,0.55), 0 0 0 1px rgba(255,200,120,0.15) inset;
-      animation: cmBreathe 3.4s var(--ease-in-out) 5s infinite;
+      box-shadow: 0 8px 22px rgba(200,105,14,0.42);
     }
-    .cmBottomBar .cookModeNavBtn.primary:hover { transform: translateY(-2px); filter: brightness(1.06); animation: none; }
-    @keyframes cmBreathe {
-      0%, 100% { box-shadow: 0 14px 40px rgba(200,105,14,0.5), 0 0 0 1px rgba(255,200,120,0.15) inset; }
-      50%      { box-shadow: 0 18px 52px rgba(200,105,14,0.8), 0 0 0 1px rgba(255,200,120,0.25) inset; }
-    }
-    @media (prefers-reduced-motion: reduce) { .cmBottomBar .cookModeNavBtn.primary { animation: none; } }
-    .cmBottomBar .cookModeNavBtn:disabled { opacity: 0.45; cursor: default; box-shadow: none; animation: none; }
-
-    /* ── Persistent floating Next CTA (cannot be clipped/hidden) ── */
-    .cmBottomBar #cookModeNextBtn { display: none; }   /* the floating CTA is canonical */
-    .cmFloatingNext {
-      position: fixed; bottom: 100px; right: 48px; z-index: 99999;
-      width: 300px; height: 80px; border: none; border-radius: 999px; cursor: pointer;
-      background: var(--ember-gradient); color: #fff; font-family: inherit;
-      font-size: 1.18rem; font-weight: 800; letter-spacing: 0.01em;
-      box-shadow: 0 16px 44px rgba(200,105,14,0.55), 0 0 0 1px rgba(255,200,120,0.18) inset;
-      display: none; align-items: center; justify-content: center; gap: 8px;
-      animation: cmBreathe 3.4s var(--ease-in-out) 5s infinite;
-      transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast) var(--ease-out);
-    }
-    .cookModeOverlay:not(.hidden) .cmFloatingNext { display: flex; }
-    .cmFloatingNext:hover { transform: translateY(-2px); filter: brightness(1.06); animation: none; }
-    .cmFloatingNext:active { transform: scale(0.97); }
-    .cmFloatingNext:focus-visible { outline: none; box-shadow: 0 0 0 4px var(--accentGlow), 0 16px 44px rgba(200,105,14,0.55); }
-    @media (max-width: 680px) { .cmFloatingNext { right: 16px; bottom: 84px; width: min(300px, calc(100% - 32px)); } }
-    @media (prefers-reduced-motion: reduce) { .cmFloatingNext { animation: none; } }
+    .cmBottomBar .cookModeNavBtn.primary:hover { transform: translateY(-1px); filter: brightness(1.06); }
+    /* Both nav pills keep a consistent minimum width so they read as a pair. */
+    .cmBottomBar .cookModeNavBtn.secondary, .cmBottomBar .cookModeNavBtn.primary { min-width: 132px; }
+    /* Disabled Previous stays a clearly-visible outlined pill (not nearly invisible). */
+    .cmBottomBar .cookModeNavBtn:disabled { opacity: 0.55; cursor: default; box-shadow: none; }
+    .cmBottomBar .cookModeNavBtn.secondary:disabled { background: transparent; border-color: rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); }
 
     /* Step progress ring — sticky at the top of the scroll area so it NEVER
        disappears, even when a long step + timer make the middle scroll. */
@@ -8962,11 +8942,6 @@
       <div class="cookModeStepDots" id="cookModeStepDots" style="display:none"></div>
       <button class="cookModeNavBtn primary" id="cookModeNextBtn" type="button">Next Step →</button>
     </div>
-
-    <!-- Persistent floating Next CTA — fixed to the viewport so it can never be
-         clipped, hidden, or rendered behind the assistant. Drives the same handler. -->
-    <button class="cmFloatingNext" id="cmFloatingNext" type="button"
-            onclick="document.getElementById('cookModeNextBtn').click()">Next Step →</button>
 
     <!-- Done celebration screen — revealed on last step -->
     <div class="cookModeDoneScreen hidden" id="cookModeDoneScreen">
