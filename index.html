@@ -5842,10 +5842,109 @@
       .cookModeMain { grid-area: center; max-width: none; }
       .cmRightRail  { grid-area: right; align-self: start; max-width: none; margin: 0; }
       .cmBottomBar  { grid-area: bottom; max-width: none; }
-      /* In the bounded center cell the ring no longer needs the big top offset or band. */
-      .cookModeRingWrap { margin-top: 6px; }
-      .cookModeRingWrap::before { display: none; }
+      /* The center ring is replaced by the top stepper on desktop. */
+      .cookModeRingWrap { display: none; }
+      .cookModeMain { justify-content: stretch; padding: 0; overflow: visible; }
+      .cookModeStepCard { height: 100%; max-height: none; }
     }
+
+    /* ── Reference chrome: stepper · timeline · previews · waveform ── */
+    /* Top centered step stepper (1 of N) */
+    .cmStepper { display: none; align-items: center; gap: 10px; }
+    .cmStepDot {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 800;
+      color: rgba(255,255,255,0.4); border: 1.5px solid rgba(255,255,255,0.16);
+    }
+    .cmStepDot.cur { color: #fff; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(200,105,14,0.16); position: relative; }
+    .cmStepDot.cur::after { content: "of " attr(data-total); position: absolute; top: 34px; left: 50%; transform: translateX(-50%);
+      font-size: 0.6rem; font-weight: 700; color: rgba(255,255,255,0.4); white-space: nowrap; }
+    .cmStepDot.done { color: var(--accent); border-color: rgba(200,105,14,0.5); }
+    @media (min-width: 1025px) { .cmStepper { display: flex; } }
+
+    .cmTopFlame { font-size: 1.1rem; }
+
+    /* Bottom cinematic timeline */
+    .cmTimeline { display: none; flex: 1; align-items: flex-start; gap: 0; padding: 0 6px; }
+    .cmTlStep { flex: 1; display: flex; flex-direction: column; align-items: flex-start; position: relative; min-width: 0; }
+    .cmTlLabel { font-size: 0.66rem; font-weight: 700; color: rgba(255,255,255,0.5); line-height: 1.2; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .cmTlSub { font-size: 0.6rem; color: rgba(255,255,255,0.3); margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+    .cmTlTrack { position: relative; width: 100%; height: 10px; display: flex; align-items: center; }
+    .cmTlTrack::before { content: ""; position: absolute; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.12); }
+    .cmTlStep.done .cmTlTrack::before, .cmTlStep.cur .cmTlTrack::before { background: var(--ember-gradient); }
+    .cmTlNode { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.18); position: relative; z-index: 1; }
+    .cmTlStep.done .cmTlNode { background: var(--accent); }
+    .cmTlStep.cur .cmTlNode { background: var(--accent); box-shadow: 0 0 0 4px rgba(200,105,14,0.25); }
+    .cmTlStep.cur .cmTlLabel { color: #fff; }
+    .cmTlTrophy { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; padding-left: 6px; }
+    .cmTlTrophy .cmTlLabel { color: rgba(255,255,255,0.45); }
+    .cmTlTrophyIcon { font-size: 1.1rem; opacity: 0.6; }
+    @media (min-width: 1025px) { .cmTimeline { display: flex; } }
+
+    /* Left rail: green voice waveform + premium timer pills */
+    .cmVoiceWave { display: inline-flex; align-items: center; gap: 2px; height: 18px; flex-shrink: 0; }
+    .cmVoiceWave i { width: 3px; border-radius: 2px; background: #34d399; height: 40%;
+      animation: cmWave 1s ease-in-out infinite; }
+    .cmVoiceWave i:nth-child(2) { animation-delay: 0.15s; }
+    .cmVoiceWave i:nth-child(3) { animation-delay: 0.3s; }
+    .cmVoiceWave i:nth-child(4) { animation-delay: 0.45s; }
+    .cmVoiceWave i:nth-child(5) { animation-delay: 0.6s; }
+    @keyframes cmWave { 0%,100% { height: 30%; } 50% { height: 95%; } }
+    .cmLeftRail #cookModeVoiceLabel { color: #6ee7a8; font-weight: 700; font-size: var(--t-sm); }
+    @media (prefers-reduced-motion: reduce) { .cmVoiceWave i { animation: none; height: 60%; } }
+
+    .cmTimerCard .cookModeTimerBtn {
+      width: 100%; background: var(--ember-gradient); color: #fff; border: none;
+      padding: 14px; border-radius: 14px; font-size: var(--t-base); font-weight: var(--fw-bold);
+      cursor: pointer; box-shadow: 0 8px 22px rgba(200,105,14,0.4);
+      transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast) var(--ease-out);
+    }
+    .cmTimerCard .cookModeTimerBtn:hover { transform: translateY(-1px); filter: brightness(1.05); }
+    .cmTimerCard .cmAddTimerBtn {
+      width: 100%; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.85);
+      border: 1px solid rgba(255,255,255,0.14); padding: 12px; border-radius: 14px;
+      font-size: var(--t-sm); font-weight: var(--fw-med); cursor: pointer; margin-top: 2px;
+    }
+    .cmTimerCard .cmAddTimerBtn:hover { background: rgba(255,255,255,0.09); }
+
+    /* Right rail: assistant bubble + ingredient preview card */
+    .cmRightRail { position: relative; }
+    .cmAssistantBubble {
+      position: absolute; top: -6px; right: 0; width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); cursor: pointer;
+      font-size: 1.1rem; display: flex; align-items: center; justify-content: center; z-index: 2;
+      transition: transform var(--dur-fast) var(--ease-out);
+    }
+    .cmAssistantBubble:hover { transform: scale(1.08); }
+    .cmIngPreview {
+      display: block; width: 100%; padding: 0; cursor: pointer; overflow: hidden;
+      border-radius: 18px; border: 1px solid var(--cm-rail-bd); background: var(--cm-rail-bg);
+      transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+    }
+    .cmIngPreview:hover { transform: translateY(-2px); border-color: rgba(200,105,14,0.4); }
+    .cmIngPreviewImg { width: 100%; height: 120px; background-size: cover; background-position: center; }
+    .cmIngPreviewFoot { display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 14px; font-size: var(--t-sm); font-weight: var(--fw-med); color: #fff; }
+    .cmIngPreviewSee { color: var(--accent); font-weight: var(--fw-bold); font-size: var(--t-xs); }
+
+    /* Bottom navigation — detached pills (prominent Next CTA) */
+    .cmBottomBar .cookModeNavBtn { border-radius: 999px; font-weight: var(--fw-bold); cursor: pointer;
+      transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast) var(--ease-out); flex: 0 0 auto; }
+    .cmBottomBar .cookModeNavBtn.secondary {
+      padding: 13px 22px; font-size: var(--t-sm);
+      background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.85);
+      border: 1px solid rgba(255,255,255,0.14);
+    }
+    .cmBottomBar .cookModeNavBtn.secondary:hover { background: rgba(255,255,255,0.09); }
+    .cmBottomBar .cookModeNavBtn.primary {
+      padding: 15px 34px; font-size: var(--t-base);
+      background: var(--ember-gradient); color: #fff; border: none;
+      box-shadow: 0 10px 28px rgba(200,105,14,0.45);
+    }
+    .cmBottomBar .cookModeNavBtn.primary:hover { transform: translateY(-1px); filter: brightness(1.05); }
+    .cmBottomBar .cookModeNavBtn:disabled { opacity: 0.45; cursor: default; box-shadow: none; }
 
     /* Step progress ring — sticky at the top of the scroll area so it NEVER
        disappears, even when a long step + timer make the middle scroll. */
@@ -5925,11 +6024,14 @@
     }
     .cookModeTimerDisplay {
       position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
       font-family: 'Fraunces', serif;
       font-size: 1.4rem; font-weight: 900;
       color: #fff;
     }
+    .cmTimerValue { font-family: 'Fraunces', serif; font-size: 1.5rem; font-weight: 900; line-height: 1; }
+    .cmTimerLabel { font-family: 'Inter', sans-serif; font-size: 0.46rem; font-weight: 700; letter-spacing: 0.16em; color: rgba(255,255,255,0.45); }
+    .cmTimerUnit { font-family: 'Inter', sans-serif; font-size: 0.46rem; font-weight: 600; letter-spacing: 0.06em; color: rgba(255,255,255,0.4); }
     .cookModeTimerBtn {
       background: rgba(200,105,14,0.20);
       border: 1.5px solid rgba(200,105,14,0.45);
@@ -6355,40 +6457,99 @@
       flex-shrink: 0;
     }
 
-    /* ── Glassmorphism step card ───────────────────────────────────── */
+    /* ── Cinematic step stage (food image right, editorial text left) ── */
     .cookModeStepCard {
-      /* Warm-tinted real glass with an inset top sheen (not cold neutral) */
-      background: linear-gradient(165deg, rgba(255,247,236,0.10), rgba(255,255,255,0.04));
-      backdrop-filter: blur(24px) saturate(1.4);
-      -webkit-backdrop-filter: blur(24px) saturate(1.4);
-      border: 1px solid rgba(255,235,210,0.14);
-      box-shadow: 0 24px 60px -12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
-      border-radius: 28px;
-      padding: 28px 26px 22px;
-      width: 100%;
-      display: flex; flex-direction: column;
-      align-items: center; gap: 10px;
-      cursor: pointer;
-      transition: background 0.25s, border-color 0.25s, transform 0.18s;
-      user-select: none; -webkit-user-select: none;
-      position: relative;
+      position: relative; overflow: hidden;
+      width: 100%; box-sizing: border-box;
+      min-height: 340px; max-height: 75vh;
+      border-radius: 24px;
+      border: 1px solid rgba(255,235,210,0.10);
+      background: #140C06;            /* warm near-black stage */
+      box-shadow: 0 34px 90px -28px rgba(0,0,0,0.78), inset 0 1px 0 rgba(255,255,255,0.05);
+      cursor: pointer; user-select: none; -webkit-user-select: none;
+      transition: border-color 0.25s, transform 0.18s;
+      display: block; padding: 0;
     }
-    .cookModeStepCard:active { background: rgba(255,255,255,0.10); transform: scale(0.985); }
-    /* Pin everything except the scrollable text so they never get pushed off. */
-    .cmStepTypeBadge, .cmAutoStartChip, .cmTapHint { flex: 0 0 auto; }
+    .cookModeStepCard:active { transform: scale(0.995); }
+    .cmStageImg {
+      position: absolute; top: 0; right: 0; bottom: 0; left: 30%; z-index: 0;
+      background-size: cover; background-position: center; opacity: 0.96;
+    }
+    .cmStageImg::after {           /* blend the image into the dark stage on the left */
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(90deg, #140C06 0%, #140C06 22%, rgba(20,12,6,0.55) 52%, rgba(20,12,6,0.08) 100%);
+    }
+    .cookModeStepCard::before {    /* extra readability scrim on the text side */
+      content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background: linear-gradient(90deg, rgba(11,7,3,0.72) 0%, rgba(11,7,3,0.3) 45%, transparent 70%);
+    }
+    .cmStageContent {
+      position: relative; z-index: 2;
+      height: 100%; box-sizing: border-box;
+      padding: clamp(26px, 3vw, 44px);
+      display: flex; flex-direction: column; gap: 16px;
+      max-width: 64%;
+    }
+    .cmChipRow { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+    .cmStepChip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: 999px;
+      font-size: 0.68rem; font-weight: 800; letter-spacing: 0.04em;
+      color: #6ee7a8; background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.35);
+    }
+    .cmStepTypeBadge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: 999px;
+      font-size: 0.68rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.6); flex-shrink: 0;
+    }
     .cmTapHint {
-      font-size: 0.62rem; color: rgba(255,255,255,0.18);
-      letter-spacing: 0.10em; text-transform: uppercase;
-      font-weight: 700; pointer-events: none;
+      font-size: 0.6rem; color: rgba(255,255,255,0.22);
+      letter-spacing: 0.10em; text-transform: uppercase; font-weight: 700;
+      pointer-events: none; flex: 0 0 auto; margin-top: auto;
     }
-    /* Short-viewport adjustments — compress padding before anything is sacrificed. */
-    @media (max-height: 700px) {
-      .cookModeStepCard { padding: 20px 22px 16px; }
-      .cookModeRingWrap { margin-top: 54px; }
+    .cmAutoStartChip { flex: 0 0 auto; }
+    /* Floating circular Next on the stage's right edge */
+    .cmStageNext {
+      position: absolute; z-index: 4; right: 22px; top: 50%; transform: translateY(-50%);
+      width: 58px; height: 58px; border-radius: 50%; border: none; cursor: pointer;
+      background: var(--ember-gradient); color: #fff; font-size: 1.4rem; line-height: 1;
+      box-shadow: 0 10px 28px rgba(200,105,14,0.5);
+      display: flex; align-items: center; justify-content: center;
+      transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast) var(--ease-out);
     }
-    @media (max-height: 560px) {
-      .cmTapHint { display: none; }
+    .cmStageNext:hover { transform: translateY(-50%) scale(1.06); filter: brightness(1.05); }
+    .cmStageNext:active { transform: translateY(-50%) scale(0.96); }
+    /* Editorial highlights inside the stage — ember accents like the reference */
+    .cookModeStepText .stepIngredient { color: #E8A020; font-weight: 700; }
+    .cookModeStepText .stepTime { color: #E8A020; font-weight: 800; font-variant-numeric: tabular-nums; }
+    /* Editorial three-tier step text */
+    .cmStepPrimary { display: block; }
+    .cmStepSecondary { display: block; margin-top: 14px; font-size: 0.66em; line-height: 1.55; color: rgba(255,255,255,0.72); }
+    .cmStepEmphasis { display: block; margin-top: 16px; font-weight: 800; color: #fff; }
+    .cmStepEmphasis .stepTime, .cmStepEmphasis .stepIngredient { color: #E8A020; }
+    /* Larger editorial type on the cinematic stage (desktop) */
+    @media (min-width: 1025px) {
+      .cmStageContent .cookModeStepText { font-size: clamp(1.4rem, 1rem + 1.1vw, 2.0rem); line-height: 1.4; text-align: left; max-width: 24ch; }
+      .cmStageContent .cookModeStepText.cmLongStep { font-size: clamp(1.18rem, 0.9rem + 0.8vw, 1.55rem); line-height: 1.42; max-width: 30ch; }
+      .cmStageContent { gap: 18px; overflow: hidden; }
+      /* Long instructions scroll within the stage text column behind a soft fade,
+         so the ring/timer/controls (in the rails) are never displaced. */
+      .cmStageContent .cmStepTextScroll {
+        flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden;
+        scrollbar-width: none; -ms-overflow-style: none; overscroll-behavior: contain;
+        -webkit-mask-image: linear-gradient(to bottom, #000 86%, transparent 100%);
+                mask-image: linear-gradient(to bottom, #000 86%, transparent 100%);
+      }
+      .cmStageContent .cmStepTextScroll::-webkit-scrollbar { width: 0; height: 0; display: none; }
     }
+    @media (max-width: 1024px) {
+      .cmStageImg { left: 50%; opacity: 0.5; }
+      .cmStageContent { max-width: 100%; }
+      .cmStageNext { display: none; }     /* bottom nav handles next on mobile */
+    }
+    @media (max-height: 560px) { .cmTapHint { display: none; } }
 
     /* ── Step dots strip ───────────────────────────────────────────── */
     .cookModeStepDots {
@@ -8651,10 +8812,12 @@
 
     <div class="cookModeTop">
       <div class="cmTopMeta">
+        <span class="cmTopFlame" aria-hidden="true">🔥</span>
         <div class="cookModeDishName" id="cookModeDishName"></div>
         <span class="cmElapsedBadge" id="cmElapsedBadge" style="display:none">0 min</span>
         <span class="cmScaleBadge" id="cmScaleBadge" style="display:none"></span>
       </div>
+      <div class="cmStepper" id="cmStepper" aria-hidden="true"><!-- step circles injected by JS --></div>
       <div class="cookModeTopRight">
         <div class="genieLangWrap" id="genieLangWrap">
           <button class="genieLangBtn" id="genieLangBtn" type="button" aria-haspopup="true" aria-expanded="false">
@@ -8690,7 +8853,7 @@
         <button class="cmAddTimerBtn" id="cmAddTimerBtn" type="button">＋ Custom Timer</button>
       </div>
       <div class="cookModeVoice" id="cookModeVoice" aria-live="polite">
-        <span class="cookModeVoiceDot"></span>
+        <span class="cmVoiceWave" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
         <span class="cmVoiceCopy"><span id="cookModeVoiceLabel">Say "Hey Simmer, next"</span><small>Voice cooking active</small></span>
       </div>
       <div class="cmProTip">
@@ -8699,37 +8862,53 @@
       </div>
     </aside>
 
-    <!-- ░░ CENTER — reading experience ░░ -->
+    <!-- ░░ CENTER — cinematic reading stage ░░ -->
     <div class="cookModeMain">
       <div class="cookModeRingWrap" id="cookModeRingWrap">
-        <!-- SVG injected by JS -->
+        <!-- SVG injected by JS (hidden on desktop — the top stepper shows progress) -->
       </div>
 
-      <!-- Glassmorphism step card (tap to advance) -->
+      <!-- Cinematic step stage (tap to advance) -->
       <div class="cookModeStepCard" id="cookModeStepCard">
-        <span class="cmStepTypeBadge" id="cmStepTypeBadge">🔪 Prep</span>
-        <div class="cmStepTextScroll" id="cmStepTextScroll" tabindex="0" role="group" aria-label="Step instruction">
-          <p class="cookModeStepText" id="cookModeStepText">Loading...</p>
+        <div class="cmStageImg" id="cmStageImg" aria-hidden="true"></div>
+        <div class="cmStageContent">
+          <div class="cmChipRow">
+            <span class="cmStepChip" id="cmStepChip">Step 1</span>
+            <span class="cmStepTypeBadge" id="cmStepTypeBadge">🔪 Prep</span>
+          </div>
+          <div class="cmStepTextScroll" id="cmStepTextScroll" tabindex="0" role="group" aria-label="Step instruction">
+            <p class="cookModeStepText" id="cookModeStepText">Loading...</p>
+          </div>
+          <label class="cmAutoStartChip" id="cmAutoStartChip" title="Auto-start detected timers">
+            <input type="checkbox" id="cmAutoStartToggle"> Auto-advance timers
+          </label>
+          <span class="cmTapHint">tap · swipe · or say "hey simmer next"</span>
         </div>
-        <label class="cmAutoStartChip" id="cmAutoStartChip" title="Auto-start detected timers">
-          <input type="checkbox" id="cmAutoStartToggle"> Auto-start timers
-        </label>
-        <span class="cmTapHint">tap card · swipe · or say "hey simmer next"</span>
+        <button class="cmStageNext" type="button" aria-label="Next step"
+                onclick="document.getElementById('cookModeNextBtn').click()">→</button>
       </div>
     </div>
 
     <!-- ░░ RIGHT RAIL — context + support ░░ -->
     <aside class="cmRightRail" id="cmRightRail" role="region" aria-label="Recipe references and help">
-      <div class="cmRailHeading">Need a hand?<small>Reference without leaving the step</small></div>
+      <button class="cmAssistantBubble" id="cmAssistantBubble" type="button" aria-label="Ask the assistant"
+              onclick="document.getElementById('cookModeAskBtn').click()">💬</button>
+      <div class="cmRailHeading">Need a hand?<small>Here are some helpful options</small></div>
       <button class="cmRailAction" id="cmIngToggleBtn" type="button"><span class="cmRailActionIcon">📋</span><span class="cmRailActionLabel">View Ingredients</span><span class="cmRailChevron">›</span></button>
       <button class="cmRailAction" id="cookModeAskBtn" type="button" aria-label="Ask the AI chef for tips"><span class="cmRailActionIcon">💡</span><span class="cmRailActionLabel">Kitchen Tips</span><span class="cmRailChevron">›</span></button>
       <button class="cmRailAction" id="cmSubsBtn" type="button"><span class="cmRailActionIcon">🔁</span><span class="cmRailActionLabel">Substitutions</span><span class="cmRailChevron">›</span></button>
+      <button class="cmIngPreview" id="cmIngPreview" type="button"
+              onclick="document.getElementById('cmIngToggleBtn').click()">
+        <div class="cmIngPreviewImg" id="cmIngPreviewImg" aria-hidden="true"></div>
+        <div class="cmIngPreviewFoot"><span id="cmIngPreviewCount">Ingredients</span><span class="cmIngPreviewSee">See all ›</span></div>
+      </button>
     </aside>
 
-    <!-- ░░ BOTTOM — progress + navigation ░░ -->
+    <!-- ░░ BOTTOM — cinematic timeline + navigation ░░ -->
     <div class="cmBottomBar" id="cmBottomBar">
       <button class="cookModeNavBtn secondary" id="cookModePrevBtn" type="button">← Previous</button>
-      <div class="cookModeStepDots" id="cookModeStepDots"></div>
+      <div class="cmTimeline" id="cmTimeline" role="progressbar" aria-valuemin="1"><!-- injected by JS --></div>
+      <div class="cookModeStepDots" id="cookModeStepDots" style="display:none"></div>
       <button class="cookModeNavBtn primary" id="cookModeNextBtn" type="button">Next Step →</button>
     </div>
 
@@ -14910,7 +15089,7 @@
             transform="rotate(-90 ${cx} ${cy})"
             style="transition:stroke-dasharray 1s linear,stroke 0.3s"/>
         </svg>
-        <div class="cookModeTimerDisplay">${formatTimer(remaining)}</div>
+        <div class="cookModeTimerDisplay"><span class="cmTimerLabel">REMAINING</span><span class="cmTimerValue">${formatTimer(remaining)}</span><span class="cmTimerUnit">min : sec</span></div>
       `;
     }
 
@@ -15824,6 +16003,76 @@
       });
     }
 
+    // Editorial split: big primary lead, smaller secondary detail, and a standalone
+    // time/action emphasis line (e.g. "Chill for 20 minutes.") — matches the reference.
+    function cmStructureStepText(text) {
+      const sentences = String(text || "").match(/[^.!?]+[.!?]+|\S[^.!?]*$/g) || [text];
+      const parts = sentences.map(s => s.trim()).filter(Boolean);
+      if (parts.length <= 1) return `<span class="cmStepPrimary">${highlightStepText(text)}</span>`;
+      // Pull a trailing emphasis line if it states a time-bound action.
+      let emphasis = "";
+      const last = parts[parts.length - 1];
+      if (/\b(chill|rest|refrigerate|bake|cook|simmer|marinate|soak|freeze|set aside|prove|proof)\b/i.test(last)
+          && /\d+\s*(min|minute|hour|hr|sec|second)/i.test(last)) {
+        emphasis = parts.pop();
+      }
+      const primary = parts.shift();
+      const secondary = parts.join(" ");
+      let html = `<span class="cmStepPrimary">${highlightStepText(primary)}</span>`;
+      if (secondary) html += `<span class="cmStepSecondary">${highlightStepText(secondary)}</span>`;
+      if (emphasis) html += `<span class="cmStepEmphasis">${highlightStepText(emphasis)}</span>`;
+      return html;
+    }
+
+    // Populate the reference-design chrome (top stepper, bottom timeline, stage
+    // food image, step chip, ingredient preview). UI-only; reads existing state.
+    function cmRenderReferenceChrome(stepNo, total) {
+      const img = activeRecipe?.image_url || "";
+      // Top stepper
+      const stepper = document.getElementById("cmStepper");
+      if (stepper) {
+        const max = Math.min(total, 6);
+        let h = "";
+        for (let i = 1; i <= max; i++) {
+          const cls = i === stepNo ? "cur" : (i < stepNo ? "done" : "");
+          h += `<span class="cmStepDot ${cls}" data-total="${total}">${i < stepNo ? "✓" : i}</span>`;
+        }
+        stepper.innerHTML = h;
+      }
+      // Stage food image + step chip
+      const stage = document.getElementById("cmStageImg");
+      if (stage && img) stage.style.backgroundImage = `url('${img}')`;
+      const chip = document.getElementById("cmStepChip");
+      if (chip) chip.textContent = `Step ${stepNo}`;
+      // Ingredient preview card
+      const ingImg = document.getElementById("cmIngPreviewImg");
+      if (ingImg && img) ingImg.style.backgroundImage = `url('${img}')`;
+      const ingCount = document.getElementById("cmIngPreviewCount");
+      if (ingCount) {
+        const n = (activeRecipe?.ingredients_with_quantities?.length)
+              || (activeRecipe?.ingredients?.length) || 0;
+        ingCount.textContent = n ? `${n} ingredients` : "Ingredients";
+      }
+      // Bottom timeline
+      const tl = document.getElementById("cmTimeline");
+      if (tl) {
+        const max = Math.min(total, 5);
+        let h = "";
+        for (let i = 1; i <= max; i++) {
+          const cls = i === stepNo ? "cur" : (i < stepNo ? "done" : "");
+          let sub = "";
+          try { sub = _cmStepTypeConfig[detectStepType(modalSteps[i - 1] || "")].label; } catch (e) {}
+          h += `<div class="cmTlStep ${cls}"><span class="cmTlLabel">Step ${i}</span>`
+             + `<span class="cmTlSub">${escapeHtml(sub)}</span>`
+             + `<div class="cmTlTrack"><span class="cmTlNode"></span></div></div>`;
+        }
+        h += `<div class="cmTlTrophy"><span class="cmTlLabel">Recipe Complete</span><span class="cmTlTrophyIcon">🏆</span></div>`;
+        tl.innerHTML = h;
+        tl.setAttribute("aria-valuenow", stepNo);
+        tl.setAttribute("aria-valuemax", total);
+      }
+    }
+
     function updateCookModeUI(direction = "forward") {
       const stepNo = currentStepIndex + 1;
       const total  = modalSteps.length;
@@ -15862,7 +16111,7 @@
         const timerChip = timerChipSec > 0
           ? `<div class="stepTimerChip">⏱ ${Math.round(timerChipSec / 60)} min</div>`
           : "";
-        stepEl.innerHTML = highlightStepText(stepText) + timerChip;
+        stepEl.innerHTML = cmStructureStepText(stepText) + timerChip;
         // Long instructions step the type down a notch so they stay readable.
         stepEl.classList.toggle("cmLongStep", (stepText || "").length > 160);
         // Reset the scroll position to the top on each new step (ring + card start visible).
@@ -15872,6 +16121,8 @@
 
       // Step dots
       renderCookModeStepDots();
+      // Reference chrome: top stepper, bottom timeline, stage image, ingredient preview
+      cmRenderReferenceChrome(stepNo, total);
 
       // Genie narrates and reacts
       if (_genie.active) genieOnStepChange(stepText, stepNo, total);
