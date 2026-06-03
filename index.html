@@ -5741,9 +5741,14 @@
                                            viewport edge, never floating mid-screen */
       flex: 1 1 auto; min-height: 0;
       overflow-y: auto; overflow-x: hidden;
+      /* Hide the scrollbar entirely — long steps stay reachable by wheel/swipe,
+         and the nav buttons live in a separate fixed zone, so no bar ever shows. */
+      scrollbar-width: none;            /* Firefox */
+      -ms-overflow-style: none;         /* old Edge/IE */
       padding: 72px 20px 12px;          /* clear the absolute top bar */
       position: relative; z-index: 2;
     }
+    .cookModeMain::-webkit-scrollbar { width: 0; height: 0; display: none; }  /* Chrome/Safari */
     /* Inner content stays a centered 540px column even though the scroller is full width. */
     .cookModeMain > * { max-width: 540px; }
     .cookModeStepCard { max-width: 540px; }
@@ -15932,6 +15937,7 @@
 
       overlay.classList.remove("hidden");
       document.body.style.overflow = "hidden";   // lock page scroll — no stray edge scrollbar behind the overlay
+      document.documentElement.style.overflow = "hidden";
       _acquireWakeLock();   // keep screen on while cooking
 
       // Start elapsed time counter
@@ -16018,6 +16024,7 @@
       const overlay = document.getElementById("cookModeOverlay");
       if (overlay) overlay.classList.add("hidden");
       document.body.style.overflow = "";   // restore page scroll
+      document.documentElement.style.overflow = "";
       // ② Restore the recipe modal and sync step
       el.recipeModal.classList.add("open");
       updateModalStep();
