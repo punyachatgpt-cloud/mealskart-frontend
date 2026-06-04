@@ -5771,22 +5771,25 @@
       --cm-elev-hover: 0 16px 38px -12px rgba(200,105,14,0.32);
     }
     .cmLeftRail, .cmRightRail {
-      display: flex; flex-direction: column; gap: 14px;
+      display: flex; flex-direction: column; gap: 12px;
       width: 100%; max-width: 540px; margin: 0 auto; box-sizing: border-box;
     }
+    .cmLeftRail { gap: 11px; }   /* tighter stack so voice + Pro Tip sit higher */
     /* Shared glass surface for rail cards */
     .cmTimerCard, .cmProTip, .cmLeftRail .cookModeVoice, .cmRailAction {
       background: var(--cm-rail-bg); border: 1px solid var(--cm-rail-bd);
       border-radius: 18px;
       backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
     }
-    .cmTimerCard { padding: 18px 18px 16px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .cmTimerCard { padding: 14px 16px 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
     /* Large, persistent radial timer */
     .cmTimerCard .cookModeTimerWrap { width: 100%; align-items: center; }
-    .cmTimerCard .cookModeTimerRingWrap { width: clamp(150px, 14vw, 180px); height: clamp(150px, 14vw, 180px); margin: 2px auto 4px; }
+    .cmTimerCard .cookModeTimerRingWrap { width: clamp(118px, 11vw, 146px); height: clamp(118px, 11vw, 146px); margin: 0 auto 2px; }
     .cmTimerCard .cookModeTimerRingWrap svg { width: 100%; height: 100%; }
     .cmTimerCard.cmTimerIdle .cookModeTimerRingWrap, .cmTimerCard .cookModeTimerWrap.cmTimerIdle .cookModeTimerRingWrap { opacity: 0.7; }
-    .cmTimerCard .cmTimerValue { font-size: clamp(1.7rem, 2.6vw, 2.2rem); }
+    .cmTimerCard .cmTimerValue { font-size: clamp(1.5rem, 2.2vw, 1.9rem); }
+    .cmTimerCard .cookModeTimerBtn { padding: 11px; }
+    .cmTimerCard .cmAddTimerBtn { padding: 10px; }
     .cmRailLabel { align-self: flex-start; font-size: var(--t-xs); font-weight: var(--fw-bold);
       letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
     .cmLeftRail .cookModeVoice { padding: 12px 14px; }
