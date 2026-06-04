@@ -48,6 +48,12 @@
       --accentGlow: rgba(200, 105, 14, 0.22);
       --radius: 24px;
       --radiusSm: 16px;
+      --radiusXs: 8px;
+      /* ── Motion tokens (consolidated: fast / mid / slow) ── */
+      --motion-fast: 200ms;
+      --motion-mid: 300ms;
+      --motion-slow: 500ms;
+      --ease-out: cubic-bezier(0.2, 0.9, 0.2, 1);
       --goldInk: #7C2D12;
       --goldBg: #FEF3E2;
       --goldBorder: #F9D5A0;
@@ -8580,7 +8586,7 @@
     }
     .topbarRight { justify-self: end; position: relative; }
     .avatarTrigger {
-      width: 42px; height: 42px; border-radius: 50%;
+      width: 44px; height: 44px; border-radius: 50%;
       border: 1.5px solid var(--border);
       background: var(--bg1);
       display: inline-flex; align-items: center; justify-content: center;
@@ -8595,7 +8601,7 @@
 
     .avatarMenu {
       position: absolute; top: calc(100% + 10px); right: 0;
-      width: 256px; max-width: 80vw;
+      width: 288px; max-width: min(420px, 90vw);
       background: var(--bg1); border: 1px solid var(--border);
       border-radius: 18px; box-shadow: var(--shadow-overlay);
       padding: 8px; z-index: 120;
@@ -8621,6 +8627,18 @@
     .avatarMenuItem span:first-child { width: 20px; text-align: center; font-size: 0.96rem; }
     .avatarMenuItem:hover { background: rgba(200,105,14,0.10); color: var(--accent); }
     .avatarMenuLogout:hover { background: rgba(200,40,20,0.10); color: #c0392b; }
+    /* Nested "More" group — collapsed by default, expands in place */
+    .avatarMenuMoreToggle { justify-content: flex-start; }
+    .avatarMenuMoreChevron { margin-left: auto; font-weight: 800; transition: transform 0.2s ease; opacity: 0.7; }
+    .avatarMenuMoreToggle[aria-expanded="true"] .avatarMenuMoreChevron { transform: rotate(90deg); }
+    .avatarMenuMoreGroup {
+      display: grid; grid-template-rows: 0fr;
+      transition: grid-template-rows 0.25s cubic-bezier(0.2,0.9,0.2,1);
+      overflow: hidden;
+    }
+    .avatarMenuMoreGroup.open { grid-template-rows: 1fr; }
+    .avatarMenuMoreGroup > * { min-height: 0; }
+    .avatarMenuMoreGroup .avatarMenuItem { padding-left: 22px; }
 
     /* ── 2 · HERO ───────────────────────────────────────────────────────── */
     .homeHeroV2 {
@@ -8628,12 +8646,13 @@
       grid-template-columns: 1.05fr 0.95fr;
       gap: 40px;
       align-items: center;
-      min-height: 72vh;
+      min-height: 60vh;
+      max-height: 720px;
       padding: 8px 4px 24px;
       border: none !important; background: none !important; box-shadow: none !important;
-      transition: min-height 0.35s cubic-bezier(0.2,0.9,0.2,1);
+      transition: min-height 0.3s cubic-bezier(0.2,0.9,0.2,1), max-height 0.3s cubic-bezier(0.2,0.9,0.2,1);
     }
-    .homeHeroV2.compressed { min-height: 48vh; }
+    .homeHeroV2.compressed { min-height: 44vh; max-height: 520px; }
     .homeHeroCopy { display: flex; flex-direction: column; justify-content: center; min-width: 0; }
     .homeHeroV2 .homeHeroEyebrow {
       font-size: 0.82rem; font-weight: 700; letter-spacing: 0.14em;
@@ -8641,10 +8660,13 @@
     }
     .homeHeroV2 .homeHeroTitle {
       font-family: 'Fraunces', serif; font-weight: 900;
-      font-size: clamp(2.6rem, 5.4vw, 4.6rem); line-height: 1.02;
-      letter-spacing: -0.025em; color: var(--ink-hi);
-      margin: 0 0 26px;
+      font-size: clamp(56px, 7vw, 92px); line-height: 0.92;
+      letter-spacing: -0.03em; color: var(--ink-hi);
+      max-width: 11ch;
+      margin: 0 0 24px;
+      transition: font-size 0.3s cubic-bezier(0.2,0.9,0.2,1), margin 0.3s;
     }
+    .homeHeroV2.compressed .homeHeroTitle { font-size: clamp(40px, 5vw, 64px); margin-bottom: 18px; }
     .homeHeroV2 .homeHeroSearchSlot { margin: 0 0 14px; max-width: 600px; }
     .homeHeroV2 .homeHeroSearchSlot .searchWrap { width: 100%; }
     .homeHeroV2 .homeHeroSearchSlot .searchInput {
@@ -8697,13 +8719,20 @@
     }
     .heroDrawerBtn.hasFilters .filtCount { display: inline-flex; }
 
+    @keyframes heroSkeleton { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    @media (prefers-reduced-motion: reduce) { .heroFeatured { animation: none !important; } }
+
     /* Featured recipe (right) — one cinematic card */
     .homeHeroVisual { align-self: stretch; min-height: 0; position: relative; }
     .homeHeroV2 .homeHeroImg { display: none; }
     .heroFeatured {
-      position: relative; width: 100%; height: 100%; min-height: 440px;
-      border-radius: 28px; overflow: hidden;
+      position: relative; width: 100%; height: 100%; min-height: 520px; max-height: 620px;
+      border-radius: 24px; overflow: hidden;
+      aspect-ratio: 4 / 5;
       background: var(--bg2, #2a1a0c) center/cover no-repeat;
+      background-image: linear-gradient(110deg, rgba(120,80,40,0.18) 8%, rgba(120,80,40,0.30) 18%, rgba(120,80,40,0.18) 33%);
+      background-size: 200% 100%;
+      animation: heroSkeleton 1.4s ease-in-out infinite;
       box-shadow: 0 30px 70px -24px rgba(40,18,4,0.55);
       transition: transform 0.35s cubic-bezier(0.2,0.9,0.2,1), box-shadow 0.35s;
     }
@@ -8716,10 +8745,14 @@
     }
     .heroFeaturedEyebrow { font-size: 0.74rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #f3c98a; margin: 0; }
     .heroFeaturedTitle { font-family: 'Fraunces', serif; font-weight: 900; font-size: 1.85rem; line-height: 1.05; margin: 4px 0 6px; color: #fff; }
-    .heroFeaturedStory { font-size: 0.92rem; line-height: 1.45; color: rgba(255,255,255,0.86); margin: 0 0 12px; max-width: 92%;
-      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .heroFeaturedMeta { display: flex; gap: 16px; font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.92); margin: 0 0 16px; flex-wrap: wrap; }
+    /* ONE hero recipe — image, title, time, CTA only. Story hidden, meta trimmed to time. */
+    .heroFeaturedStory { display: none !important; }
+    .heroFeaturedMeta { display: flex; gap: 16px; font-size: 0.84rem; font-weight: 600; color: rgba(255,255,255,0.92); margin: 0 0 16px; flex-wrap: wrap; }
     .heroFeaturedMeta span { display: inline-flex; align-items: center; gap: 5px; }
+    /* hide all meta chips except the first (time) */
+    .heroFeaturedMeta span:not(:first-child) { display: none !important; }
+    /* secondary save action removed from featured per single-CTA spec */
+    .heroFeaturedSave { display: none !important; }
     .heroFeaturedActions { display: flex; gap: 10px; align-items: center; }
     .heroFeaturedCta {
       background: var(--accent); color: #fff; border: none;
@@ -8761,6 +8794,8 @@
     .continueBand .resumeMetaRow { color: rgba(255,255,255,0.62); }
     .continueBand .resumeBtn { padding: 14px 30px; font-size: 0.96rem;
       box-shadow: 0 12px 28px -8px rgba(200,105,14,0.7); }
+    /* Netflix "Continue Watching" feel — image + recipe + Continue + tiny context only */
+    .continueBand .resumeMetaRow { display: none !important; }
     @media (max-width: 480px) {
       .continueBand .resumeCard { flex-direction: row; align-items: center; }
       .continueBand .resumeRing { width: 72px; height: 72px; }
@@ -8793,13 +8828,26 @@
     }
     .ccResumeBtn:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -8px rgba(200,105,14,0.8); }
 
-    /* ── 4 · TRENDING + COMMUNITY (quiet) ──────────────────────────────── */
+    /* ── 4 · POPULAR TONIGHT (merged trending + community, one rail) ────── */
+    .popularTonight {
+      margin: 18px 0 28px; padding: 18px 20px;
+      background: var(--bg1); border: 1px solid var(--border);
+      border-radius: 16px; box-shadow: var(--shadow-card);
+    }
+    [data-theme="dark"] .popularTonight {
+      background: linear-gradient(135deg, rgba(255,255,255,0.035), rgba(255,255,255,0.012));
+    }
+    .popularTonightTitle {
+      font-family: 'Fraunces', serif; font-weight: 900;
+      font-size: 1.18rem; color: var(--ink-hi);
+      margin: 0 0 10px;
+    }
     .trendingBarV2, .communityBarV2 {
       border: none !important; background: none !important; box-shadow: none !important;
-      border-radius: 0 !important; margin: 2px 0 !important; padding: 6px 4px !important;
-      opacity: 0.86;
+      border-radius: 0 !important; margin: 2px 0 !important; padding: 4px 0 !important;
+      opacity: 0.9;
     }
-    .communityBarV2 { opacity: 0.66; }
+    .communityBarV2 { opacity: 0.72; border-top: 1px solid var(--border) !important; padding-top: 10px !important; margin-top: 8px !important; }
 
     /* ── 5 · SEARCH CONTEXT DRAWER (was the left panel) ─────────────────── */
     .ctxDrawerOverlay {
@@ -8848,11 +8896,23 @@
     .glass-mainV2 .foodCard .macroRow,
     .glass-mainV2 .foodCard .smartBadge ~ .smartBadge { display: none !important; }
 
-    /* ── 8 · ASK CHEF FAB — reduced weight, docked ─────────────────────── */
+    /* ── 8 · ASK CHEF FAB → "Ask Simmer" — integrated, docked, low weight ── */
     .chefFab {
-      box-shadow: 0 10px 26px -10px rgba(200,105,14,0.55) !important;
-      opacity: 0.96;
+      bottom: 20px; right: 20px;
+      background: var(--bg1) !important; color: var(--ink-hi) !important;
+      border: 1px solid var(--border) !important;
+      padding: 11px 18px 11px 14px !important;
+      font-weight: 700 !important; font-size: 0.86rem !important;
+      box-shadow: var(--shadow-card) !important;
+      backdrop-filter: blur(8px);
     }
+    .chefFab:hover {
+      border-color: var(--accent) !important; color: var(--accent) !important;
+      box-shadow: var(--shadow-card-lg) !important;
+    }
+    [data-theme="dark"] .chefFab { background: rgba(40,28,16,0.85) !important; }
+    /* On mobile the existing tab bar already hosts the Chef/Chat tab —
+       the desktop FAB stays hidden there (handled by the ≤980px rule). */
 
     /* ── 9 · RESPONSIVE ────────────────────────────────────────────────── */
     @media (max-width: 1100px) {
@@ -8865,6 +8925,9 @@
     @media (max-width: 760px) {
       .topbarV2 { height: 64px; grid-template-columns: 1fr auto; }
       .topbarContext { display: none; }
+      /* 44px min tap targets on touch */
+      .homeHeroV2 .heroPill { min-height: 44px; padding-top: 10px; padding-bottom: 10px; }
+      .heroRecentChip, .heroSelChip { min-height: 40px; }
       .homeHeroV2 .homeHeroVisual { display: block !important; }
       .homeHeroV2 { min-height: auto; padding-top: 4px; }
       .homeHeroV2 .homeHeroTitle { font-size: clamp(2.2rem, 9vw, 3rem); margin-bottom: 18px; }
@@ -8905,16 +8968,29 @@
             <div class="avatarMenuSub" id="avatarMenuSub">Sign in to sync your kitchen</div>
           </div>
 
+          <!-- First level — essentials -->
           <div class="avatarMenuGroup">
             <a class="avatarMenuItem" href="/profile.html" role="menuitem"><span>👤</span> Profile</a>
-            <button class="avatarMenuItem" type="button" role="menuitem" data-ws="moreCollectionsBtn"><span>📚</span> Collections</button>
-            <button class="avatarMenuItem" type="button" role="menuitem" data-ws="moreStreaksBtn"><span>🔥</span> Streaks</button>
-            <button class="avatarMenuItem" type="button" role="menuitem" data-ws="morePlanBtn"><span>🗓</span> Meal Plans</button>
-            <button class="avatarMenuItem" type="button" role="menuitem" data-ws="moreTasteBtn"><span>🧬</span> Taste DNA</button>
-            <button class="avatarMenuItem" type="button" role="menuitem" data-ws="moreWeekBtn"><span>📊</span> My Week</button>
             <button class="avatarMenuItem" type="button" role="menuitem" data-ws="moreSavedBtn"><span>📌</span> Saved</button>
-            <button class="avatarMenuItem" type="button" role="menuitem" data-ws="moreUrlImportBtn"><span>🔗</span> Import URL</button>
-            <button class="avatarMenuItem" type="button" role="menuitem" data-ws="tabMore"><span>☰</span> More workspace</button>
+            <button class="avatarMenuItem" type="button" role="menuitem" data-ws="moreCollectionsBtn"><span>📚</span> Collections</button>
+            <button class="avatarMenuItem" type="button" role="menuitem" data-ws="moreWeekBtn"><span>📊</span> My Week</button>
+            <button class="avatarMenuItem" type="button" role="menuitem" id="avatarSettingsProxy"><span>⚙️</span> Settings</button>
+          </div>
+
+          <div class="avatarMenuDivider"></div>
+
+          <!-- Nested "More" — advanced, collapsed by default -->
+          <div class="avatarMenuGroup">
+            <button class="avatarMenuItem avatarMenuMoreToggle" type="button" role="menuitem" id="avatarMoreToggle" aria-expanded="false" aria-controls="avatarMoreGroup">
+              <span>☰</span> More <span class="avatarMenuMoreChevron" aria-hidden="true">›</span>
+            </button>
+            <div class="avatarMenuMoreGroup" id="avatarMoreGroup" role="group" aria-label="More options">
+              <button class="avatarMenuItem" type="button" role="menuitem" data-ws="morePlanBtn"><span>🗓</span> Meal Plans</button>
+              <button class="avatarMenuItem" type="button" role="menuitem" data-ws="moreTasteBtn"><span>🧬</span> Taste DNA</button>
+              <button class="avatarMenuItem" type="button" role="menuitem" data-ws="moreStreaksBtn"><span>🔥</span> Streaks</button>
+              <button class="avatarMenuItem" type="button" role="menuitem" data-ws="moreUrlImportBtn"><span>🔗</span> Import URL</button>
+              <button class="avatarMenuItem" type="button" role="menuitem" data-ws="tabMore"><span>⊞</span> Workspace</button>
+            </div>
           </div>
 
           <div class="avatarMenuDivider"></div>
@@ -9036,7 +9112,7 @@
             <p class="heroFeaturedStory" id="heroFeaturedStory"></p>
             <div class="heroFeaturedMeta" id="heroFeaturedMeta"></div>
             <div class="heroFeaturedActions">
-              <button class="heroFeaturedCta" id="heroFeaturedCta" type="button">Start Cooking</button>
+              <button class="heroFeaturedCta" id="heroFeaturedCta" type="button">Start cooking</button>
               <button class="heroFeaturedSave" id="heroFeaturedSave" type="button" aria-label="Save recipe">♡ Save</button>
             </div>
           </div>
@@ -9047,6 +9123,9 @@
     <!-- ░ Continue Cooking — immersive full-width band ░ -->
     <div class="continueBand" id="continueBand"></div>
 
+    <!-- ░ Popular Tonight — merged trending + community rail ░ -->
+    <section class="popularTonight" aria-label="Popular tonight">
+      <h2 class="popularTonightTitle">🔥 Popular Tonight</h2>
     <!-- ░ Trending — single rail ░ -->
     <div class="trendingBar trendingBarV2" aria-label="Trending dishes">
       <span class="trendingLabel">🔥 Trending</span>
@@ -9083,6 +9162,8 @@
         <div class="communityFeedInner" id="communityFeed"><!-- injected by JS --></div>
       </div>
     </div>
+    </section>
+    <!-- ░ end Popular Tonight ░ -->
 
     <!-- ░ Search Context Drawer — was the left filter panel ░ -->
     <div class="ctxDrawerOverlay" id="ctxDrawerOverlay" aria-hidden="true">
@@ -9476,9 +9557,9 @@
   </div>
 
   <!-- AI Chef Chat FAB -->
-  <button class="chefFab" id="chefFab" type="button" aria-label="Ask the AI chef">
+  <button class="chefFab" id="chefFab" type="button" aria-label="Ask Simmer — your AI chef">
     <span class="chefFabIcon">👨‍🍳</span>
-    <span>Ask Chef</span>
+    <span>Ask Simmer</span>
     <span class="chefFabUnread" id="chefFabUnread"></span>
   </button>
 
@@ -21499,6 +21580,54 @@
           searchInput.addEventListener("focus", () => hero?.classList.add("compressed"));
           searchInput.addEventListener("blur", () => { if (!searchInput.value) hero?.classList.remove("compressed"); });
         }
+
+        // 7. SEARCH ALIVE — hero eyebrow reacts contextually to what's typed.
+        if (searchInput) {
+          const eyebrow = document.querySelector("#homeHero .homeHeroEyebrow");
+          const defaultEyebrow = eyebrow ? eyebrow.textContent : "Food for the moment.";
+          const CTX = [
+            { re: /jap/i,           copy: "Japanese comfort food" },
+            { re: /ital|pasta|pizza/i, copy: "Italian classics" },
+            { re: /indi|curry|masala|paneer|biry/i, copy: "Bold Indian flavours" },
+            { re: /chin|noodle|fried rice/i, copy: "Chinese takeout, made fresh" },
+            { re: /mex|taco|burrito/i, copy: "Mexican fiesta" },
+            { re: /thai/i,          copy: "Fragrant Thai dishes" },
+            { re: /quick|fast|15|easy/i, copy: "Quick and easy tonight" },
+            { re: /health|salad|protein|fit/i, copy: "Light and nourishing" },
+            { re: /dessert|sweet|cake|choc/i, copy: "Something sweet" },
+            { re: /break(fast)?/i,   copy: "Bright breakfast ideas" },
+            { re: /soup|stew|warm|comfort/i, copy: "Warm and comforting" },
+          ];
+          searchInput.addEventListener("input", () => {
+            if (!eyebrow) return;
+            const v = searchInput.value.trim();
+            if (!v) { eyebrow.textContent = defaultEyebrow; return; }
+            const hit = CTX.find(c => c.re.test(v));
+            eyebrow.textContent = hit ? hit.copy : "Searching the kitchen…";
+          });
+        }
+
+        // 8. Cmd/Ctrl+K focuses search from anywhere (skips when typing in a field).
+        document.addEventListener("keydown", (e) => {
+          if ((e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "K")) {
+            const tag = (document.activeElement && document.activeElement.tagName) || "";
+            const editing = /INPUT|TEXTAREA|SELECT/.test(tag) && document.activeElement !== searchInput;
+            if (editing) return;
+            e.preventDefault();
+            const si = document.getElementById("searchInput");
+            if (si) { si.focus(); si.select?.(); }
+          }
+        });
+
+        // 9. Push committed searches into the recent-search list (reuses V2 store).
+        if (searchInput) {
+          searchInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              const q = searchInput.value.trim();
+              if (q.length >= 2 && typeof pushRecentSearchV2 === "function") pushRecentSearchV2(q);
+            }
+          });
+        }
       } catch (e) { /* hero is progressive enhancement — never break home */ }
     }
 
@@ -21583,6 +21712,18 @@
         document.getElementById("avatarBellProxy")?.addEventListener("click", () => {
           closeMenu(); document.getElementById("bellBtn")?.click();
         });
+        // Settings proxy → profile page (existing route)
+        document.getElementById("avatarSettingsProxy")?.addEventListener("click", () => {
+          closeMenu(); window.location.href = "/profile.html";
+        });
+        // Nested "More" group — expand/collapse in place (does not close menu)
+        const moreToggle = document.getElementById("avatarMoreToggle");
+        const moreGroup = document.getElementById("avatarMoreGroup");
+        moreToggle?.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const open = moreGroup?.classList.toggle("open");
+          moreToggle.setAttribute("aria-expanded", open ? "true" : "false");
+        });
         // Logout (mirrors existing flow)
         document.getElementById("avatarLogoutItem")?.addEventListener("click", async () => {
           closeMenu();
@@ -21666,7 +21807,16 @@
       const card = document.getElementById("heroFeatured");
       if (!card) return;
       const img = (typeof recipeImg === "function") ? recipeImg(item) : (typeof dishImageUrl === "function" ? dishImageUrl(item.name) : "");
-      if (img) card.style.backgroundImage = `url('${img}')`;
+      if (img) {
+        // Preload then swap in — avoids layout flash and stops the skeleton shimmer.
+        const pre = new Image();
+        pre.onload = () => {
+          card.style.backgroundImage = `url('${img}')`;
+          card.style.animation = "none";
+        };
+        pre.onerror = () => { card.style.animation = "none"; };
+        pre.src = img;
+      }
       const elT = document.getElementById("heroFeaturedTitle");
       const elS = document.getElementById("heroFeaturedStory");
       const elM = document.getElementById("heroFeaturedMeta");
