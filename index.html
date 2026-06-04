@@ -5938,14 +5938,25 @@
     }
     .cmAssistantBubble:hover { transform: scale(1.08); }
     .cmIngPreview {
-      display: block; width: 100%; padding: 0; cursor: pointer; overflow: hidden;
-      border-radius: 18px; border: 1px solid var(--cm-rail-bd); background: var(--cm-rail-bg);
+      position: relative; display: block; width: 100%; padding: 0; cursor: pointer; overflow: hidden;
+      border-radius: 16px; border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(12px) saturate(1.1); -webkit-backdrop-filter: blur(12px) saturate(1.1);
       transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
     }
     .cmIngPreview:hover { transform: translateY(-2px); border-color: rgba(200,105,14,0.4); }
-    .cmIngPreviewImg { width: 100%; height: 100px; background-size: cover; background-position: center; }
-    .cmIngPreviewFoot { display: flex; align-items: center; justify-content: space-between;
-      padding: 11px 14px; font-size: var(--t-sm); font-weight: var(--fw-med); color: #fff; }
+    .cmIngPreviewImg {
+      position: relative; width: 100%; height: 64px;            /* smaller */
+      background-size: cover; background-position: center;
+      filter: blur(1.5px) saturate(1.05); transform: scale(1.06);  /* soft blur, hide blur edges */
+    }
+    .cmIngPreviewImg::after {                                   /* frosted glass veil */
+      content: ""; position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(20,12,6,0.18) 0%, rgba(20,12,6,0.62) 100%);
+      backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+    }
+    .cmIngPreviewFoot { position: relative; display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; font-size: var(--t-sm); font-weight: var(--fw-med); color: #fff; }
     .cmIngPreviewSee { color: var(--accent); font-weight: var(--fw-bold); font-size: var(--t-xs); }
 
     /* Bottom navigation — detached pills (prominent Next CTA) */
