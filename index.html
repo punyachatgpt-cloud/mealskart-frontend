@@ -10747,11 +10747,66 @@
     }
 
     // ── Grocery delivery store links ──────────────────────────────────────
+    // ── Commerce: turn recipe ingredients into product-search INTENT ──────────
+    // Quick-commerce sites do single-product search, not recipe queries, so we
+    // strip pantry staples, normalise to commonly-sold names, and pass focused
+    // terms per store (single hero term for most; a small bundle for Instamart).
+    const _GROCERY_PANTRY = new Set([
+      "water","hot water","cold water","warm water","chilled water","plain water",
+      "ice","ice cubes","ice cube","salt","table salt","sea salt","rock salt",
+      "oil","cooking oil","vegetable oil","sunflower oil","refined oil",
+      "sugar","pepper","black pepper","white pepper","baking soda","baking powder",
+      "to taste","as needed","a pinch","optional","for garnish","for frying",
+    ]);
+    const _GROCERY_ALIASES = [
+      [/\b(roasted\s+)?gram\s+flour\b/i, "sattu"],
+      [/\bsattu\b/i, "sattu"],
+      [/\bblack\s+salt\b/i, "kala namak"],
+      [/\bkala\s+namak\b/i, "kala namak"],
+      [/\bjaggery\b/i, "jaggery"],
+      [/\bmint(\s+leaves)?\b/i, "mint"],
+      [/\bpudina\b/i, "mint"],
+      [/\bcoriander(\s+leaves)?\b/i, "coriander"],
+      [/\bcurd\b/i, "yogurt"],
+      [/\bcapsicum\b/i, "bell pepper"],
+      [/\bbrinjal\b/i, "eggplant"],
+      [/\bcottage\s+cheese\b/i, "paneer"],
+    ];
+    function _normalizeGroceryName(raw) {
+      let n = String(raw || "").toLowerCase();
+      n = n.replace(/\([^)]*\)/g, " ");                          // drop parentheticals
+      n = n.replace(/\b\d+([.,/]\d+)?\s*(g|kg|ml|l|tsp|tbsp|cup|cups|pinch|cloves?|inch|piece|pieces)\b/gi, " "); // quantities/units
+      n = n.replace(/\b(finely|freshly|roughly|thinly)?\s*(chopped|sliced|diced|grated|minced|ground|crushed|fresh|dried|boiled|cooked|peeled|deseeded|soaked|beaten|whisked|to taste|optional|as needed)\b/gi, " ");
+      n = n.replace(/[^a-z\s]/g, " ").replace(/\s+/g, " ").trim();
+      for (const [re, canon] of _GROCERY_ALIASES) { if (re.test(raw) || re.test(n)) return canon; }
+      return n;
+    }
+    // Purchasable but common — kept, but pushed below distinctive ingredients
+    // so the "hero" search term is the recipe's star (eggplant > olive oil).
+    const _GROCERY_SOFT = new Set([
+      "olive oil","ghee","butter","honey","vinegar","soy sauce","flour",
+      "cornflour","cornstarch","yogurt","milk","cream","lemon","lime","garlic","onion","tomato",
+    ]);
+    function _groceryQueryTerms(ingredients) {
+      const seen = new Set(); const core = []; const soft = [];
+      for (const ing of (ingredients || [])) {
+        const name = typeof ing === "string" ? ing : (ing && ing.name) || "";
+        const norm = _normalizeGroceryName(name);
+        if (!norm || norm.length < 2) continue;
+        if (_GROCERY_PANTRY.has(norm)) continue;
+        if (norm.split(" ").every(w => _GROCERY_PANTRY.has(w))) continue;
+        if (seen.has(norm)) continue;
+        seen.add(norm);
+        (_GROCERY_SOFT.has(norm) ? soft : core).push(norm);
+      }
+      return [...core, ...soft].slice(0, 5);
+    }
+
     const GROCERY_STORES = [
-      { cls: "gsBigBasket", emoji: "🟢", label: "BigBasket",  url: q => `https://www.bigbasket.com/ps/?q=${encodeURIComponent(q)}` },
-      { cls: "gsZepto",     emoji: "⚡", label: "Zepto",      url: q => `https://www.zeptonow.com/search?query=${encodeURIComponent(q)}` },
-      { cls: "gsBlinkit",   emoji: "🟡", label: "Blinkit",    url: q => `https://blinkit.com/s/?q=${encodeURIComponent(q)}` },
-      { cls: "gsSwiggy",    emoji: "🟠", label: "Instamart",  url: q => `https://www.swiggy.com/instamart/search?query=${encodeURIComponent(q)}` },
+      { cls: "gsBigBasket", emoji: "🟢", label: "BigBasket",  url: t => `https://www.bigbasket.com/ps/?q=${encodeURIComponent(t[0] || "")}` },
+      { cls: "gsZepto",     emoji: "⚡", label: "Zepto",      url: t => `https://www.zeptonow.com/search?query=${encodeURIComponent(t[0] || "")}` },
+      { cls: "gsBlinkit",   emoji: "🟡", label: "Blinkit",    url: t => `https://blinkit.com/s/?q=${encodeURIComponent(t[0] || "")}` },
+      { cls: "gsSwiggy",    emoji: "🟠", label: "Instamart",  url: t => `https://www.swiggy.com/instamart/search?query=${encodeURIComponent(t.slice(0, 2).join(" "))}` },
     ];
 
     function renderGrocerySection(recipe, ingredients, missingForGrocery) {
@@ -10761,12 +10816,15 @@
         if (section) section.style.display = "none";
         return;
       }
-      // Smart query: use first 3 missing ingredient names if known, else recipe name
-      const queryItems = (missingForGrocery.length ? missingForGrocery : ingredients.map(i => i.name || "")).slice(0, 3);
-      const query = queryItems.filter(Boolean).join(" ") || recipe.name;
+      // Prefer missing ingredients (what the user actually needs to buy), else all.
+      const source = missingForGrocery.length ? missingForGrocery.map(n => ({ name: n })) : ingredients;
+      let terms = _groceryQueryTerms(source);
+      // Never send an empty search — fall back to a normalised recipe name.
+      if (!terms.length) terms = [_normalizeGroceryName(recipe.name) || recipe.name];
+      const shown = terms.slice(0, 3).map(titleCase).join(" + ");
 
       row.innerHTML = GROCERY_STORES.map(s =>
-        `<a class="groceryStoreBtn ${s.cls}" href="${s.url(query)}" target="_blank" rel="noopener noreferrer">${s.emoji} ${s.label}</a>`
+        `<a class="groceryStoreBtn ${s.cls}" href="${s.url(terms)}" target="_blank" rel="noopener noreferrer" title="Searching for: ${escapeHtml(shown)}">${s.emoji} ${s.label}</a>`
       ).join("");
       section.style.display = "block";
     }
@@ -12094,7 +12152,7 @@
         const needToBuy = pantryActive2 && !inPantry;
         if (needToBuy) missingForGrocery.push(item.name);
         const buyLink = needToBuy
-          ? `<a class="ingBuyLink" href="https://www.bigbasket.com/ps/?q=${encodeURIComponent(item.name)}" target="_blank" rel="noopener noreferrer" title="Buy on BigBasket">🛒</a>`
+          ? `<a class="ingBuyLink" href="https://www.bigbasket.com/ps/?q=${encodeURIComponent(_normalizeGroceryName(item.name) || item.name)}" target="_blank" rel="noopener noreferrer" title="Buy on BigBasket">🛒</a>`
           : "";
         return `
           <label class="ingredientCheck${pantryActive2 ? (inPantry ? " pantryHave" : " pantryNeed") : ""}">
