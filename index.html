@@ -8428,6 +8428,121 @@
       border: 1px solid rgba(200,105,14,0.25);
     }
     .scaleMultiBadge::before { content: "⚖️ "; }
+
+    /* ════ Editorial HOME HERO ════════════════════════════════════ */
+    .homeHero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      gap: clamp(20px, 4vw, 56px);
+      align-items: center;
+      margin: 4px 0 26px;
+      padding: clamp(22px, 3vw, 40px);
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow-card);
+      isolation: isolate;
+    }
+    [data-theme="dark"] .homeHero {
+      background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
+    }
+    .homeHeroEyebrow {
+      margin: 0 0 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem; font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--accent);
+    }
+    .homeHeroTitle {
+      margin: 0 0 22px;
+      font-family: 'Fraunces', serif;
+      font-weight: 900;
+      font-size: clamp(34px, 4.6vw, 58px);
+      line-height: 1.04;
+      letter-spacing: -0.02em;
+      color: var(--ink-hi);
+    }
+    .homeHeroSearchSlot { margin: 0 0 16px; max-width: 560px; }
+    /* The reparented searchWrap fills the hero, larger & more prominent */
+    .homeHeroSearchSlot .searchWrap { width: 100%; }
+    .homeHeroSearchSlot .searchInput {
+      font-size: 1.02rem;
+      padding-top: 16px; padding-bottom: 16px;
+    }
+    .homeHeroPills { display: flex; flex-wrap: wrap; gap: 9px; }
+    .heroPill {
+      border: 1px solid var(--border);
+      background: var(--surface, var(--bg0));
+      color: var(--ink-lo);
+      border-radius: 999px;
+      padding: 9px 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.84rem; font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s, transform 0.12s;
+      white-space: nowrap;
+    }
+    .heroPill:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+    .heroPill.active { border-color: var(--accent); color: #fff; background: var(--accent); }
+    .heroPillMore { font-weight: 800; letter-spacing: 0.05em; padding: 9px 14px; }
+    .homeHeroVisual { align-self: stretch; min-height: 240px; }
+    .homeHeroImg {
+      width: 100%; height: 100%;
+      min-height: 240px;
+      border-radius: 22px;
+      background-size: cover; background-position: center;
+      box-shadow: var(--shadow-card);
+    }
+    @media (max-width: 900px) {
+      .homeHero { grid-template-columns: 1fr; gap: 18px; }
+      .homeHeroVisual { display: none; }
+      .homeHeroTitle br { display: none; }
+    }
+
+    /* ════ Premium CONTINUE COOKING card ════════════════════════ */
+    .resumeCard {
+      display: flex; align-items: center; gap: 18px;
+      padding: 16px 18px;
+      background: var(--bg1);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 20px;
+      box-shadow: var(--shadow-card);
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .resumeCard:hover { transform: translateY(-2px); box-shadow: var(--shadow-overlay); }
+    .resumeRing { position: relative; flex: 0 0 auto; width: 78px; height: 78px; }
+    .resumeRing svg { transform: rotate(-90deg); width: 78px; height: 78px; }
+    .resumeRingTrack { fill: none; stroke: var(--border); stroke-width: 5; }
+    .resumeRingFill { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+    .resumeRingImg {
+      position: absolute; inset: 9px; border-radius: 50%;
+      background-size: cover; background-position: center;
+    }
+    .resumeRingLabel {
+      position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: #fff;
+      font-size: 0.6rem; font-weight: 800; white-space: nowrap;
+      padding: 2px 7px; border-radius: 999px;
+    }
+    .resumeBody { flex: 1; min-width: 0; }
+    .resumeEyebrow { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--accent); margin: 0 0 3px; }
+    .resumeTitle { font-family: 'Fraunces', serif; font-weight: 900; font-size: 1.18rem; color: var(--ink-hi); margin: 0 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .resumeProgress { font-size: 0.84rem; font-weight: 600; color: var(--ink-lo); margin: 0 0 8px; }
+    .resumeMetaRow { display: flex; gap: 14px; font-size: 0.76rem; color: var(--ink-faint); margin: 0 0 12px; flex-wrap: wrap; }
+    .resumeMetaRow span { display: inline-flex; align-items: center; gap: 4px; }
+    .resumeBtn {
+      background: var(--accent); color: #fff; border: none;
+      border-radius: 999px; padding: 10px 22px;
+      font-family: 'Inter', sans-serif; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; transition: opacity 0.15s, transform 0.12s;
+    }
+    .resumeBtn:hover { opacity: 0.92; transform: translateY(-1px); }
+    @media (max-width: 480px) {
+      .resumeCard { flex-direction: column; align-items: flex-start; text-align: left; }
+      .resumeBtn { width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -8568,6 +8683,26 @@
         <div class="communityFeedInner" id="communityFeed"><!-- injected by JS --></div>
       </div>
     </div>
+
+    <!-- ░ Editorial HERO — hero search is the primary action ░ -->
+    <section class="homeHero" id="homeHero" aria-label="What should we cook tonight">
+      <div class="homeHeroCopy">
+        <p class="homeHeroEyebrow">Food for the moment. Made for you.</p>
+        <h2 class="homeHeroTitle">What should we <br>cook tonight?</h2>
+        <div class="homeHeroSearchSlot" id="homeHeroSearchSlot"><!-- existing searchWrap reparented here by JS --></div>
+        <div class="homeHeroPills" id="homeHeroPills" role="group" aria-label="Quick cravings">
+          <button class="heroPill" type="button" data-hp-mood="healthy">High protein</button>
+          <button class="heroPill" type="button" data-hp-category="continental">One pan</button>
+          <button class="heroPill" type="button" data-hp-mood="comfort">Comfort food</button>
+          <button class="heroPill" type="button" data-hp-time="15">Quick</button>
+          <button class="heroPill" type="button" data-hp-diet="veg">Veg</button>
+          <button class="heroPill heroPillMore" type="button" id="heroPillMore" aria-label="More filters">…</button>
+        </div>
+      </div>
+      <div class="homeHeroVisual" aria-hidden="true">
+        <div class="homeHeroImg" id="homeHeroImg"></div>
+      </div>
+    </section>
 
     <section class="grid">
       <aside class="glass left">
@@ -9850,17 +9985,19 @@
         ].join(";");
 
         const items = [
-          { label: "👤  Profile", href: null, action: null },
-          { label: "🚪  Sign out", href: null, action: "logout" }
+          { label: "👤  Profile", href: "/profile.html", action: null },
+          { label: "⚙️  Preferences", href: "/profile.html#preferences", action: null },
+          { label: "🚪  Sign out", href: null, action: "logout", danger: true }
         ];
         items.forEach(item => {
           const btn = document.createElement("button");
           btn.textContent = item.label;
-          btn.style.cssText = "display:block;width:100%;text-align:left;background:none;border:none;padding:8px 10px;border-radius:6px;cursor:pointer;color:var(--text);font-size:inherit;font-family:inherit;transition:background 0.1s";
+          btn.style.cssText = "display:block;width:100%;text-align:left;background:none;border:none;padding:8px 10px;border-radius:6px;cursor:pointer;color:" + (item.danger ? "#dc2626" : "var(--text)") + ";font-weight:" + (item.danger ? "700" : "400") + ";font-size:inherit;font-family:inherit;transition:background 0.1s";
           btn.onmouseover = () => btn.style.background = "var(--border)";
           btn.onmouseout  = () => btn.style.background = "none";
           btn.addEventListener("click", async () => {
             menu.remove();
+            if (item.href) { window.location.href = item.href; return; }
             if (item.action === "logout") {
               const t = localStorage.getItem("simmer_token");
               if (t) {
@@ -10434,21 +10571,63 @@
         if (!name) { el.cookAgainWrap.classList.remove("show"); return; }
         el.cookAgainWrap.classList.add("show");
         const img = dishImageUrl(name);
+
+        // Pull real cook progress (sessionStorage) when it matches this recipe.
+        let savedStep = null, totalSteps = null;
+        try {
+          const raw = sessionStorage.getItem("simmer_cook_progress");
+          if (raw) {
+            const obj = JSON.parse(raw);
+            if (String(obj.id) === String(lastId) && Date.now() - obj.ts < 4 * 60 * 60 * 1000) {
+              savedStep = obj.step;
+            }
+          }
+        } catch {}
+        if (entry && Number(entry.totalSteps) > 0) totalSteps = Number(entry.totalSteps);
+
+        const inProgress = savedStep != null;
+        const stepNo = inProgress ? (savedStep + 1) : null;
+        const pct = (inProgress && totalSteps) ? Math.min(1, stepNo / totalSteps)
+                  : inProgress ? 0.5 : 1;
+        const C = 2 * Math.PI * 35; // r=35 viewbox
+        const dashOffset = C * (1 - pct);
+        const eyebrow = inProgress ? "Continue where you left off" : "Cook again";
+        const progressLine = inProgress
+          ? (totalSteps ? `Step ${stepNo} of ${totalSteps} · Almost there! Finish strong`
+                        : `Step ${stepNo} · Almost there! Finish strong`)
+          : "Loved it last time — make it again tonight";
+        const ringLabel = inProgress ? "Resume" : "Ready";
+        const ctaLabel = inProgress ? "Resume cooking" : "Cook again";
+
         el.cookAgainWrap.innerHTML = `
-          <div class="cookAgainCard" id="cookAgainCard" tabindex="0" role="button" aria-label="Cook ${escapeHtml(name)} again">
-            <div class="cookAgainThumb" style="background-image:url('${img}')"></div>
-            <div class="cookAgainBody">
-              <strong>Cook again: ${escapeHtml(name)}</strong>
-              <span>Jump straight back in &#8594;</span>
+          <div class="resumeCard" id="cookAgainCard" tabindex="0" role="button" aria-label="${escapeHtml(ctaLabel)}: ${escapeHtml(name)}">
+            <div class="resumeRing">
+              <svg viewBox="0 0 78 78" aria-hidden="true">
+                <circle class="resumeRingTrack" cx="39" cy="39" r="35"></circle>
+                <circle class="resumeRingFill" cx="39" cy="39" r="35"
+                  stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${dashOffset.toFixed(1)}"></circle>
+              </svg>
+              <div class="resumeRingImg" style="background-image:url('${img}')"></div>
+              <span class="resumeRingLabel">${ringLabel}</span>
             </div>
-            <span class="cookAgainArrow">&#8594;</span>
+            <div class="resumeBody">
+              <p class="resumeEyebrow">${escapeHtml(eyebrow)}</p>
+              <p class="resumeTitle">${escapeHtml(name)}</p>
+              <p class="resumeProgress">${escapeHtml(progressLine)}</p>
+              <div class="resumeMetaRow">
+                <span>🕐 Last cooked recently</span>
+                <span>🍳 Kitchen ready</span>
+              </div>
+              <button class="resumeBtn" id="resumeCookBtn" type="button">${escapeHtml(ctaLabel)} →</button>
+            </div>
           </div>
         `;
         const card = document.getElementById("cookAgainCard");
         if (card) {
-          const open = () => openRecipeModal(lastId);
+          const open = (e) => { if (e) e.stopPropagation(); openRecipeModal(lastId); };
           card.addEventListener("click", open);
           card.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+          document.getElementById("resumeCookBtn")?.addEventListener("click", open);
         }
       } catch { el.cookAgainWrap.classList.remove("show"); }
     }
@@ -20774,6 +20953,128 @@
     loadPreferences();
     applyPreferencesToUI();
     updateMicrocopy();
+    initHomeHero();
+    // ══════════════════════════════════════════════
+    // HOME HERO — editorial hero search (reuses existing #searchInput)
+    // ══════════════════════════════════════════════
+    function initHomeHero() {
+      try {
+        // 1. Reparent the real search wrap into the hero so all existing
+        //    handlers (bound by ID) keep working — restructure, not rebuild.
+        const slot = document.getElementById("homeHeroSearchSlot");
+        const searchInput = document.getElementById("searchInput");
+        const searchWrap = searchInput ? searchInput.closest(".searchWrap") : null;
+        if (slot && searchWrap) {
+          slot.appendChild(searchWrap);
+          searchInput.placeholder = "What are you craving?";
+        }
+
+        // 2. Search mic — reuse existing voice recognition (the ingredients mic
+        //    #micBtn drives recognition). We add a mic inside the search that,
+        //    on result, fills the search field instead. Keep it simple & safe:
+        //    forward a click to the existing voice flow when available.
+        if (searchWrap && !document.getElementById("heroSearchMic")) {
+          const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+          if (SR) {
+            const mic = document.createElement("button");
+            mic.id = "heroSearchMic";
+            mic.type = "button";
+            mic.className = "micBtn";
+            mic.title = "Speak what you're craving";
+            mic.setAttribute("aria-label", "Voice search");
+            mic.textContent = "🎤";
+            mic.style.cssText = "position:absolute;right:42px;top:50%;transform:translateY(-50%);z-index:3";
+            searchWrap.style.position = searchWrap.style.position || "relative";
+            searchWrap.appendChild(mic);
+            const rec = new SR();
+            rec.lang = "en-IN"; rec.interimResults = false; rec.maxAlternatives = 1;
+            let listening = false;
+            mic.addEventListener("click", (e) => {
+              e.preventDefault();
+              if (listening) { try { rec.stop(); } catch {} return; }
+              try { rec.start(); } catch {}
+            });
+            rec.onstart = () => { listening = true; mic.classList.add("listening"); mic.textContent = "🔴"; };
+            rec.onend   = () => { listening = false; mic.classList.remove("listening"); mic.textContent = "🎤"; };
+            rec.onerror = () => { listening = false; mic.classList.remove("listening"); mic.textContent = "🎤"; };
+            rec.onresult = (ev) => {
+              const t = ev.results?.[0]?.[0]?.transcript || "";
+              if (t && searchInput) {
+                searchInput.value = t;
+                searchInput.dispatchEvent(new Event("input", { bubbles: true }));
+                searchInput.focus();
+              }
+            };
+          }
+        }
+
+        // 3. Hero quick-craving pills → drive existing filter state + getSuggestions.
+        const pills = document.querySelectorAll("#homeHeroPills .heroPill:not(.heroPillMore)");
+        const syncHeroPills = () => {
+          pills.forEach(p => {
+            let on = false;
+            if (p.dataset.hpMood)     on = state.mood === p.dataset.hpMood;
+            else if (p.dataset.hpDiet) on = state.diet === p.dataset.hpDiet;
+            else if (p.dataset.hpCategory) on = state.category === p.dataset.hpCategory;
+            else if (p.dataset.hpTime) on = String(state.time_available) === p.dataset.hpTime;
+            p.classList.toggle("active", on);
+          });
+        };
+        pills.forEach(p => {
+          p.addEventListener("click", () => {
+            if (p.dataset.hpMood) {
+              const v = state.mood === p.dataset.hpMood ? "" : p.dataset.hpMood;
+              state.mood = v; setSelected("mood", v);
+            } else if (p.dataset.hpDiet) {
+              const v = state.diet === p.dataset.hpDiet ? "" : p.dataset.hpDiet;
+              state.diet = v; setSelected("diet", v);
+            } else if (p.dataset.hpCategory) {
+              const v = state.category === p.dataset.hpCategory ? "all" : p.dataset.hpCategory;
+              state.category = v; setSelected("category", v);
+            } else if (p.dataset.hpTime) {
+              const cur = String(state.time_available) === p.dataset.hpTime;
+              const v = cur ? 999 : Number(p.dataset.hpTime);
+              state.time_available = v; setSelected("time", String(v));
+            }
+            savePreferences(); updateMicrocopy(); syncHeroPills();
+            getSuggestions("normal");
+          });
+        });
+        syncHeroPills();
+
+        // "…" more → scroll to the full filter sidebar (all filters live there).
+        document.getElementById("heroPillMore")?.addEventListener("click", () => {
+          const left = document.querySelector(".grid .left");
+          if (left) left.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+
+        // 4. Rotating placeholder suggestions on the hero search.
+        if (searchInput) {
+          const rotations = [
+            "What are you craving?",
+            "Something warm and comforting…",
+            "Quick high-protein dinner",
+            "Butter Chicken, Pasta, Chinese…",
+            "Use what's in my fridge",
+            "A cosy one-pan meal"
+          ];
+          let ri = 0;
+          setInterval(() => {
+            if (document.activeElement === searchInput) return;
+            if (searchInput.value) return;
+            ri = (ri + 1) % rotations.length;
+            searchInput.placeholder = rotations[ri];
+          }, 3200);
+        }
+
+        // 5. Hero food image (decorative, desktop only).
+        const heroImg = document.getElementById("homeHeroImg");
+        if (heroImg && typeof dishImageUrl === "function") {
+          try { heroImg.style.backgroundImage = `url('${dishImageUrl("Thai Green Curry")}')`; } catch {}
+        }
+      } catch (e) { /* hero is progressive enhancement — never break home */ }
+    }
+    // ── end Home Hero ─────────────────────────────
     // ══════════════════════════════════════════════
     // SURPRISE ME
     // ══════════════════════════════════════════════
