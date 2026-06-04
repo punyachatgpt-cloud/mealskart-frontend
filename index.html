@@ -5878,7 +5878,8 @@
     .cmStepDot.cur::after { content: "of " attr(data-total); position: absolute; top: 34px; left: 50%; transform: translateX(-50%);
       font-size: 0.6rem; font-weight: 700; color: rgba(255,255,255,0.4); white-space: nowrap; }
     .cmStepDot.done { color: var(--accent); border-color: rgba(200,105,14,0.5); }
-    @media (min-width: 1025px) { .cmStepper { display: flex; } }
+    /* Top stepper removed — the bottom timeline is the single source of progress. */
+    .cmStepper { display: none !important; }
 
     .cmTopFlame { font-size: 1.1rem; }
 
