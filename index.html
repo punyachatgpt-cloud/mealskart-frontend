@@ -2074,6 +2074,62 @@
       .rdPrepare { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
     }
 
+    /* ══ Emotion / craft layer — delight, not layout ══ */
+    /* Emotional descriptor */
+    .rdStory { font-family: 'Fraunces', serif; font-size: var(--t-base); font-style: italic;
+      font-weight: 500; color: var(--muted); margin: 0; line-height: 1.4; }
+    .rdStory:empty { display: none; }
+
+    /* Hero — cinematic ambient lighting + depth (richer, not larger) */
+    .rdHeroVisual { position: relative; }
+    .rdHeroVisual::before {
+      content: ""; position: absolute; inset: -10% -8%; z-index: 0; pointer-events: none;
+      background: radial-gradient(58% 55% at 62% 42%, rgba(232,160,32,0.22), transparent 70%);
+      filter: blur(22px);
+    }
+    .rdHero .modalHero { position: relative; z-index: 1; box-shadow: 0 30px 72px -30px rgba(40,18,4,0.55); }
+    .rdHero .modalHeroImg { filter: saturate(1.08) contrast(1.04) brightness(1.02); }
+    .rdHero .modalHero::before {
+      content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+      background: radial-gradient(78% 58% at 22% 14%, rgba(255,242,214,0.18), transparent 56%);
+    }
+
+    /* Start Cooking — irresistible */
+    .cookModeEntryBtn.rdStartCta { position: relative; overflow: hidden; }
+    .cookModeEntryBtn.rdStartCta > * { position: relative; z-index: 1; }
+    .rdStartGlow { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0;
+      transition: opacity 220ms var(--ease-out);
+      background: radial-gradient(60% 130% at 50% 125%, rgba(255,222,156,0.4), transparent 70%); }
+    .cookModeEntryBtn.rdStartCta:hover .rdStartGlow { opacity: 1; }
+    .rdStartArrow { margin-left: auto; font-size: 1.3rem; transition: transform 220ms var(--ease-out); }
+    .cookModeEntryBtn.rdStartCta:hover .rdStartArrow { transform: translateX(5px); }
+    .rdStartSteps { display: flex; gap: 8px; flex-wrap: wrap; }
+    .rdStartSteps:empty { display: none; }
+    .rdMiniStep { display: inline-flex; align-items: center; gap: 6px; font-size: var(--t-xs);
+      font-weight: var(--fw-med); color: var(--muted); background: var(--bg0);
+      border: 1px solid var(--hairline); border-radius: 999px; padding: 5px 11px;
+      transition: transform 150ms var(--ease-out), border-color 150ms var(--ease-out); }
+    .rdMiniStep:hover { transform: translateY(-1px); border-color: var(--goldBorder); }
+    .rdMiniStep b { font-family: 'Fraunces', serif; color: var(--accent); font-weight: 800; }
+
+    /* Ingredients — human, not spreadsheet */
+    .rdPrepIngredients .ingredientChecklist .ingredientCheck {
+      border-radius: 10px; transition: background 150ms var(--ease-out), transform 150ms var(--ease-out); }
+    .rdPrepIngredients .ingredientChecklist .ingredientCheck:hover {
+      background: var(--accentGlow); transform: translateX(2px); }
+
+    /* Made it — rewarding ritual */
+    .rdComplete { transition: box-shadow 220ms var(--ease-out), transform 220ms var(--ease-out); }
+    .rdComplete:hover { box-shadow: 0 18px 44px -20px var(--accentGlow); }
+    .rdCompleteMicro { font-size: var(--t-xs); color: var(--muted2); margin-top: 10px; letter-spacing: 0.02em; }
+
+    /* Noise reduction + reduced motion */
+    .rdResMore { background: transparent; }
+    @media (prefers-reduced-motion: reduce) {
+      .rdStartArrow, .rdMiniStep, .rdComplete, .rdPrepIngredients .ingredientChecklist .ingredientCheck { transition: none; }
+      .cookModeEntryBtn.rdStartCta:hover .rdStartArrow { transform: none; }
+    }
+
     @keyframes sheetIn {
       from { transform: translateY(40px); opacity: 0; }
       to   { transform: translateY(0);    opacity: 1; }
@@ -8739,12 +8795,16 @@
       <!-- ░ 01 · RECIPE IDENTITY (cinematic hero) ░ -->
       <section class="rdSec rdHero">
         <div class="rdHeroContent">
+          <p class="rdStory" id="rdStory"></p>
           <div class="modalMetaGrid" id="modalMeta"></div>
           <div class="myNotesBox" id="myNotesBox" style="display:none"></div>
           <button class="cookModeEntryBtn rdStartCta" id="cookModeEntryBtn" type="button">
+            <span class="rdStartGlow" aria-hidden="true"></span>
             <span class="rdStartIcon" aria-hidden="true">🍳</span>
-            <span class="rdStartCopy"><span class="rdStartTitle">Start Cooking</span><span class="rdStartSub">Full-screen · step-by-step · hands-free</span></span>
+            <span class="rdStartCopy"><span class="rdStartTitle">Start Cooking</span><span class="rdStartSub">Immersive guided mode · voice enabled · hands-free</span></span>
+            <span class="rdStartArrow" aria-hidden="true">→</span>
           </button>
+          <div class="rdStartSteps" id="rdStartSteps" aria-hidden="true"></div>
           <div class="rdHeroSecondary">
             <button class="saveRecipeBtn" id="saveRecipeBtn" type="button">📌 Save recipe</button>
             <button class="actionChip" id="shareRecipeBtn" type="button">&#128279; Share</button>
@@ -8812,9 +8872,10 @@
 
       <!-- ░ 05 · COMPLETE (made it?) ░ -->
       <section class="rdSec rdComplete">
-        <div class="rdCompleteEyebrow">Made it?</div>
+        <div class="rdCompleteEyebrow">👏 Made it?</div>
         <div class="rdCompleteHead">How'd it turn out?</div>
         <button class="cookModeEntryBtn" id="imadethisModalBtn" type="button" style="background:linear-gradient(135deg,#C8690E 0%,#e59622 100%);color:#fff;margin-top:0;border:none">📸 I Made This — Rate &amp; Share</button>
+        <div class="rdCompleteMicro">Rate it · Save the memory · Share your dish</div>
       </section>
 
       <!-- ░ Step-by-step preview (de-emphasised, kept fully functional) ░ -->
@@ -11888,6 +11949,36 @@
       return clampInt(Number(value || 0) * servingMultiplier, 0);
     }
 
+    // A single evocative line that creates appetite (derived from category/tags).
+    function _rdDescriptor(recipe) {
+      if (!recipe) return "";
+      const tags = (recipe.tags || []).map(t => String(t).toLowerCase());
+      if (tags.includes("quick"))   return "Quick to make, hard to resist.";
+      if (tags.includes("healthy")) return "Light, nourishing, feel-good food.";
+      if (tags.includes("comfort")) return "Pure comfort in every bite.";
+      const cat = String(recipe.category || "").toLowerCase();
+      const map = {
+        "drinks": "A cooling sip, made to savour slow.",
+        "sweets": "A little indulgence, made with love.",
+        "snacks": "Crisp, moreish, made for sharing.",
+        "south-indian": "Fragrant comfort from the south.",
+        "north-indian": "Hearty, spiced and soul-warming.",
+        "chinese": "Wok-fresh and full of flavour.",
+        "continental": "Simple, elegant, quietly delicious.",
+      };
+      return map[cat] || "Made to be savoured.";
+    }
+    // First 2–3 words of the first three steps → a teaser of the cook.
+    function _rdMiniSteps(steps) {
+      return (Array.isArray(steps) ? steps : []).slice(0, 3).map((s, i) => {
+        const clean = String(s || "").replace(/^step\s*\d+[\s.:–-]*/i, "").trim();
+        let label = clean.split(/\s+/).slice(0, 3).join(" ").replace(/[.,;:].*$/, "");
+        label = label.replace(/\s+(the|a|an|of|with|in|to|and|for|on|into|until)$/i, "");  // no dangling words
+        if (!label) label = `Step ${i + 1}`;
+        return { n: String(i + 1).padStart(2, "0"), label };
+      });
+    }
+
     function renderRecipeModalDetails() {
       if (!activeRecipe) return;
 
@@ -11944,6 +12035,19 @@
         ${activeRecipe.custom ? `<div class="modalMetaItem" style="color:#0369a1"><span style="color:#0369a1">✏️ Type</span>My Recipe</div>` : ""}
         ${cookCount > 0 ? `<div class="modalMetaItem" style="color:#15803d"><span style="color:#15803d">🍳 Cooked</span>${cookCount}×</div>` : ""}
       `;
+
+      // ── Emotional descriptor under the title (appetite, not info) ────────────
+      const _story = document.getElementById("rdStory");
+      if (_story) _story.textContent = _rdDescriptor(activeRecipe);
+
+      // ── Start Cooking mini-step preview (build anticipation) ────────────────
+      const _stepsEl = document.getElementById("rdStartSteps");
+      if (_stepsEl) {
+        const mini = _rdMiniSteps(activeRecipe.steps);
+        _stepsEl.innerHTML = mini.length
+          ? mini.map(m => `<span class="rdMiniStep"><b>${m.n}</b>${escapeHtml(m.label)}</span>`).join("")
+          : "";
+      }
 
       // ── Macros: show real data or trigger AI estimation ──────────────────────
       const macroVals = [nutrition.protein_g, nutrition.carbs_g, nutrition.fat_g, nutrition.fiber_g];
