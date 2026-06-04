@@ -5813,9 +5813,12 @@
       background: rgba(200,105,14,0.16); }
     .cmRailActionLabel { flex: 1; }
     .cmRailChevron { color: rgba(255,255,255,0.32); font-size: 1.2rem; }
-    /* Bottom bar */
-    .cmBottomBar { display: flex; align-items: center; justify-content: space-between; gap: 16px;
-      width: 100%; max-width: 540px; margin: 0 auto; padding: 8px 20px 12px; box-sizing: border-box; }
+    /* Bottom bar — timeline on top, then a simple Previous/Next pair below it.
+       The nav row is independent of the timeline so Next is always visible. */
+    .cmBottomBar { display: flex; flex-direction: column; gap: 10px;
+      width: 100%; max-width: 540px; margin: 0 auto; padding: 8px 20px 12px; box-sizing: border-box;
+      position: relative; z-index: 5; }   /* above the blurred cookModeBg, which was covering Next */
+    .cmNavRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; }
     .cmBottomBar .cookModeStepDots { flex: 1; }
 
     /* ── Mobile / tablet: clean scrollable stack (step first) ── */
@@ -5852,12 +5855,10 @@
       .cmLeftRail::-webkit-scrollbar { display: none; }
       .cookModeMain { grid-area: center; max-width: none; }
       .cmRightRail  { grid-area: right; align-self: start; max-width: none; margin: 0; }
-      /* Explicit 3-column grid pins Previous | timeline | Next so Next can NEVER
-         be pushed off the row by the timeline, regardless of step count. */
-      .cmBottomBar  { grid-area: bottom; max-width: none;
-        display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
-        align-items: center; gap: 16px; }
-      .cmBottomBar .cmTimeline { min-width: 0; }
+      /* Timeline on its own row; Previous/Next as a separate pair below — Next is
+         never affected by the timeline width, so it's always visible. */
+      .cmBottomBar  { grid-area: bottom; max-width: none; }
+      .cmBottomBar .cmTimeline { min-width: 0; width: 100%; }
       /* The center ring is replaced by the top stepper on desktop. */
       .cookModeRingWrap { display: none; }
       .cookModeMain { justify-content: stretch; padding: 0; overflow: visible; }
@@ -8948,10 +8949,12 @@
 
     <!-- ░░ BOTTOM — cinematic timeline + navigation ░░ -->
     <div class="cmBottomBar" id="cmBottomBar">
-      <button class="cookModeNavBtn secondary" id="cookModePrevBtn" type="button">← Previous</button>
       <div class="cmTimeline" id="cmTimeline" role="progressbar" aria-valuemin="1"><!-- injected by JS --></div>
       <div class="cookModeStepDots" id="cookModeStepDots" style="display:none"></div>
-      <button class="cookModeNavBtn primary" id="cookModeNextBtn" type="button">Next Step →</button>
+      <div class="cmNavRow">
+        <button class="cookModeNavBtn secondary" id="cookModePrevBtn" type="button">← Previous</button>
+        <button class="cookModeNavBtn primary" id="cookModeNextBtn" type="button">Next Step →</button>
+      </div>
     </div>
 
     <!-- Done celebration screen — revealed on last step -->
