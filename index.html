@@ -2010,6 +2010,70 @@
       background: rgba(255,255,255,0.55);
     }
 
+    /* ══════════════════════════════════════════════════════════════════
+       RECIPE DETAIL — 6-section editorial redesign (Identity · Prepare ·
+       Start Cooking · Resources · Complete · Discover). Wrapper-only; every
+       original id/handler preserved. Mobile = stacked sheet, desktop = 55/45.
+       ══════════════════════════════════════════════════════════════════ */
+    .rdSec { margin: 0 0 26px; }
+    .rdSec:last-child { margin-bottom: 0; }
+
+    /* 01 · Identity hero */
+    .rdHero { display: flex; flex-direction: column; gap: 16px; }
+    .rdHeroVisual { order: -1; }                       /* image banner on top (mobile) */
+    .rdHero .modalHero { width: calc(100% + 40px); margin: 0 -20px; height: 220px; border-radius: 0 0 26px 26px; }
+    .rdHeroContent { display: flex; flex-direction: column; gap: 14px; }
+    .rdHeroSecondary { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .rdHeroSecondary .saveRecipeBtn, .rdHeroSecondary .actionChip { margin: 0; flex: 0 0 auto; }
+    /* Start Cooking — dominant immersive CTA */
+    .cookModeEntryBtn.rdStartCta {
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+      width: 100%; min-height: 84px; border-radius: 20px; margin: 0;
+      background: var(--ember-gradient); color: #fff; border: none; cursor: pointer;
+      box-shadow: 0 18px 48px -16px var(--accentGlow);
+      transition: transform 250ms var(--ease-out), box-shadow 250ms var(--ease-out);
+    }
+    .cookModeEntryBtn.rdStartCta:hover { transform: scale(1.012); box-shadow: 0 26px 66px -14px var(--accentGlow); }
+    .cookModeEntryBtn.rdStartCta:active { transform: scale(0.995); }
+    .rdStartIcon { font-size: 1.7rem; line-height: 1; }
+    .rdStartCopy { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
+    .rdStartTitle { font-family: 'Fraunces', serif; font-size: var(--t-lg); font-weight: var(--fw-black); }
+    .rdStartSub { font-size: var(--t-xs); opacity: 0.88; font-weight: var(--fw-med); }
+
+    /* 02 · Prepare (merged surface) */
+    .rdPrepare { display: flex; flex-direction: column; gap: 16px; }
+
+    /* 04 · Cook Resources */
+    .rdResMore { border: 1px solid var(--border); border-radius: 16px; padding: 2px 14px; background: var(--bg1); }
+    .rdResSummary { cursor: pointer; padding: 12px 2px; font-weight: var(--fw-bold); color: var(--ink); list-style: none; font-size: var(--t-sm); }
+    .rdResSummary::-webkit-details-marker { display: none; }
+    .rdResSummary::after { content: "▾"; float: right; opacity: 0.5; transition: transform 0.2s; }
+    .rdResMore[open] .rdResSummary::after { transform: rotate(180deg); }
+    .rdResMore .recipeActionRow { margin-top: 4px; }
+
+    /* 05 · Complete (celebratory) */
+    .rdComplete { text-align: center; background: var(--accentGlow); border: 1px solid var(--goldBorder);
+      border-radius: var(--cardRadius); padding: 18px 18px 16px; }
+    .rdCompleteEyebrow { font-size: var(--t-xs); text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); font-weight: var(--fw-bold); }
+    .rdCompleteHead { font-family: 'Fraunces', serif; font-size: var(--t-lg); font-weight: var(--fw-black); color: var(--ink); margin: 4px 0 12px; }
+
+    /* Step-by-step preview (de-emphasised, collapsible, fully functional) */
+    .rdStepPreview { border-top: 1px solid var(--hairline); }
+    .rdStepSummary { cursor: pointer; padding: 14px 2px; font-size: var(--t-sm); font-weight: var(--fw-bold); color: var(--muted); list-style: none; }
+    .rdStepSummary::-webkit-details-marker { display: none; }
+    .rdStepSummary::after { content: "▾"; float: right; opacity: 0.5; transition: transform 0.2s; }
+    .rdStepPreview[open] .rdStepSummary::after { transform: rotate(180deg); }
+
+    /* Desktop: 55/45 hero + 2-column Prepare */
+    @media (min-width: 1024px) {
+      .modal { width: min(100%, 980px); }
+      .rdHero { display: grid; grid-template-columns: 55fr 45fr; gap: 30px; align-items: start; }
+      .rdHeroContent { order: 0; }
+      .rdHeroVisual { order: 0; }
+      .rdHero .modalHero { width: 100%; margin: 0; height: clamp(320px, 40vh, 460px); border-radius: 20px; }
+      .rdPrepare { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+    }
+
     @keyframes sheetIn {
       from { transform: translateY(40px); opacity: 0; }
       to   { transform: translateY(0);    opacity: 1; }
@@ -8666,58 +8730,96 @@
 
   <div class="modalOverlay" id="recipeModal">
     <section class="modal" role="dialog" aria-modal="true" aria-label="Recipe steps">
-      <div class="modalHero" id="modalHero">
-        <img class="modalHeroImg" id="modalHeroImg" alt="" decoding="async" />
-        <div class="modalHeroGradient"></div>
-      </div>
       <div class="dragHandle" aria-hidden="true"></div>
       <div class="modalHead">
         <h2 class="modalTitle" id="modalDishName">Recipe</h2>
         <button class="closeBtn" id="closeModalBtn" type="button">✕ Close</button>
       </div>
-      <div class="modalMetaGrid" id="modalMeta"></div>
-      <div class="servingRow">
-        <div class="servingLabel">Servings</div>
-        <div class="servingControls" aria-label="Serving controls">
-          <button class="servingBtn" id="servingMinusBtn" type="button">-</button>
-          <span class="servingCount" id="servingCount">1x</span>
-          <button class="servingBtn" id="servingPlusBtn" type="button">+</button>
-        </div>
-      </div>
-      <div class="macroGrid" id="macroGrid"></div>
-      <div class="myNotesBox" id="myNotesBox" style="display:none"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px">
-        <p class="modalSectionTitle" style="margin:0">Ingredient checklist</p>
-        <div class="unitToggleWrap" id="unitToggleWrap">
-          <button class="unitToggleBtn" id="unitToggleBtn" type="button" title="Switch units">
-            <span id="unitToggleLabel">metric</span> <span style="opacity:0.45;font-size:0.7em">⇄</span>
+
+      <!-- ░ 01 · RECIPE IDENTITY (cinematic hero) ░ -->
+      <section class="rdSec rdHero">
+        <div class="rdHeroContent">
+          <div class="modalMetaGrid" id="modalMeta"></div>
+          <div class="myNotesBox" id="myNotesBox" style="display:none"></div>
+          <button class="cookModeEntryBtn rdStartCta" id="cookModeEntryBtn" type="button">
+            <span class="rdStartIcon" aria-hidden="true">🍳</span>
+            <span class="rdStartCopy"><span class="rdStartTitle">Start Cooking</span><span class="rdStartSub">Full-screen · step-by-step · hands-free</span></span>
           </button>
+          <div class="rdHeroSecondary">
+            <button class="saveRecipeBtn" id="saveRecipeBtn" type="button">📌 Save recipe</button>
+            <button class="actionChip" id="shareRecipeBtn" type="button">&#128279; Share</button>
+          </div>
         </div>
-      </div>
-      <div class="ingredientChecklist" id="modalIngredients"></div>
-      <div class="missingBox" id="missingBox"></div>
-      <div class="substitutionBox" id="substitutionBox"></div>
-      <div class="groceryShopSection" id="groceryShopSection" style="display:none">
-        <div class="groceryShopLabel">🛒 Order ingredients online</div>
-        <div class="groceryStoreRow" id="groceryStoreRow"></div>
-      </div>
-      <div class="recipeActionRow">
-        <button class="actionChip" id="shareRecipeBtn" type="button">&#128279; Share</button>
-        <button class="actionChip actionChipWA" id="shareWhatsAppBtn" type="button">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="vertical-align:-2px;margin-right:4px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>WhatsApp
-        </button>
-        <button class="actionChip" id="shareCardBtn" type="button">🖼️ Card</button>
-        <button class="actionChip" id="exportGroceryBtn" type="button">&#128722; Grocery list</button>
-        <button class="addToListBtn" id="addToListBtn" type="button">🛒 Add to List</button>
-      </div>
-      <button class="saveRecipeBtn" id="saveRecipeBtn" type="button">📌 Save recipe</button>
-      <button class="cookModeEntryBtn" id="imadethisModalBtn" type="button" style="background:linear-gradient(135deg,#C8690E 0%,#e59622 100%);color:#fff;margin-top:0;border:none">📸 I Made This — Rate &amp; Share</button>
-      <div class="modalRemixRow" id="modalRemixRow">
-        <button class="modalRemixBtn" id="modalRemixHealthier" data-remix="healthier" type="button">🥗 Healthier</button>
-        <button class="modalRemixBtn" id="modalRemixSpicier"   data-remix="spicier"   type="button">🌶 Spicier</button>
-        <button class="modalRemixBtn" id="modalRemixQuicker"   data-remix="quicker"   type="button">⚡ Quicker</button>
-      </div>
-      <button class="cookModeEntryBtn" id="cookModeEntryBtn" type="button">🍳 Enter Cook Mode — full screen</button>
+        <div class="rdHeroVisual">
+          <div class="modalHero" id="modalHero">
+            <img class="modalHeroImg" id="modalHeroImg" alt="" decoding="async" />
+            <div class="modalHeroGradient"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ░ 02 · PREPARE (merged surface) ░ -->
+      <section class="rdSec rdPrepare">
+        <div class="rdPrepIngredients">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 8px">
+            <p class="modalSectionTitle" style="margin:0">Ingredient checklist</p>
+            <div class="unitToggleWrap" id="unitToggleWrap">
+              <button class="unitToggleBtn" id="unitToggleBtn" type="button" title="Switch units">
+                <span id="unitToggleLabel">metric</span> <span style="opacity:0.45;font-size:0.7em">⇄</span>
+              </button>
+            </div>
+          </div>
+          <div class="ingredientChecklist" id="modalIngredients"></div>
+          <div class="missingBox" id="missingBox"></div>
+          <div class="substitutionBox" id="substitutionBox"></div>
+        </div>
+        <div class="rdPrepFacts">
+          <div class="servingRow">
+            <div class="servingLabel">Servings</div>
+            <div class="servingControls" aria-label="Serving controls">
+              <button class="servingBtn" id="servingMinusBtn" type="button">-</button>
+              <span class="servingCount" id="servingCount">1x</span>
+              <button class="servingBtn" id="servingPlusBtn" type="button">+</button>
+            </div>
+          </div>
+          <div class="macroGrid" id="macroGrid"></div>
+          <div class="groceryShopSection" id="groceryShopSection" style="display:none">
+            <div class="groceryShopLabel">🛒 Order ingredients online</div>
+            <div class="groceryStoreRow" id="groceryStoreRow"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ░ 04 · COOK RESOURCES ░ -->
+      <section class="rdSec rdResources">
+        <details class="rdResMore">
+          <summary class="rdResSummary">More actions</summary>
+          <div class="recipeActionRow">
+            <button class="actionChip actionChipWA" id="shareWhatsAppBtn" type="button">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="vertical-align:-2px;margin-right:4px"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>WhatsApp
+            </button>
+            <button class="actionChip" id="shareCardBtn" type="button">🖼️ Card</button>
+            <button class="actionChip" id="exportGroceryBtn" type="button">&#128722; Grocery list</button>
+            <button class="addToListBtn" id="addToListBtn" type="button">🛒 Add to List</button>
+          </div>
+          <div class="modalRemixRow" id="modalRemixRow">
+            <button class="modalRemixBtn" id="modalRemixHealthier" data-remix="healthier" type="button">🥗 Healthier</button>
+            <button class="modalRemixBtn" id="modalRemixSpicier"   data-remix="spicier"   type="button">🌶 Spicier</button>
+            <button class="modalRemixBtn" id="modalRemixQuicker"   data-remix="quicker"   type="button">⚡ Quicker</button>
+          </div>
+        </details>
+      </section>
+
+      <!-- ░ 05 · COMPLETE (made it?) ░ -->
+      <section class="rdSec rdComplete">
+        <div class="rdCompleteEyebrow">Made it?</div>
+        <div class="rdCompleteHead">How'd it turn out?</div>
+        <button class="cookModeEntryBtn" id="imadethisModalBtn" type="button" style="background:linear-gradient(135deg,#C8690E 0%,#e59622 100%);color:#fff;margin-top:0;border:none">📸 I Made This — Rate &amp; Share</button>
+      </section>
+
+      <!-- ░ Step-by-step preview (de-emphasised, kept fully functional) ░ -->
+      <details class="rdStepPreview" open>
+        <summary class="rdStepSummary">Step-by-step preview</summary>
       <div class="stepLangRow">
         <span class="stepLangLabel">Instructions in</span>
         <div class="stepLangWrap" id="stepLangWrap">
@@ -8748,12 +8850,15 @@
         <button class="btn secondary" id="prevStepBtn" type="button">Previous</button>
         <button class="btn" id="nextStepBtn" type="button">Next Step</button>
       </div>
+      </details>
 
-      <!-- Similar Recipes strip -->
-      <div class="similarSection" id="similarSection" style="display:none">
-        <p class="modalSectionTitle" style="margin-top:20px">Similar recipes you might like</p>
-        <div class="similarRow" id="similarRow"></div>
-      </div>
+      <!-- ░ 06 · DISCOVER (cook next) ░ -->
+      <section class="rdSec rdDiscover">
+        <div class="similarSection" id="similarSection" style="display:none">
+          <p class="modalSectionTitle" style="margin-top:20px">Cook next</p>
+          <div class="similarRow" id="similarRow"></div>
+        </div>
+      </section>
     </section>
   </div>
 
