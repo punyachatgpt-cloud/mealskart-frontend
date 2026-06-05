@@ -97,12 +97,12 @@
     .back-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
 
     .auth-card {
-      width: 100%; max-width: 400px;
+      width: 100%; max-width: 440px;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: var(--sp-xl) var(--sp-lg);
-      box-shadow: var(--shadow-float);
+      border-radius: 28px;
+      padding: 44px 32px 32px;
+      box-shadow: 0 24px 60px -24px rgba(50,20,5,0.22);
       display: flex; flex-direction: column; gap: var(--sp-lg);
     }
 
@@ -110,15 +110,19 @@
     .step { display: none; flex-direction: column; gap: var(--sp-lg); }
     .step.active { display: flex; }
 
+    .auth-heading { text-align: center; }
     .auth-heading h2 {
       font-family: 'Fraunces', serif;
-      font-size: var(--t-xl);
-      font-weight: var(--fw-med);
+      font-size: clamp(1.8rem, 1.4rem + 1.4vw, 2.1rem);
+      font-weight: var(--fw-bold);
       color: var(--ink);
-      letter-spacing: -0.01em;
-      line-height: 1.2;
-      margin-bottom: var(--sp-xs);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 6px;
     }
+    .recover-security { display:flex; align-items:flex-start; gap:8px; font-size:var(--t-xs);
+      color:var(--positive); background:rgba(22,163,74,0.08); border:1px solid rgba(22,163,74,0.25);
+      border-radius:12px; padding:10px 12px; line-height:1.4; }
     .auth-heading p { font-size: var(--t-sm); color: var(--ink-lo); font-weight: var(--fw-reg); line-height: 1.5; }
     .auth-heading .phone-display { font-weight: var(--fw-bold); color: var(--ink); }
 
@@ -259,8 +263,6 @@
 </head>
 <body>
 
-  <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
-
   <main class="auth-shell">
 
     <nav class="auth-nav">
@@ -280,7 +282,7 @@
       <div class="step active" id="step1">
         <div class="auth-heading">
           <h2>Trouble signing in?</h2>
-          <p id="recoverSub">Reset your password by email, or recover via your phone number.</p>
+          <p id="recoverSub">We'll help you get back in.</p>
         </div>
 
         <div class="seg-toggle" id="segToggle" role="tablist" aria-label="Recovery method" data-active="email">
@@ -321,6 +323,8 @@
             <span class="btn-label" id="recoverBtnLabel">Send reset link</span>
           </button>
         </form>
+
+        <p class="recover-security">🔒 For your security, recovery links expire after 30 minutes.</p>
 
         <p class="auth-footer">
           Remember your details? <a href="/login.html">Sign in</a>
@@ -375,19 +379,9 @@
 
   <script>
     (() => {
-      // Theme
-      const toggle = document.getElementById('themeToggle');
-      const saved = localStorage.getItem('simmer_theme') ||
+      // Theme (apply saved; toggle lives in-app to keep auth calm)
+      document.documentElement.dataset.theme = localStorage.getItem('simmer_theme') ||
         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      applyTheme(saved);
-      toggle.addEventListener('click', () => {
-        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-        applyTheme(next); localStorage.setItem('simmer_theme', next);
-      });
-      function applyTheme(t) {
-        document.documentElement.dataset.theme = t;
-        toggle.textContent = t === 'dark' ? '☀️' : '🌙';
-      }
 
       let pendingPhone = '';
 
@@ -411,10 +405,8 @@
         seg.dataset.active = m;
         seg.querySelectorAll('.seg-btn').forEach(b => { const on = b.dataset.method === m; b.classList.toggle('is-active', on); b.setAttribute('aria-selected', String(on)); });
         document.querySelectorAll('#recoverForm .method-pane').forEach(p => { p.hidden = p.dataset.method !== m; });
-        recoverBtnLabel.textContent = m === 'email' ? 'Send reset link' : 'Send recovery OTP';
-        recoverSub.textContent = m === 'email'
-          ? "Enter your email and we'll send a password-reset link."
-          : "Enter your registered number — we'll verify it's you with an OTP.";
+        recoverBtnLabel.textContent = m === 'email' ? 'Send recovery link' : 'Send recovery code';
+        recoverSub.textContent = "We'll help you get back in.";
         setTimeout(() => (m === 'email' ? emailInput : phoneInput).focus(), 60);
       }
       seg.querySelectorAll('.seg-btn').forEach(b => b.addEventListener('click', () => setMethod(b.dataset.method)));

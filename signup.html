@@ -96,16 +96,23 @@
     /* ── Card ────────────────────────────────────────────────── */
     .auth-card {
       width: 100%;
-      max-width: 400px;
+      max-width: 440px;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: var(--sp-xl) var(--sp-lg);
-      box-shadow: var(--shadow-float);
+      border-radius: 28px;
+      padding: 44px 32px 32px;
+      box-shadow: 0 24px 60px -24px rgba(50,20,5,0.22);
       display: flex;
       flex-direction: column;
       gap: var(--sp-lg);
     }
+    .auth-heading { text-align: center; }
+    .auth-heading h2 { font-size: clamp(1.8rem, 1.4rem + 1.4vw, 2.1rem) !important;
+      font-weight: var(--fw-bold); letter-spacing: -0.02em; line-height: 1.1; }
+    .value-chips { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+    .value-chips li { font-size: var(--t-xs); font-weight: var(--fw-med); color: var(--ink-lo);
+      background: var(--bg0); border: 1px solid var(--border); border-radius: 999px; padding: 7px 12px; }
+    .auth-trust { text-align: center; font-size: var(--t-xs); color: var(--ink-faint); font-weight: var(--fw-reg); }
 
     /* ── Brand mark ──────────────────────────────────────────── */
     .auth-brand {
@@ -402,8 +409,6 @@
 </head>
 <body>
 
-  <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme" title="Toggle dark/light mode">🌙</button>
-
   <main class="auth-shell">
     <div class="auth-card" role="main">
 
@@ -415,9 +420,15 @@
 
       <!-- Heading -->
       <div class="auth-heading" id="authHead">
-        <h2>Your kitchen,<br>your craving.</h2>
-        <p id="authSub">Sign up free — takes 20 seconds.</p>
+        <h2>Your kitchen starts here.</h2>
+        <p id="authSub">Recipes, plans, and cooking memories in one place.</p>
       </div>
+
+      <ul class="value-chips" aria-hidden="true">
+        <li>⚡ Takes ~20 sec</li>
+        <li>🔒 Private by default</li>
+        <li>🍳 Start cooking right away</li>
+      </ul>
 
       <div class="seg-toggle" id="segToggle" role="tablist" aria-label="Sign up method" data-active="phone">
         <span class="seg-indicator" aria-hidden="true"></span>
@@ -476,7 +487,7 @@
 
         <button type="submit" class="btn-cta" id="submitBtn">
           <div class="spinner" aria-hidden="true"></div>
-          <span class="btn-label" id="btnLabel">Send OTP</span>
+          <span class="btn-label" id="btnLabel">Continue</span>
         </button>
       </form>
 
@@ -491,13 +502,13 @@
         <a class="auth-footer" href="/login.html" style="color:var(--accent)">Back to sign in</a>
       </div>
 
+      <p class="auth-trust" id="authTrust">🔒 We never share your phone or email.</p>
+
       <!-- Terms -->
       <p class="auth-terms" id="authTerms">
         By continuing, you agree to Simmer's
-        <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+        <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.
       </p>
-
-      <div class="auth-divider" id="authDivider">or</div>
 
       <!-- Footer -->
       <p class="auth-footer" id="authFooter">
@@ -510,7 +521,6 @@
   <script>
     (() => {
       const form     = document.getElementById('signupForm');
-      const toggle   = document.getElementById('themeToggle');
       const phoneInp = document.getElementById('phoneInput');
       const phoneWrap= document.getElementById('phoneWrap');
       const phoneErr = document.getElementById('phoneError');
@@ -531,11 +541,8 @@
       const seg      = document.getElementById('segToggle');
       const panes    = [...document.querySelectorAll('.method-pane')];
 
-      // ── Theme ──
-      const savedTheme = localStorage.getItem('simmer_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      applyTheme(savedTheme);
-      toggle.addEventListener('click', () => { const n = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; applyTheme(n); localStorage.setItem('simmer_theme', n); });
-      function applyTheme(t) { document.documentElement.dataset.theme = t; toggle.textContent = t === 'dark' ? '☀️' : '🌙'; }
+      // ── Theme (apply saved; toggle lives in-app to keep auth calm) ──
+      document.documentElement.dataset.theme = localStorage.getItem('simmer_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
       let method = localStorage.getItem('simmer_auth_method') === 'email' ? 'email' : 'phone';
 
@@ -547,8 +554,8 @@
         seg.dataset.active = m;
         seg.querySelectorAll('.seg-btn').forEach(b => { const on = b.dataset.method === m; b.classList.toggle('is-active', on); b.setAttribute('aria-selected', String(on)); });
         panes.forEach(p => { const on = p.dataset.method === m; p.hidden = !on; if (on) { p.classList.add('entering'); p.addEventListener('animationend', () => p.classList.remove('entering'), { once:true }); } });
-        btnLabel.textContent = m === 'phone' ? 'Send OTP' : 'Create account';
-        authSub.textContent  = m === 'phone' ? 'Sign up free — takes 20 seconds.' : 'Sign up with your email and a password.';
+        btnLabel.textContent = 'Continue';
+        authSub.textContent  = 'Recipes, plans, and cooking memories in one place.';
         localStorage.setItem('simmer_auth_method', m);
         setTimeout(() => (m === 'phone' ? phoneInp : emailInp).focus(), 60);
       }
@@ -579,7 +586,7 @@
       emailInp.addEventListener('input', () => clearFieldError(emailWrap, emailErr, emailInp));
 
       const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
-      function setLoading(on) { btn.disabled = on; btn.classList.toggle('loading', on); }
+      function setLoading(on) { btn.disabled = on; btn.classList.toggle('loading', on); btnLabel.textContent = on ? 'Sending code…' : 'Continue'; }
 
       // ── Resend countdown for inbox state ──
       let resendTimer = null;
