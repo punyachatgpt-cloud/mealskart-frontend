@@ -9188,53 +9188,53 @@
           <div class="section" id="timePanel">
             <div class="label">Time <span class="hint">how long do you have</span></div>
             <div class="seg" role="group" aria-label="Time">
-              <button class="chip selected" data-group="time" data-value="999">Any time</button>
-              <button class="chip" data-group="time" data-value="15">15 min</button>
-              <button class="chip" data-group="time" data-value="30">30 min</button>
+              <button class="chip selected" aria-pressed="true" data-group="time" data-value="999">Any time</button>
+              <button class="chip" aria-pressed="false" data-group="time" data-value="15">15 min</button>
+              <button class="chip" aria-pressed="false" data-group="time" data-value="30">30 min</button>
             </div>
           </div>
 
           <div class="section" id="moodPanel">
             <div class="label">Mood <span class="hint">match the vibe</span></div>
             <div class="seg" role="group" aria-label="Mood">
-              <button class="chip selected" data-group="mood" data-value="">Any</button>
-              <button class="chip" data-group="mood" data-value="quick">quick</button>
-              <button class="chip" data-group="mood" data-value="healthy">healthy</button>
-              <button class="chip" data-group="mood" data-value="comfort">comfort</button>
+              <button class="chip selected" aria-pressed="true" data-group="mood" data-value="">Any</button>
+              <button class="chip" aria-pressed="false" data-group="mood" data-value="quick">quick</button>
+              <button class="chip" aria-pressed="false" data-group="mood" data-value="healthy">healthy</button>
+              <button class="chip" aria-pressed="false" data-group="mood" data-value="comfort">comfort</button>
             </div>
           </div>
 
           <div class="section" id="categoryPanel">
             <div class="label">Craving <span class="hint">cuisine or type</span></div>
             <div class="seg scroll" role="group" aria-label="Category">
-              <button class="chip selected" data-group="category" data-value="all">all</button>
-              <button class="chip" data-group="category" data-value="north-indian">north indian</button>
-              <button class="chip" data-group="category" data-value="south-indian">south indian</button>
-              <button class="chip" data-group="category" data-value="continental">continental</button>
-              <button class="chip" data-group="category" data-value="chinese">chinese</button>
-              <button class="chip" data-group="category" data-value="salad">salad</button>
-              <button class="chip" data-group="category" data-value="drinks">drinks</button>
-              <button class="chip" data-group="category" data-value="snacks">snacks</button>
-              <button class="chip" data-group="category" data-value="sweets">sweets</button>
-              <button class="chip" data-group="category" data-value="other">other</button>
+              <button class="chip selected" aria-pressed="true" data-group="category" data-value="all">all</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="north-indian">north indian</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="south-indian">south indian</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="continental">continental</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="chinese">chinese</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="salad">salad</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="drinks">drinks</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="snacks">snacks</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="sweets">sweets</button>
+              <button class="chip" aria-pressed="false" data-group="category" data-value="other">other</button>
             </div>
           </div>
 
           <div class="section" id="dietPanel">
             <div class="label">Diet <span class="hint">always respected</span></div>
             <div class="seg" role="group" aria-label="Diet">
-              <button class="chip selected" data-group="diet" data-value="">All</button>
-              <button class="chip" data-group="diet" data-value="veg">veg</button>
-              <button class="chip" data-group="diet" data-value="non-veg">non-veg</button>
+              <button class="chip selected" aria-pressed="true" data-group="diet" data-value="">All</button>
+              <button class="chip" aria-pressed="false" data-group="diet" data-value="veg">veg</button>
+              <button class="chip" aria-pressed="false" data-group="diet" data-value="non-veg">non-veg</button>
             </div>
           </div>
 
           <div class="section" id="budgetPanel">
             <div class="label">Budget <span class="hint">shapes suggestions</span></div>
             <div class="seg" role="group" aria-label="Budget">
-              <button class="chip" data-group="budget" data-value="economical">💚 Economical</button>
-              <button class="chip selected" data-group="budget" data-value="any">✨ Any</button>
-              <button class="chip" data-group="budget" data-value="premium">💰 Premium</button>
+              <button class="chip" aria-pressed="false" data-group="budget" data-value="economical">💚 Economical</button>
+              <button class="chip selected" aria-pressed="true" data-group="budget" data-value="any">✨ Any</button>
+              <button class="chip" aria-pressed="false" data-group="budget" data-value="premium">💰 Premium</button>
             </div>
           </div>
 
@@ -9443,9 +9443,9 @@
           <div class="servingRow">
             <div class="servingLabel">Servings</div>
             <div class="servingControls" aria-label="Serving controls">
-              <button class="servingBtn" id="servingMinusBtn" type="button">-</button>
-              <span class="servingCount" id="servingCount">1x</span>
-              <button class="servingBtn" id="servingPlusBtn" type="button">+</button>
+              <button class="servingBtn" id="servingMinusBtn" type="button" aria-label="Decrease servings" title="Decrease servings">-</button>
+              <span class="servingCount" id="servingCount" aria-live="polite" aria-atomic="true">1x</span>
+              <button class="servingBtn" id="servingPlusBtn" type="button" aria-label="Increase servings" title="Increase servings">+</button>
             </div>
           </div>
           <div class="macroGrid" id="macroGrid"></div>
@@ -10553,7 +10553,9 @@
 
     function setSelected(group, value) {
       document.querySelectorAll(`[data-group="${group}"]`).forEach((btn) => {
-        btn.classList.toggle("selected", btn.dataset.value === value);
+        const isSelected = btn.dataset.value === value;
+        btn.classList.toggle("selected", isSelected);
+        btn.setAttribute("aria-pressed", isSelected ? "true" : "false");
       });
       // Home v2: keep hero selected-chips + quick pills in sync with filter state
       try { renderHeroSelectedChips(); syncHeroPillsGlobal(); } catch {}
@@ -12386,6 +12388,7 @@
         // Shopping list button — uses card._item so remix swaps are respected
         card.querySelector(".cardShopBtn")?.addEventListener("click", (e) => {
           e.stopPropagation();
+          if (navigator.vibrate) navigator.vibrate(40);
           const count = addRecipeToShoppingList(card._item);
           const btn = e.currentTarget;
           btn.textContent = count > 0 ? `✓ ${count} item${count !== 1 ? "s" : ""} added` : "✓ Already in list";
@@ -13906,6 +13909,7 @@
 
     el.decideBtn.addEventListener("click", async (e) => {
       addRipple(el.decideBtn, e);
+      if (navigator.vibrate) navigator.vibrate(40);
       if (!(await checkLimit("decide_for_me"))) return;
       getSuggestions("decide");
     });
@@ -13936,11 +13940,13 @@
     });
 
     el.servingMinusBtn.addEventListener("click", () => {
+      if (navigator.vibrate) navigator.vibrate(40);
       servingMultiplier = Math.max(1, servingMultiplier - 1);
       renderRecipeModalDetails();
     });
 
     el.servingPlusBtn.addEventListener("click", () => {
+      if (navigator.vibrate) navigator.vibrate(40);
       servingMultiplier = Math.min(8, servingMultiplier + 1);
       renderRecipeModalDetails();
     });
@@ -14149,6 +14155,7 @@
     if (el.decideBtnMobile) {
       el.decideBtnMobile.addEventListener("click", (e) => {
         addRipple(el.decideBtnMobile, e);
+        if (navigator.vibrate) navigator.vibrate(40);
         getSuggestions("decide");
       });
     }
@@ -18580,6 +18587,7 @@
       // "Add to List" inside recipe modal — smart: missing-only when pantry active
       document.getElementById("addToListBtn")?.addEventListener("click", () => {
         if (!activeRecipe) return;
+        if (navigator.vibrate) navigator.vibrate(40);
         const btn = document.getElementById("addToListBtn");
         const pantryOn = getPantryStore().length > 0;
         let onlyMissing = null;
@@ -21870,6 +21878,7 @@
       if (!btn) return;
       btn.addEventListener("click", async () => {
         if (btn.disabled) return;
+        if (navigator.vibrate) navigator.vibrate(40);
         btn.disabled = true;
 
         // Spin the dice emoji
