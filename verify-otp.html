@@ -114,26 +114,28 @@
 
     .auth-card {
       width: 100%;
-      max-width: 400px;
+      max-width: 440px;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: var(--sp-xl) var(--sp-lg);
-      box-shadow: var(--shadow-float);
+      border-radius: 28px;
+      padding: 44px 32px 32px;
+      box-shadow: 0 24px 60px -24px rgba(50,20,5,0.22);
       display: flex;
       flex-direction: column;
       gap: var(--sp-lg);
     }
 
+    .auth-heading { text-align: center; }
     .auth-heading h2 {
       font-family: 'Fraunces', serif;
-      font-size: var(--t-xl);
-      font-weight: var(--fw-med);
+      font-size: clamp(1.8rem, 1.4rem + 1.4vw, 2.1rem);
+      font-weight: var(--fw-bold);
       color: var(--ink);
-      letter-spacing: -0.01em;
-      line-height: 1.2;
-      margin-bottom: var(--sp-xs);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 6px;
     }
+    .phone-display { font-weight: var(--fw-bold); color: var(--ink); letter-spacing: 0.04em; }
     .auth-heading p {
       font-size: var(--t-sm);
       color: var(--ink-lo);
@@ -298,8 +300,6 @@
 </head>
 <body>
 
-  <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
-
   <main class="auth-shell">
 
     <nav class="auth-nav">
@@ -316,8 +316,8 @@
       <div class="auth-brand"><img src="/logo.svg" alt="" class="logo-mark" /><h1>Simmer</h1></div>
 
       <div class="auth-heading">
-        <h2>Check your messages.</h2>
-        <p>We sent a 6-digit code to <span class="phone-display" id="phoneDisplay">your number</span>.</p>
+        <h2>Enter your code.</h2>
+        <p>Sent to <span class="phone-display" id="phoneDisplay">your number</span></p>
       </div>
 
       <form class="otp-form" id="otpForm" novalidate>
@@ -336,7 +336,7 @@
 
         <button type="submit" class="btn-cta" id="verifyBtn" disabled>
           <div class="spinner" aria-hidden="true"></div>
-          <span class="btn-label">Verify</span>
+          <span class="btn-label">Continue</span>
         </button>
       </form>
 
@@ -351,20 +351,9 @@
 
   <script>
     (() => {
-      // ── Theme ─────────────────────────────────────────────────
-      const toggle = document.getElementById('themeToggle');
-      const savedTheme = localStorage.getItem('simmer_theme') ||
+      // ── Theme (apply saved; toggle lives in-app to keep auth calm) ──
+      document.documentElement.dataset.theme = localStorage.getItem('simmer_theme') ||
         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-      applyTheme(savedTheme);
-      toggle.addEventListener('click', () => {
-        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-        applyTheme(next);
-        localStorage.setItem('simmer_theme', next);
-      });
-      function applyTheme(t) {
-        document.documentElement.dataset.theme = t;
-        toggle.textContent = t === 'dark' ? '☀️' : '🌙';
-      }
 
       // ── Retrieve pending phone ─────────────────────────────────
       const phone  = sessionStorage.getItem('simmer_pending_phone') || '';
@@ -377,8 +366,8 @@
         return;
       }
 
-      // Display masked phone
-      const masked = phone.replace(/(\+\d{2})(\d{3})(\d{3})(\d{4})/, '$1 $2 $3 $4');
+      // Display masked destination — dots + last 4 (e.g. ••••••3210)
+      const masked = '••••••' + phone.slice(-4);
       document.getElementById('phoneDisplay').textContent = masked;
       backBtn.href = intent === 'login' ? '/login.html' : '/signup.html';
 
