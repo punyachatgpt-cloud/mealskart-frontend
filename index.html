@@ -9011,8 +9011,8 @@
         </button>
         <button class="themeBtn" id="themeBtn" type="button" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
         <a id="authBtn" href="/login.html">Sign in</a>
-        <button id="authAvatarBtn" type="button" title="View your profile" onclick="window.location.href='/profile.html'"></button>
-        <button id="weeklyReportBtn" type="button">📊 My week</button>
+        <button id="authAvatarBtn" type="button" title="View your profile" aria-label="View your profile" onclick="window.location.href='/profile.html'"></button>
+        <button id="weeklyReportBtn" type="button" title="View weekly report" aria-label="View weekly report">📊 My week</button>
         <div class="microcopy" id="microcopy">Dinner ready in 15 mins &#9889;</div>
       </div>
     </header>
@@ -9176,14 +9176,14 @@
         <div class="label" style="margin-bottom:6px">Search a dish <span class="hint">by name or cuisine</span></div>
         <div class="searchWrap">
           <span class="searchIcon">&#128269;</span>
-          <input id="searchInput" class="searchInput" placeholder="e.g. Butter Chicken, Pasta, Chinese…" autocomplete="off" aria-label="Universal recipe search" />
+          <input id="searchInput" class="searchInput" placeholder="e.g. Butter Chicken, Pasta, Chinese…" autocomplete="off" aria-label="Universal recipe search" title="Press '/' to search" />
           <button class="searchClear" id="searchClearBtn" type="button" aria-label="Clear search">✕</button>
           <div class="searchDropdown" id="searchDropdown"></div>
         </div>
         <div style="font-size:0.75rem;color:var(--muted2);margin:-2px 0 6px 4px;display:flex;align-items:center;gap:5px">
           ⚡ Results appear as you type — no button needed
         </div>
-        <button class="browseAllBtn" id="browseAllBtn" type="button">🗂 Browse all 500+ recipes →</button>
+        <button class="browseAllBtn" id="browseAllBtn" type="button" title="Browse all recipes" aria-label="Browse all 500+ recipes">🗂 Browse all 500+ recipes →</button>
         <div class="stack">
           <div class="section" id="timePanel">
             <div class="label">Time <span class="hint">how long do you have</span></div>
@@ -10437,6 +10437,7 @@
         const prefs = JSON.parse(localStorage.getItem("foodai_preferences") || "{}");
         const name = prefs.display_name || "";
         avatarBtn.textContent = name ? name[0].toUpperCase() : "U";
+        if (name) avatarBtn.setAttribute("aria-label", `View profile for ${name}`);
       } catch { avatarBtn.textContent = "U"; }
 
       // Avatar click → tiny dropdown (logout)
@@ -14078,6 +14079,11 @@
 
     // Global Escape key — closes the frontmost open dialog
     document.addEventListener("keydown", (e) => {
+      if (e.key === "/" && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
+        e.preventDefault();
+        el.searchInput?.focus();
+        return;
+      }
       if (e.key !== "Escape") return;
       const urlImportOv = document.getElementById("urlImportOverlay");
       if (urlImportOv && !urlImportOv.classList.contains("hidden")) { closeUrlImport(); return; }
