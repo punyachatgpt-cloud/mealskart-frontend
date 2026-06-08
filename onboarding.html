@@ -474,6 +474,7 @@
         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       applyTheme(saved);
       toggle.addEventListener('click', () => {
+        if (navigator.vibrate) navigator.vibrate(40);
         const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
         applyTheme(next); localStorage.setItem('simmer_theme', next);
       });
@@ -502,6 +503,7 @@
 
       // ── Step transition ────────────────────────────────────────
       function goToStep(nextIdx) {
+        if (navigator.vibrate) navigator.vibrate(40);
         const current = document.getElementById('step' + currentStep);
         const next    = document.getElementById('step' + nextIdx);
         if (!next) return;
@@ -533,6 +535,7 @@
       const dietChips = Array.from(document.querySelectorAll('#dietGrid .ob-chip'));
       dietChips.forEach(chip => {
         chip.addEventListener('click', () => {
+          if (navigator.vibrate) navigator.vibrate(40);
           dietChips.forEach(c => { c.classList.remove('selected'); c.setAttribute('aria-checked', 'false'); });
           chip.classList.add('selected');
           chip.setAttribute('aria-checked', 'true');
@@ -546,6 +549,7 @@
       const cuisineChips = Array.from(document.querySelectorAll('#cuisineGrid .ob-chip'));
       cuisineChips.forEach(chip => {
         chip.addEventListener('click', () => {
+          if (navigator.vibrate) navigator.vibrate(40);
           const val = chip.dataset.value;
           if (chip.classList.contains('selected')) {
             chip.classList.remove('selected');
@@ -562,6 +566,7 @@
 
       // ── Submit ─────────────────────────────────────────────────
       async function submitOnboarding(skipped) {
+        if (navigator.vibrate) navigator.vibrate(40);
         const btn = document.getElementById('nextStep2');
         btn.disabled = true;
         btn.classList.add('loading');
