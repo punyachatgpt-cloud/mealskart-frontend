@@ -1,0 +1,3 @@
+## 2026-06-10 - [Accessibility and Tactile Feedback for Serving Controls]
+**Learning:** Icon-only or character-based buttons (like '-' and '+') are ambiguous to screen readers and lack descriptive tooltips. Combining `aria-label`, `title`, and `aria-live` for dynamic counters ensures a fully accessible experience. Adding micro-vibrations (`navigator.vibrate(40)`) on mobile provides a satisfying tactile confirmation that mirrors the visual state change.
+**Action:** Always include ARIA labels and haptic feedback for primary increment/decrement controls and use live regions for the resulting value.
