@@ -9176,7 +9176,7 @@
         <div class="label" style="margin-bottom:6px">Search a dish <span class="hint">by name or cuisine</span></div>
         <div class="searchWrap">
           <span class="searchIcon">&#128269;</span>
-          <input id="searchInput" class="searchInput" placeholder="e.g. Butter Chicken, Pasta, Chinese…" autocomplete="off" aria-label="Universal recipe search" />
+          <input id="searchInput" class="searchInput" placeholder="e.g. Butter Chicken, Pasta, Chinese…" autocomplete="off" aria-label="Universal recipe search" title="Press '/' to search" />
           <button class="searchClear" id="searchClearBtn" type="button" aria-label="Clear search">✕</button>
           <div class="searchDropdown" id="searchDropdown"></div>
         </div>
@@ -12306,7 +12306,9 @@
               </div>
               <div style="display:flex;gap:6px;align-items:center">
                 <button class="saveBtn ${getRecipeCollections(item.id).length ? "saved" : ""}" type="button" aria-label="Save to collection">🔖</button>
-                <button class="heartBtn" type="button" aria-label="Toggle favorite">
+                <button class="heartBtn" type="button"
+                  aria-label="${isFav ? "Remove from favorites" : "Add to favorites"}"
+                  aria-pressed="${isFav ? "true" : "false"}">
                   <span class="heart">${isFav ? "&#10084;" : "&#9825;"}</span>
                 </button>
               </div>
@@ -12346,8 +12348,12 @@
           if (next.has(id)) next.delete(id);
           else next.add(id);
           saveFavorites(next);
+          const isFavNow = next.has(id);
           const heart = heartBtn.querySelector(".heart");
-          heart.innerHTML = next.has(id) ? "&#10084;" : "&#9825;";
+          heart.innerHTML = isFavNow ? "&#10084;" : "&#9825;";
+          heartBtn.setAttribute("aria-pressed", isFavNow ? "true" : "false");
+          heartBtn.setAttribute("aria-label", isFavNow ? "Remove from favorites" : "Add to favorites");
+          if (navigator.vibrate) navigator.vibrate(40);
         });
 
         // Save button → collection picker
@@ -21607,12 +21613,16 @@
           });
         }
 
-        // 8. Cmd/Ctrl+K focuses search from anywhere (skips when typing in a field).
+        // 8. Cmd/Ctrl+K or '/' focuses search from anywhere (skips when typing in a field).
         document.addEventListener("keydown", (e) => {
-          if ((e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "K")) {
+          const isK = (e.metaKey || e.ctrlKey) && (e.key === "k" || e.key === "K");
+          const isSlash = e.key === "/" && !e.metaKey && !e.ctrlKey;
+
+          if (isK || isSlash) {
             const tag = (document.activeElement && document.activeElement.tagName) || "";
             const editing = /INPUT|TEXTAREA|SELECT/.test(tag) && document.activeElement !== searchInput;
             if (editing) return;
+
             e.preventDefault();
             const si = document.getElementById("searchInput");
             if (si) { si.focus(); si.select?.(); }

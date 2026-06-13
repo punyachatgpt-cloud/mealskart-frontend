@@ -1,0 +1,3 @@
+## 2026-06-13 - [Accessibility & Search Discoverability]
+**Learning:** Icon-only buttons like the favorite 'heart' need more than just a static 'Toggle favorite' label; they require dynamic 'aria-label' and 'aria-pressed' states to be truly accessible to screen readers. Additionally, standard keyboard shortcuts (like '/') significantly improve discoverability for search-heavy interfaces when paired with a 'title' attribute.
+**Action:** Always pair state changes in icon buttons with ARIA attribute updates and ensure global keyboard listeners check for 'INPUT/TEXTAREA' focus to avoid shortcut collisions.
