@@ -1,0 +1,3 @@
+## 2026-06-14 - Keyboard Shortcut Discoverability and Accessible State Management
+**Learning:** Global keyboard shortcuts (like '/') significantly improve power-user efficiency but remain "invisible" UX unless paired with a visible cue (like a title attribute or shortcut hint). Additionally, dynamic UI updates (like serving counts) must use ARIA live regions to be perceivable by screen reader users who aren't visually tracking the DOM change.
+**Action:** Always pair new keyboard shortcuts with a 'title' or 'aria-keyshortcuts' attribute on the target element. For any numeric or status toggle, ensure the value container has 'aria-live="polite"' to maintain accessibility parity with visual feedback.
